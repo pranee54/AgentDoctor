@@ -38,9 +38,20 @@ export type FrameworkId =
   | "unknown";
 
 export type PackageManagerId =
-  "npm" | "pnpm" | "yarn" | "bun" | "composer" | "pip" | "poetry" | "cargo" | "gradle" | "unknown";
+  | "npm"
+  | "pnpm"
+  | "yarn"
+  | "bun"
+  | "composer"
+  | "pub"
+  | "pip"
+  | "poetry"
+  | "cargo"
+  | "gradle"
+  | "unknown";
 
-export type MonorepoToolId = "npm-workspaces" | "pnpm-workspaces" | "turborepo" | "nx" | "none";
+export type MonorepoToolId =
+  "npm-workspaces" | "pnpm-workspaces" | "turborepo" | "nx" | "multi-project" | "none";
 
 export type AgentId = "cursor" | "claude-code" | "codex";
 

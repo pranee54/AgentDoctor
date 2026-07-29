@@ -5,7 +5,7 @@
 [![GitHub Stars](https://img.shields.io/github/stars/pranee54/AgentDoctor)](https://github.com/pranee54/AgentDoctor/stargazers)
 [![CI](https://img.shields.io/github/actions/workflow/status/pranee54/AgentDoctor/ci.yml?branch=main&label=CI)](https://github.com/pranee54/AgentDoctor/actions)
 [![Node](https://img.shields.io/node/v/@praneeth_54/agentdoctor)](https://nodejs.org)
-[![Release](https://img.shields.io/badge/release-v0.1.1--beta-orange)](CHANGELOG.md)
+[![Release](https://img.shields.io/badge/release-v0.1.2--beta-orange)](CHANGELOG.md)
 
 **Lighthouse for AI coding agents.**
 
@@ -29,7 +29,7 @@ npx @praneeth_54/agentdoctor
 ```text
 $ npx @praneeth_54/agentdoctor
 
-AgentDoctor v0.1.1-beta
+AgentDoctor v0.1.2-beta
 
 Repository
   Framework: Next.js
@@ -88,13 +88,13 @@ AgentDoctor analyzes configuration files. It does not run agents or edit your pr
 ### One-shot
 
 ```bash
-npx @praneeth_54/agentdoctor@0.1.1-beta
+npx @praneeth_54/agentdoctor@0.1.2-beta
 ```
 
 ### Global (optional)
 
 ```bash
-npm install -g @praneeth_54/agentdoctor@0.1.1-beta
+npm install -g @praneeth_54/agentdoctor@0.1.2-beta
 agentdoctor
 ```
 
@@ -225,7 +225,7 @@ npx @praneeth_54/agentdoctor --json
 
 ```json
 {
-  "version": "0.1.1-beta",
+  "version": "0.1.2-beta",
   "repository": {
     "primaryFramework": "nextjs",
     "primaryLanguage": "typescript",

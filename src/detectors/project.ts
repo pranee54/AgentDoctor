@@ -1,13 +1,13 @@
 import path from "node:path";
 
-import { DEFAULT_MAX_FILE_SIZE_BYTES } from "../constants.js";
+import { DEFAULT_IGNORE_DIRECTORIES, DEFAULT_MAX_FILE_SIZE_BYTES } from "../constants.js";
 import { discoverFiles } from "../discovery/files.js";
 import { detectFrameworks } from "./framework.js";
 import { detectLanguages } from "./language.js";
 import { detectMonorepo } from "./monorepo.js";
 import { detectPackageManagers } from "./package-manager.js";
 import type { DiscoveryResult, RepositoryInfo } from "../types/index.js";
-import { isDirectory, readJsonFile } from "../utils/fs.js";
+import { isDirectory, pathExists, readJsonFile } from "../utils/fs.js";
 import { resolveRepoRoot } from "../utils/path.js";
 
 export interface ProjectDetectionResult {
@@ -41,16 +41,26 @@ export async function detectProject(
   const relativePaths = discovery.files.map((f) => f.relativePath);
 
   for (const err of discovery.permissionErrors) {
+    const relative = err.split(":")[0] ?? err;
+    const underIgnored = relative
+      .split("/")
+      .some((segment) => segment.length > 0 && DEFAULT_IGNORE_DIRECTORIES.has(segment));
+    if (underIgnored) {
+      continue;
+    }
     diagnostics.push(`Permission/read issue: ${err}`);
   }
 
   let packageJson: PackageJsonShape | undefined;
   const packageJsonPath = path.join(root, "package.json");
-  const packageResult = await readJsonFile<PackageJsonShape>(packageJsonPath, maxFileSizeBytes);
-  if (packageResult.ok) {
-    packageJson = packageResult.data;
-  } else if (relativePaths.some((p) => p === "package.json" || p.endsWith("/package.json"))) {
-    diagnostics.push(`Malformed package.json: ${packageResult.error}`);
+  const rootPackageExists = await pathExists(packageJsonPath);
+  if (rootPackageExists) {
+    const packageResult = await readJsonFile<PackageJsonShape>(packageJsonPath, maxFileSizeBytes);
+    if (packageResult.ok) {
+      packageJson = packageResult.data;
+    } else {
+      diagnostics.push(`Malformed package.json: ${packageResult.error}`);
+    }
   }
 
   const deps = {

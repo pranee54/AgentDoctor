@@ -28,6 +28,29 @@ export function parseIgnoreFile(content: string): string[] {
 }
 
 /**
+ * Rewrite patterns from a nested ignore file so they apply relative to repository root.
+ * `baseDir` is the directory containing the ignore file (POSIX, no trailing slash), or "".
+ */
+export function relativizeIgnorePatterns(baseDir: string, patterns: string[]): string[] {
+  if (!baseDir || baseDir === ".") {
+    return patterns;
+  }
+  return patterns.map((pattern) => {
+    const negated = pattern.startsWith("!");
+    const body = negated ? pattern.slice(1) : pattern;
+    let rewritten: string;
+    if (body.startsWith("/")) {
+      rewritten = `${baseDir}${body}`;
+    } else if (body.startsWith("**/")) {
+      rewritten = `${baseDir}/${body.slice(3)}`;
+    } else {
+      rewritten = `${baseDir}/${body}`;
+    }
+    return negated ? `!${rewritten}` : rewritten;
+  });
+}
+
+/**
  * Match a relative POSIX path against a single gitignore-like pattern.
  * Negation (`!`) is not fully supported for re-inclusion of parent-excluded paths.
  */
@@ -37,23 +60,41 @@ export function matchIgnorePattern(relativePath: string, pattern: string): boole
     pat = pat.slice(1);
   }
 
-  const pathNorm = relativePath.replace(/^\/+/, "");
+  const pathNorm = relativePath.replace(/^\/+/, "").replace(/\/+$/, "");
   let matched = false;
 
   if (pat.endsWith("/")) {
     const dir = pat.slice(0, -1);
-    matched =
-      pathNorm === dir ||
-      pathNorm.startsWith(`${dir}/`) ||
-      globMatch(pathNorm, dir) ||
-      pathNorm.split("/").some((_, i, parts) => globMatch(parts.slice(0, i + 1).join("/"), dir));
+    if (!dir.includes("/")) {
+      // `build/` matches build at any directory level (gitignore semantics)
+      matched =
+        pathNorm === dir ||
+        pathNorm.endsWith(`/${dir}`) ||
+        pathNorm.split("/").includes(dir) ||
+        globMatch(pathNorm, `**/${dir}`) ||
+        globMatch(pathNorm, `**/${dir}/**`);
+    } else {
+      matched =
+        pathNorm === dir ||
+        pathNorm.startsWith(`${dir}/`) ||
+        globMatch(pathNorm, dir) ||
+        globMatch(pathNorm, `${dir}/**`);
+    }
   } else if (pat.startsWith("/")) {
     matched = globMatch(pathNorm, pat.slice(1));
   } else if (pat.includes("/")) {
-    matched = globMatch(pathNorm, pat) || pathNorm.endsWith(`/${pat}`);
+    matched =
+      globMatch(pathNorm, pat) ||
+      globMatch(pathNorm, `${pat}/**`) ||
+      pathNorm.endsWith(`/${pat}`) ||
+      pathNorm.startsWith(`${pat}/`);
   } else {
     const base = pathNorm.split("/").pop() ?? pathNorm;
-    matched = globMatch(base, pat) || globMatch(pathNorm, pat) || globMatch(pathNorm, `**/${pat}`);
+    matched =
+      globMatch(base, pat) ||
+      globMatch(pathNorm, pat) ||
+      globMatch(pathNorm, `**/${pat}`) ||
+      pathNorm.split("/").includes(pat);
   }
 
   return matched;
@@ -109,7 +150,6 @@ export function createIgnoreIndex(options: {
       if (pathMatchesAny(relativePath, gitignorePatterns)) {
         return true;
       }
-      // Documented default ignore list includes .env*
       return pathMatchesAny(relativePath, CURSOR_DEFAULT_ENV_PATTERNS);
     },
   };

@@ -13,6 +13,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Safe automatic fixes
 - Packaged GitHub Action
 
+## [0.1.2-beta] — 2026-07-29
+
+Backward-compatible quality patch.
+
+### Fixed
+
+- More reliable CLI/package binary execution (local bin shim + executable CLI entry)
+- Nested `context/generated-directory` ignore handling and precise evidence paths
+- Multi-project repository detection without requiring Node workspace tooling
+- Mixed Composer / Pub / npm package-manager detection
+- False malformed-package diagnostic when root `package.json` is absent
+- Conservative credential-file detection for `.der` and service-account JSON names
+- Quieter permission diagnostics under already-skipped directories
+
+### Testing
+
+- Added real-world multi-app, generated-directory, credential, and CLI bin fixtures/tests
+- Total test suite is now 104 tests
+
 ## [0.1.1-beta] — 2026-07-29
 
 Patch release.
@@ -62,6 +81,7 @@ First public beta.
 - Not a complete secret scanner
 - Git “tracked secret” detection deferred
 
-[Unreleased]: https://github.com/pranee54/AgentDoctor/compare/v0.1.1-beta...HEAD
+[Unreleased]: https://github.com/pranee54/AgentDoctor/compare/v0.1.2-beta...HEAD
+[0.1.2-beta]: https://github.com/pranee54/AgentDoctor/releases/tag/v0.1.2-beta
 [0.1.1-beta]: https://github.com/pranee54/AgentDoctor/releases/tag/v0.1.1-beta
 [0.1.0-beta]: https://github.com/pranee54/AgentDoctor/releases/tag/v0.1.0-beta

@@ -3,7 +3,7 @@ import { AGENT_DISPLAY_NAMES } from "../../constants.js";
 import { formatFramework } from "../../detectors/framework.js";
 import { formatLanguage } from "../../detectors/language.js";
 import { formatMonorepo } from "../../detectors/monorepo.js";
-import { formatPackageManager } from "../../detectors/package-manager.js";
+import { formatPackageManager, formatPackageManagers } from "../../detectors/package-manager.js";
 import type { AgentId, Finding, ScanResult, Severity } from "../../types/index.js";
 import { colors, symbolFail, symbolInfo, symbolOk, symbolWarn } from "../../utils/colors.js";
 import { sanitizeTerminalText } from "../../security/redaction.js";
@@ -86,9 +86,12 @@ export function renderTerminalReport(
   lines.push(
     `  Language: ${sanitizeTerminalText(formatLanguage(result.repository.primaryLanguage))}`,
   );
-  lines.push(
-    `  Package manager: ${sanitizeTerminalText(formatPackageManager(result.repository.primaryPackageManager))}`,
-  );
+  const packageManagerLabel =
+    result.repository.packageManagers.length > 1 ||
+    result.repository.primaryPackageManager === "unknown"
+      ? formatPackageManagers(result.repository.packageManagers)
+      : formatPackageManager(result.repository.primaryPackageManager);
+  lines.push(`  Package manager: ${sanitizeTerminalText(packageManagerLabel)}`);
   if (result.repository.monorepo !== "none") {
     lines.push(`  Monorepo: ${sanitizeTerminalText(formatMonorepo(result.repository.monorepo))}`);
   }

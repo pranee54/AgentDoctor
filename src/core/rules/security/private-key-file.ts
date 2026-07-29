@@ -8,10 +8,14 @@ const PRIVATE_KEY_PATTERNS: Array<{ test: (base: string) => boolean; label: stri
     test: (b) => /\.pem$/i.test(b) && !/cert|certificate|public|ca-bundle/i.test(b),
     label: "PEM private key",
   },
+  {
+    test: (b) => /\.der$/i.test(b) && !/cert|certificate|public|ca-bundle/i.test(b),
+    label: "DER-encoded key or credential material",
+  },
   { test: (b) => /\.p12$/i.test(b), label: "PKCS#12 credential bundle" },
   { test: (b) => /\.pfx$/i.test(b), label: "PKCS#12 credential bundle" },
   { test: (b) => /^credentials\.json$/i.test(b), label: "credentials file" },
-  { test: (b) => /service-account.*\.json$/i.test(b), label: "service account key" },
+  { test: (b) => /service[-_]?account.*\.json$/i.test(b), label: "service account key" },
   {
     test: (b) => /\.key$/i.test(b) && !/public|pub/i.test(b),
     label: "private key file",

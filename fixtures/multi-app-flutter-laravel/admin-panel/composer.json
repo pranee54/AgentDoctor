@@ -1,0 +1,6 @@
+{
+  "name": "admin-panel",
+  "require": {
+    "php": "^8.2"
+  }
+}

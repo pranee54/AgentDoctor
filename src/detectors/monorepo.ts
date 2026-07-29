@@ -9,8 +9,19 @@ export interface MonorepoDetectionResult {
   monorepo: MonorepoToolId;
 }
 
+const PROJECT_MANIFESTS = new Set([
+  "package.json",
+  "pubspec.yaml",
+  "composer.json",
+  "cargo.toml",
+  "go.mod",
+  "pyproject.toml",
+  "gemfile",
+]);
+
 /**
- * Detect common monorepo tooling from config markers.
+ * Detect common monorepo tooling from config markers, or multi-project layouts
+ * with multiple independently buildable manifests.
  */
 export function detectMonorepo(input: MonorepoDetectionInput): MonorepoDetectionResult {
   const basenames = new Set(
@@ -45,6 +56,27 @@ export function detectMonorepo(input: MonorepoDetectionInput): MonorepoDetection
     }
   }
 
+  const projectRoots = new Set<string>();
+  for (const relativePath of input.relativePaths) {
+    const parts = relativePath.split("/");
+    const base = (parts[parts.length - 1] ?? relativePath).toLowerCase();
+    if (!PROJECT_MANIFESTS.has(base)) {
+      continue;
+    }
+    if (parts.length === 1) {
+      projectRoots.add(".");
+      continue;
+    }
+    // Count only first-level project directories (e.g. mobile-apps/pubspec.yaml)
+    if (parts.length === 2) {
+      projectRoots.add(parts[0] ?? relativePath);
+    }
+  }
+
+  if (projectRoots.size >= 2) {
+    return { monorepo: "multi-project" };
+  }
+
   return { monorepo: "none" };
 }
 
@@ -58,6 +90,8 @@ export function formatMonorepo(id: MonorepoToolId): string {
       return "Turborepo";
     case "nx":
       return "Nx";
+    case "multi-project":
+      return "Multi-project";
     default:
       return "None";
   }

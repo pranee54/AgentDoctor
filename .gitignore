@@ -23,4 +23,6 @@ tmp/
 !fixtures/**/.env
 !fixtures/**/.env.*
 !fixtures/**/*.pem
+!fixtures/**/*.der
 !fixtures/**/*.log
+!fixtures/**/build/**

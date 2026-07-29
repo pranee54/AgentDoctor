@@ -41,7 +41,7 @@ Exact token savings are never claimed.
 ### `security/private-key-file`
 
 - **Severity:** critical
-- **Detects:** High-confidence private key / credential filenames (`id_rsa`, `*.pem` excluding obvious cert names, `credentials.json`, `service-account*.json`, etc.)
+- **Detects:** High-confidence private key / credential filenames (`id_rsa`, `*.pem` / `*.der` excluding obvious cert names, `credentials.json`, `service-account*.json`, etc.)
 - **Why:** Credential material in the tree is high risk
 - **Contents:** Never inspected or printed
 - **Fixability:** manual
@@ -79,7 +79,8 @@ Exact token savings are never claimed.
 ### `context/generated-directory`
 
 - **Severity:** info
-- **Detects:** Common generated dirs (`dist`, `build`, `coverage`, `.next`, …) without project ignore evidence
+- **Detects:** Common generated directories with exact repository-relative evidence (e.g. `mobile-apps/build`) when no matching ignore pattern applies
+- **Ignores:** Root and nested `.gitignore` / `.cursorignore`, including `build/` and `**/build/`
 - **Note:** `vendor/` only flagged outside PHP/Composer
 - **Fixability:** safe
 
