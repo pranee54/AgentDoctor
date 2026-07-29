@@ -1,0 +1,6 @@
+---
+globs: src/**/*.ts
+alwaysApply: false
+---
+
+Prefer named exports.

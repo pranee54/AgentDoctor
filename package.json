@@ -1,0 +1,79 @@
+{
+  "name": "agentdoctor",
+  "version": "0.1.0-beta",
+  "description": "Audit AI coding agent configuration in a repository — local, deterministic, no API key.",
+  "type": "module",
+  "bin": {
+    "agentdoctor": "./dist/cli/index.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsx src/cli/index.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.build.json --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run typecheck && npm run lint && npm test && npm run build"
+  },
+  "keywords": [
+    "ai",
+    "coding-agents",
+    "agent-config",
+    "cursor",
+    "claude-code",
+    "codex",
+    "mcp",
+    "security",
+    "linter",
+    "cli",
+    "static-analysis",
+    "developer-tools"
+  ],
+  "author": "AgentDoctor Contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/agentdoctor/agentdoctor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/agentdoctor/agentdoctor/issues"
+  },
+  "homepage": "https://github.com/agentdoctor/agentdoctor#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "commander": "^14.0.3",
+    "picocolors": "^1.1.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "@types/node": "^22.19.1",
+    "eslint": "^9.39.2",
+    "prettier": "^3.7.4",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.50.0",
+    "vitest": "^3.2.4"
+  }
+}

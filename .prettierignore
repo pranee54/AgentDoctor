@@ -1,0 +1,15 @@
+node_modules/
+dist/
+coverage/
+test-results/
+package-lock.json
+*.md
+!README.md
+!docs/**/*.md
+!CHANGELOG.md
+!CONTRIBUTING.md
+!SECURITY.md
+!CODE_OF_CONDUCT.md
+!ROADMAP.md
+fixtures/malformed-agent-config/**
+fixtures/malformed-mcp-project/**

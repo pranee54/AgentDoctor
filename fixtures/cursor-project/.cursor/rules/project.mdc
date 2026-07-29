@@ -1,0 +1,6 @@
+---
+description: Project conventions
+alwaysApply: true
+---
+
+Use TypeScript for all new files.

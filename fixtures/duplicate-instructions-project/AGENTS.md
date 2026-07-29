@@ -1,0 +1,1 @@
+Use TypeScript for all new files.\nPrefer small pull requests.\nRun tests before merging.\nKeep secrets out of the repo.\n

@@ -1,0 +1,8 @@
+* text=auto eol=lf
+
+*.{ts,tsx,js,cjs,mjs,json,yml,yaml,md,css,html} text eol=lf
+*.{png,jpg,jpeg,gif,webp,ico} binary
+*.{pem,p12,pfx} binary
+
+# Keep shell scripts executable bits when present
+*.sh text eol=lf
