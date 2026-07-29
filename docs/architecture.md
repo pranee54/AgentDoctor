@@ -59,7 +59,7 @@ src/
 ## Public API
 
 ```ts
-import { scan } from "agentdoctor";
+import { scan } from "@praneeth_54/agentdoctor";
 
 const result = await scan({ cwd: process.cwd() });
 ```

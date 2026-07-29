@@ -6,6 +6,7 @@ This document describes what consumers can rely on during the public beta.
 
 | Surface          | Promise                                                                                                         |
 | ---------------- | --------------------------------------------------------------------------------------------------------------- |
+| npm package name | `@praneeth_54/agentdoctor`                                                                                      |
 | CLI binary name  | `agentdoctor`                                                                                                   |
 | Default command  | Scan current directory / path argument                                                                          |
 | Flags            | `--json`, `--ci`, `--verbose`, `--version`, `--help`                                                            |

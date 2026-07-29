@@ -1,32 +1,33 @@
 # AgentDoctor
 
+[![npm](https://img.shields.io/npm/v/@praneeth_54/agentdoctor)](https://www.npmjs.com/package/@praneeth_54/agentdoctor)
+[![License](https://img.shields.io/github/license/pranee54/AgentDoctor)](LICENSE)
+[![GitHub Stars](https://img.shields.io/github/stars/pranee54/AgentDoctor)](https://github.com/pranee54/AgentDoctor/stargazers)
+[![CI](https://img.shields.io/github/actions/workflow/status/pranee54/AgentDoctor/ci.yml?branch=main&label=CI)](https://github.com/pranee54/AgentDoctor/actions)
+[![Node](https://img.shields.io/node/v/@praneeth_54/agentdoctor)](https://nodejs.org)
+[![Release](https://img.shields.io/badge/release-v0.1.0--beta-orange)](CHANGELOG.md)
+
 **Lighthouse for AI coding agents.**
 
 AgentDoctor audits a repository’s AI coding agent configuration — instructions, ignore rules, permissions, and MCP setup — using local static analysis. No API key. No upload by default.
 
 ```bash
-npx agentdoctor
+npx @praneeth_54/agentdoctor
 ```
 
 |                |                                                                                     |
 | -------------- | ----------------------------------------------------------------------------------- |
 | **What it is** | A CLI health check for agent config in your repo                                    |
 | **Why use it** | Catch misconfigurations, sensitive context exposure, and instruction problems early |
-| **Install**    | `npx agentdoctor` or `npm install -g agentdoctor`                                   |
+| **Install**    | `npx @praneeth_54/agentdoctor` or `npm install -g @praneeth_54/agentdoctor`         |
 | **Requires**   | Node.js 20+                                                                         |
-
-[![CI](https://img.shields.io/github/actions/workflow/status/pranee54/AgentDoctor/ci.yml?branch=main&label=CI)](https://github.com/pranee54/AgentDoctor/actions)
-[![npm](https://img.shields.io/npm/v/agentdoctor?label=npm)](https://www.npmjs.com/package/agentdoctor)
-[![Node](https://img.shields.io/node/v/agentdoctor)](https://nodejs.org)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Release](https://img.shields.io/badge/release-v0.1.0--beta-orange)](CHANGELOG.md)
 
 ---
 
 ## Demo
 
 ```text
-$ npx agentdoctor
+$ npx @praneeth_54/agentdoctor
 
 AgentDoctor v0.1.0-beta
 
@@ -87,24 +88,26 @@ AgentDoctor analyzes configuration files. It does not run agents or edit your pr
 ### One-shot
 
 ```bash
-npx agentdoctor
+npx @praneeth_54/agentdoctor
 ```
 
 ### Global (optional)
 
 ```bash
-npm install -g agentdoctor
+npm install -g @praneeth_54/agentdoctor
 agentdoctor
 ```
+
+The published package name is `@praneeth_54/agentdoctor` (npm blocks the unscoped name `agentdoctor` as too similar to an existing package). The CLI binary remains `agentdoctor`.
 
 ### Library
 
 ```bash
-npm install agentdoctor
+npm install @praneeth_54/agentdoctor
 ```
 
 ```ts
-import { scan } from "agentdoctor";
+import { scan } from "@praneeth_54/agentdoctor";
 
 const result = await scan({ cwd: process.cwd() });
 console.log(result.summary);
@@ -116,22 +119,22 @@ console.log(result.summary);
 
 ```bash
 # Scan the current directory
-npx agentdoctor
+npx @praneeth_54/agentdoctor
 
 # Scan a path
-npx agentdoctor ./my-app
+npx @praneeth_54/agentdoctor ./my-app
 
 # Machine-readable output
-npx agentdoctor --json
+npx @praneeth_54/agentdoctor --json
 
 # Extra detail (paths, timing, finding rationale)
-npx agentdoctor --verbose
+npx @praneeth_54/agentdoctor --verbose
 
 # Explain a rule
-npx agentdoctor explain security/env-file-exposure
+npx @praneeth_54/agentdoctor explain security/env-file-exposure
 
 # Environment health check
-npx agentdoctor doctor
+npx @praneeth_54/agentdoctor doctor
 ```
 
 ---
@@ -217,7 +220,7 @@ Details: [docs/architecture.md](docs/architecture.md)
 ## JSON output
 
 ```bash
-npx agentdoctor --json
+npx @praneeth_54/agentdoctor --json
 ```
 
 ```json
@@ -291,7 +294,7 @@ Yes — prefer `--json`. `--min-score` is ignored until readiness scoring ships.
 **How do I understand a finding?**
 
 ```bash
-npx agentdoctor explain <rule-id>
+npx @praneeth_54/agentdoctor explain <rule-id>
 ```
 
 ---

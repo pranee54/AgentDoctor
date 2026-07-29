@@ -14,7 +14,7 @@ In v0.1.0-beta, readiness scoring is not available (`scoringAvailable: false`). 
 Example:
 
 ```bash
-npx agentdoctor --json
+npx @praneeth_54/agentdoctor --json
 echo $?
 ```
 

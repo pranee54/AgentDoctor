@@ -7,7 +7,7 @@ First public beta. Local, deterministic repository audits for AI coding agent co
 ## Install
 
 ```bash
-npx agentdoctor@0.1.0-beta
+npx @praneeth_54/agentdoctor@0.1.0-beta
 ```
 
 Or from source after cloning:
@@ -17,6 +17,8 @@ npm install
 npm run build
 node dist/cli/index.js
 ```
+
+Published npm name: `@praneeth_54/agentdoctor` (CLI binary: `agentdoctor`).
 
 ## Features
 
@@ -30,9 +32,9 @@ node dist/cli/index.js
 ## Example
 
 ```bash
-npx agentdoctor
-npx agentdoctor --json
-npx agentdoctor explain security/env-file-exposure
+npx @praneeth_54/agentdoctor
+npx @praneeth_54/agentdoctor --json
+npx @praneeth_54/agentdoctor explain security/env-file-exposure
 ```
 
 ## Known limitations
