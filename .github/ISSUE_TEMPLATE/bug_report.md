@@ -22,10 +22,14 @@ A clear description of the problem.
 
 ## Environment
 
-- AgentDoctor version:
+- AgentDoctor version (`agentdoctor --version`):
 - Node.js version:
 - OS:
 
 ## Additional context
 
-Attach `--json` output if helpful (redact secrets).
+Attach redacted `--json` output if helpful.
+
+**Do not paste real secrets or credential values.** Use fixtures with fake markers or anonymized paths.
+
+If this is specifically a wrong finding or a miss, prefer the **False positive** or **False negative** templates.

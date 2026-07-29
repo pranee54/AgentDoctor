@@ -24,7 +24,7 @@ Thanks for helping improve AgentDoctor.
    node dist/cli/index.js ./fixtures/clean-configured-project
    ```
 
-5. Prefer issues labeled `good first issue` or `help wanted`.
+5. Prefer issues labeled `good first issue` or `help wanted`. Starter ideas: [docs/good-first-issues.md](docs/good-first-issues.md).
 
 6. Open a focused pull request (one concern per PR).
 
@@ -53,14 +53,13 @@ npm run verify
 4. Ensure CI checks pass
 5. Fill out the PR template
 
-## Reporting bugs
+## Reporting bugs and finding quality issues
 
-Use the bug report issue template. Include:
+- **CLI crashes / incorrect behavior:** [bug report](.github/ISSUE_TEMPLATE/bug_report.md)
+- **Wrong finding:** [false positive](.github/ISSUE_TEMPLATE/false_positive.md)
+- **Missed problem:** [false negative](.github/ISSUE_TEMPLATE/false_negative.md)
 
-- AgentDoctor version (`agentdoctor --version`)
-- Node.js version
-- Minimal reproduction (fixture or anonymized tree)
-- Whether `--json` reproduces the issue
+Include AgentDoctor version, rule ID when relevant, and anonymized evidence. **Never paste real secrets.**
 
 ## Security issues
 
@@ -73,3 +72,5 @@ Open an issue describing the problem first. New rules and adapters should includ
 - Official documentation references when agent-specific
 - Stable rule/adapter IDs
 - Tests and false-positive considerations
+
+Templates: [feature request](.github/ISSUE_TEMPLATE/feature_request.md), [rule proposal](.github/ISSUE_TEMPLATE/rule_proposal.md), [adapter request](.github/ISSUE_TEMPLATE/adapter_request.md).

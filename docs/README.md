@@ -1,24 +1,41 @@
 # Documentation
 
-| Document                                                     | Description                           |
-| ------------------------------------------------------------ | ------------------------------------- |
-| [architecture.md](architecture.md)                           | Scan pipeline and package layout      |
-| [rules.md](rules.md)                                         | Stable rule IDs and severity policy   |
-| [exit-codes.md](exit-codes.md)                               | CLI process exit codes                |
-| [compatibility.md](compatibility.md)                         | Beta compatibility promises           |
-| [development.md](development.md)                             | Local setup and contributor workflows |
-| [release-notes-v0.1.3-beta.md](release-notes-v0.1.3-beta.md) | v0.1.3-beta release notes             |
-| [release-notes-v0.1.2-beta.md](release-notes-v0.1.2-beta.md) | v0.1.2-beta release notes             |
-| [release-notes-v0.1.1-beta.md](release-notes-v0.1.1-beta.md) | v0.1.1-beta release notes             |
-| [release-notes-v0.1.0-beta.md](release-notes-v0.1.0-beta.md) | v0.1.0-beta release notes             |
-| [images/](images/)                                           | Optional README screenshots           |
+## Product
 
-Project-level docs:
+| Document                             | Description                         |
+| ------------------------------------ | ----------------------------------- |
+| [../README.md](../README.md)         | Product overview and quick start    |
+| [architecture.md](architecture.md)   | Scan pipeline and package layout    |
+| [rules.md](rules.md)                 | Stable rule IDs and severity policy |
+| [exit-codes.md](exit-codes.md)       | CLI process exit codes              |
+| [compatibility.md](compatibility.md) | Beta compatibility promises         |
+| [../SECURITY.md](../SECURITY.md)     | Vulnerability reporting             |
 
-| Document                                 | Description                      |
-| ---------------------------------------- | -------------------------------- |
-| [../README.md](../README.md)             | Product overview and quick start |
-| [../ROADMAP.md](../ROADMAP.md)           | Near- and medium-term plans      |
-| [../CHANGELOG.md](../CHANGELOG.md)       | Release history                  |
-| [../CONTRIBUTING.md](../CONTRIBUTING.md) | How to contribute                |
-| [../SECURITY.md](../SECURITY.md)         | Vulnerability reporting          |
+## Development
+
+| Document                                     | Description                           |
+| -------------------------------------------- | ------------------------------------- |
+| [development.md](development.md)             | Local setup and contributor workflows |
+| [../CONTRIBUTING.md](../CONTRIBUTING.md)     | How to contribute                     |
+| [../ROADMAP.md](../ROADMAP.md)               | Near- and medium-term plans           |
+| [good-first-issues.md](good-first-issues.md) | Suggested starter contributions       |
+
+## Launch
+
+| Document                                                       | Description                           |
+| -------------------------------------------------------------- | ------------------------------------- |
+| [github-launch-checklist.md](github-launch-checklist.md)       | GitHub About, topics, checklist       |
+| [images/README.md](images/README.md)                           | Demo screenshot / GIF plan            |
+| [images/social-preview-spec.md](images/social-preview-spec.md) | Social preview design spec            |
+| [launch/](launch/)                                             | Draft launch posts (do not auto-post) |
+| [discussions-welcome.md](discussions-welcome.md)               | Discussions welcome copy              |
+
+## Release notes
+
+| Document                                                     | Description               |
+| ------------------------------------------------------------ | ------------------------- |
+| [../CHANGELOG.md](../CHANGELOG.md)                           | Release history           |
+| [release-notes-v0.1.3-beta.md](release-notes-v0.1.3-beta.md) | v0.1.3-beta release notes |
+| [release-notes-v0.1.2-beta.md](release-notes-v0.1.2-beta.md) | v0.1.2-beta release notes |
+| [release-notes-v0.1.1-beta.md](release-notes-v0.1.1-beta.md) | v0.1.1-beta release notes |
+| [release-notes-v0.1.0-beta.md](release-notes-v0.1.0-beta.md) | v0.1.0-beta release notes |

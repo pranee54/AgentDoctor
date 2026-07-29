@@ -1,41 +1,39 @@
 # AgentDoctor
 
 [![npm](https://img.shields.io/npm/v/@praneeth_54/agentdoctor)](https://www.npmjs.com/package/@praneeth_54/agentdoctor)
-[![License](https://img.shields.io/github/license/pranee54/AgentDoctor)](LICENSE)
-[![GitHub Stars](https://img.shields.io/github/stars/pranee54/AgentDoctor)](https://github.com/pranee54/AgentDoctor/stargazers)
+[![npm downloads](https://img.shields.io/npm/dm/@praneeth_54/agentdoctor)](https://www.npmjs.com/package/@praneeth_54/agentdoctor)
 [![CI](https://img.shields.io/github/actions/workflow/status/pranee54/AgentDoctor/ci.yml?branch=main&label=CI)](https://github.com/pranee54/AgentDoctor/actions)
 [![Node](https://img.shields.io/node/v/@praneeth_54/agentdoctor)](https://nodejs.org)
-[![Release](https://img.shields.io/badge/release-v0.1.2--beta-orange)](CHANGELOG.md)
+[![License](https://img.shields.io/github/license/pranee54/AgentDoctor)](LICENSE)
 
 **Lighthouse for AI coding agents.**
 
-AgentDoctor audits a repository’s AI coding agent configuration — instructions, ignore rules, permissions, and MCP setup — using local static analysis. No API key. No upload by default.
+Audit coding-agent configuration before it becomes a repository problem.
+
+AgentDoctor is a local CLI that inspects project-level AI coding agent setup — Cursor, Claude Code, and Codex — for security, instructions, context, and MCP configuration. Deterministic static analysis. No API key. No code upload by default.
 
 ```bash
 npx @praneeth_54/agentdoctor
 ```
 
-|                |                                                                                     |
-| -------------- | ----------------------------------------------------------------------------------- |
-| **What it is** | A CLI health check for agent config in your repo                                    |
-| **Why use it** | Catch misconfigurations, sensitive context exposure, and instruction problems early |
-| **Install**    | `npx @praneeth_54/agentdoctor` or `npm install -g @praneeth_54/agentdoctor`         |
-| **Requires**   | Node.js 20+                                                                         |
+Public beta (`0.1.x-beta`). Readiness scoring and automatic fixes are not available yet.
 
 ---
 
-## Demo
+## What you get
 
 ```text
 $ npx @praneeth_54/agentdoctor
 
-AgentDoctor v0.1.3-beta
+🩺 AgentDoctor v0.1.3-beta
+
+Scanning repository...
 
 Repository
-  Framework: Next.js
-  Language: TypeScript
+  Framework: Node.js
+  Language: JavaScript
   Package manager: npm
-  Files scanned: 46
+  Files scanned: 7
 
 AI Coding Agents
 
@@ -48,44 +46,109 @@ Findings
 CRITICAL
 
   ✗ Sensitive environment file may enter agent context
-    .env.production
+    .env
     Affected: Claude Code, Codex
-    Fix: Exclude the file from agent context and keep it out of version control.
+    Fix: Add an agent-specific exclusion (for example .cursorignore or a
+         Claude Code Read deny rule), keep the file out of version control,
+         and rotate any credentials that may have been exposed.
+
+  ✗ Private key or credential file present in repository
+    test-private-key.pem
+    Affected: Claude Code, Codex, Cursor
 
 WARNING
 
-  ! Large instruction file
-    CLAUDE.md — 38 KB
+  ! Claude Code bypassPermissions mode enabled
+    .claude/settings.json
 
 Summary
 
-  1 critical
+  3 critical
   1 warning
   0 info
 
-Scoring is not included in this beta
+Scoring: not included in this release
 ```
+
+Example abbreviated from a real fixture scan (`fixtures/insecure-agent-project`). Secret values are never printed.
 
 ---
 
-## Why AgentDoctor exists
+## Why AgentDoctor?
 
-Teams adopt AI coding agents quickly and accumulate project instructions, ignore rules, MCP servers, and permission settings. Those files are easy to misconfigure and hard to review consistently.
+Repositories accumulate agent configuration quickly:
 
-| Tooling analogy | Domain                           |
+- Multiple instruction formats (`.cursor/rules`, `CLAUDE.md`, `AGENTS.md`)
+- Stale path references in always-on instructions
+- Ignore differences between `.gitignore`, `.cursorignore`, and agent defaults
+- MCP filesystem scopes that are broader than intended
+- Generated directories and large logs that waste context
+- Credential-like files that may be readable by agents
+- Conflicting assumptions about what each agent can see
+
+Manually reviewing all of that across Cursor, Claude Code, and Codex is slow and inconsistent. AgentDoctor provides one deterministic local audit with stable rule IDs, evidence paths, and affected-agent information.
+
+| Analogy         | Domain                           |
 | --------------- | -------------------------------- |
 | Lighthouse      | Web pages                        |
 | `npm audit`     | Dependencies                     |
 | ESLint          | Source code                      |
 | **AgentDoctor** | **AI coding agent environments** |
 
-AgentDoctor analyzes configuration files. It does not run agents or edit your project.
+AgentDoctor analyzes configuration. It does not run agents, call an LLM, or modify your repository in this release.
 
 ---
 
-## Installation
+## Before / after
 
-### One-shot
+**Before**
+
+A repository may contain:
+
+```text
+.cursor/rules/
+AGENTS.md
+CLAUDE.md
+.claude/settings.json
+.mcp.json
+.env
+```
+
+Potential problems stay invisible until something leaks into model context, CI, or a teammate’s agent session:
+
+- environment or credential-like files reachable by agents
+- stale instruction path references
+- broad MCP filesystem access
+- oversized always-on context
+
+**Run**
+
+```bash
+npx @praneeth_54/agentdoctor
+```
+
+**After**
+
+You get deterministic findings with:
+
+- stable rule IDs (for example `security/env-file-exposure`)
+- evidence paths
+- affected agents when exposure claims are supported
+- conservative recommendations
+
+Automatic repair is **not** included in this beta. Findings tell you what to review; you decide what to change.
+
+---
+
+## Quick start
+
+### One-shot (recommended)
+
+```bash
+npx @praneeth_54/agentdoctor
+```
+
+Pin a beta version when you need a fixed install:
 
 ```bash
 npx @praneeth_54/agentdoctor@0.1.3-beta
@@ -94,13 +157,23 @@ npx @praneeth_54/agentdoctor@0.1.3-beta
 ### Global (optional)
 
 ```bash
-npm install -g @praneeth_54/agentdoctor@0.1.3-beta
+npm install -g @praneeth_54/agentdoctor
 agentdoctor
 ```
 
-The published package name is `@praneeth_54/agentdoctor` (npm blocks the unscoped name `agentdoctor` as too similar to an existing package). The CLI binary remains `agentdoctor`.
+### Common commands
 
-### Library
+```bash
+agentdoctor .
+agentdoctor . --json
+agentdoctor . --verbose
+agentdoctor explain security/env-file-exposure
+agentdoctor doctor
+```
+
+Package name: `@praneeth_54/agentdoctor` (npm blocks the unscoped name). CLI binary: `agentdoctor`. Requires **Node.js 20+**.
+
+### Programmatic API
 
 ```bash
 npm install @praneeth_54/agentdoctor
@@ -111,218 +184,118 @@ import { scan } from "@praneeth_54/agentdoctor";
 
 const result = await scan({ cwd: process.cwd() });
 console.log(result.summary);
+console.log(result.agentSecurityAnalysis); // "full" | "limited"
 ```
 
 ---
 
-## Quick start
+## Supported agents
+
+Project-level configuration only (repository files). Global user settings are not scanned.
+
+| Agent           | What AgentDoctor inspects                                              |
+| --------------- | ---------------------------------------------------------------------- |
+| **Cursor**      | `.cursor/rules/*.mdc`, `.cursorignore`, Cursor MCP config, `AGENTS.md` |
+| **Claude Code** | `CLAUDE.md`, `.claude/settings*.json`, `.claude/rules`, MCP config     |
+| **Codex**       | `AGENTS.md` / overrides, project `.codex/` configuration               |
+
+Additional adapters are planned — see [ROADMAP.md](ROADMAP.md).
+
+---
+
+## Finding categories
+
+| Category         | Examples                                                              |
+| ---------------- | --------------------------------------------------------------------- |
+| **Security**     | Env-file exposure, private-key filenames, broad MCP filesystem scopes |
+| **Context**      | Large instruction files, large logs, unignored generated directories  |
+| **Instructions** | Empty instructions, duplicate content, missing path references        |
+| **MCP**          | Malformed MCP config, high-risk filesystem path arguments             |
+
+Full catalog with severities and fixability: [docs/rules.md](docs/rules.md).
+
+Explain any rule:
 
 ```bash
-# Scan the current directory
-npx @praneeth_54/agentdoctor
-
-# Scan a path
-npx @praneeth_54/agentdoctor ./my-app
-
-# Machine-readable output
-npx @praneeth_54/agentdoctor --json
-
-# Extra detail (paths, timing, finding rationale)
-npx @praneeth_54/agentdoctor --verbose
-
-# Explain a rule
 npx @praneeth_54/agentdoctor explain security/env-file-exposure
-
-# Environment health check
-npx @praneeth_54/agentdoctor doctor
 ```
 
 ---
 
-## Features
+## Privacy and trust
 
-| Capability                                              | Status  |
-| ------------------------------------------------------- | ------- |
-| Zero-config first run                                   | ✓       |
-| Works offline / no API key                              | ✓       |
-| Detects project-level agent configuration               | ✓       |
-| Deterministic security / context / instruction findings | ✓       |
-| Inspects supported MCP project configuration            | ✓       |
-| Stable JSON output for CI                               | ✓       |
-| `explain <rule>` documentation                          | ✓       |
-| Readiness scoring                                       | Planned |
-| Safe automatic fixes                                    | Planned |
-| Official GitHub Action package                          | Planned |
+**Scans run locally on your machine.**
 
-### Feature comparison
+AgentDoctor:
 
-| Concern                                      | Manual review | Generic linters | AgentDoctor      |
-| -------------------------------------------- | ------------- | --------------- | ---------------- |
-| Agent instruction files present and usable   | Manual        | —               | ✓                |
-| Empty or duplicated instructions             | Manual        | —               | ✓                |
-| Sensitive filenames vs agent access patterns | Manual        | Partial         | ✓ (conservative) |
-| Broad MCP filesystem scopes                  | Manual        | —               | ✓                |
-| Large always-on instruction files            | Manual        | —               | ✓                |
-| Uploads repository by default                | —             | Sometimes       | **Never**        |
+- does not require an API key
+- does not upload repository contents by default
+- does not call an LLM for core scanning
+- does not execute MCP servers
+- does not execute project code
+- never prints secret values from files it flags by name
+- enforces repository boundary checks for path references and symlink escape
+
+This is still software that reads untrusted repository trees. Treat findings as guidance, not a security certification. AgentDoctor is **not** a complete secret-content scanner.
 
 ---
 
-## What it detects
+## CI usage
 
-### Supported agents
+Use JSON for automation:
 
-| Agent       | Project-level detection                    |
-| ----------- | ------------------------------------------ |
-| Cursor      | Rules, ignore files, MCP, `AGENTS.md`      |
-| Claude Code | Instructions, settings, rules, MCP         |
-| Codex       | `AGENTS.md` / overrides, project `.codex/` |
+```bash
+npx @praneeth_54/agentdoctor --json
+```
 
-### Finding categories
+`--ci` runs non-interactively. Until readiness scoring ships, successful scans exit `0` even when findings exist, and `--min-score` is accepted but ignored.
 
-Security, context efficiency, instruction quality, and MCP configuration. Full catalog: [docs/rules.md](docs/rules.md).
+There is no packaged GitHub Action yet (planned — [ROADMAP.md](ROADMAP.md)).
 
-Adapters are pluggable — additional agents can be registered without rewriting the scanner.
+Exit codes: [docs/exit-codes.md](docs/exit-codes.md). Compatibility promises: [docs/compatibility.md](docs/compatibility.md).
+
+---
+
+## Beta limitations
+
+Honest limits of the current public beta:
+
+| Limitation                          | Status                                                          |
+| ----------------------------------- | --------------------------------------------------------------- |
+| Readiness scoring                   | Not available (`scores` is `null`, `scoringAvailable: false`)   |
+| `--min-score`                       | Accepted, ignored until scoring ships                           |
+| Automatic fixes (`agentdoctor fix`) | Stub only — does not modify files                               |
+| Secret-content scanning             | Filename / config heuristics only                               |
+| Detection style                     | Intentionally conservative; false security findings are avoided |
+| Agent coverage                      | Cursor, Claude Code, Codex project configs                      |
+
+See [CHANGELOG.md](CHANGELOG.md) and [docs/release-notes-v0.1.3-beta.md](docs/release-notes-v0.1.3-beta.md).
 
 ---
 
 ## Architecture
 
 ```text
-┌─────────────┐
-│  Discovery  │  bounded filesystem walk
-└──────┬──────┘
-       ▼
-┌─────────────────┐
-│ Project detect  │  language / framework / package manager
-└──────┬──────────┘
-       ▼
-┌─────────────────┐
-│ Agent adapters  │  Cursor · Claude Code · Codex
-└──────┬──────────┘
-       ▼
-┌─────────────────┐
-│  Rule engine    │  security · context · instructions · MCP
-└──────┬──────────┘
-       ▼
-┌─────────────────┐
-│    Findings     │  deterministic IDs · deduped · fixability metadata
-└──────┬──────────┘
-       ▼
-┌─────────────────┐
-│   Reporters     │  terminal · JSON
-└─────────────────┘
+Discovery → Project detect → Agent adapters → Rule engine → Findings → Terminal / JSON
 ```
 
 Details: [docs/architecture.md](docs/architecture.md)
 
 ---
 
-## JSON output
-
-```bash
-npx @praneeth_54/agentdoctor --json
-```
-
-```json
-{
-  "version": "0.1.3-beta",
-  "repository": {
-    "primaryFramework": "nextjs",
-    "primaryLanguage": "typescript",
-    "filesScanned": 46
-  },
-  "agents": [
-    {
-      "id": "cursor",
-      "detected": true,
-      "configured": true,
-      "status": "configured"
-    }
-  ],
-  "findings": [
-    {
-      "id": "security/env-file-exposure:.env.production",
-      "ruleId": "security/env-file-exposure",
-      "category": "security",
-      "severity": "critical",
-      "title": "Sensitive environment file may enter agent context",
-      "affectedAgents": ["claude-code", "codex"],
-      "fixability": "review"
-    }
-  ],
-  "summary": { "critical": 1, "warning": 0, "info": 0, "total": 1 },
-  "scoringAvailable": false,
-  "scores": null
-}
-```
-
-Exit codes: [docs/exit-codes.md](docs/exit-codes.md)
-
----
-
-## Privacy
-
-**Your code stays on your machine.**
-
-Normal scans do not:
-
-- send source code to external services
-- require authentication
-- call an LLM
-- execute project code
-- start MCP servers
-- enable telemetry by default
-
-If anonymous telemetry is ever introduced, it will be opt-in.
-
----
-
-## FAQ
-
-**Does AgentDoctor require an API key?**  
-No. Core scanning is local and deterministic.
-
-**Is this a secret scanner?**  
-No. It uses conservative filename and configuration heuristics. It never prints secret values and does not claim complete coverage.
-
-**Will it modify my repository?**  
-Not in this release. `agentdoctor fix` is reserved for a future safe-fix mode.
-
-**Can I use it in CI?**  
-Yes — prefer `--json`. `--min-score` is ignored until readiness scoring ships.
-
-**How do I understand a finding?**
-
-```bash
-npx @praneeth_54/agentdoctor explain <rule-id>
-```
-
----
-
 ## Documentation
 
-Start at [docs/README.md](docs/README.md).
-
-| Doc                                            | Contents                    |
-| ---------------------------------------------- | --------------------------- |
-| [docs/architecture.md](docs/architecture.md)   | Pipeline and package layout |
-| [docs/rules.md](docs/rules.md)                 | Stable rule IDs             |
-| [docs/exit-codes.md](docs/exit-codes.md)       | Process exit codes          |
-| [docs/compatibility.md](docs/compatibility.md) | Beta compatibility promises |
-| [docs/development.md](docs/development.md)     | Local development           |
-| [ROADMAP.md](ROADMAP.md)                       | Near- and medium-term plans |
-| [CHANGELOG.md](CHANGELOG.md)                   | Release history             |
-
----
-
-## Roadmap
-
-See [ROADMAP.md](ROADMAP.md). Highlights:
-
-1. Deterministic readiness scoring
-2. Conservative auto-fix for safe findings
-3. Packaged GitHub Action
-4. Additional agent adapters
+| Doc                                                                | Contents                       |
+| ------------------------------------------------------------------ | ------------------------------ |
+| [docs/README.md](docs/README.md)                                   | Documentation index            |
+| [docs/architecture.md](docs/architecture.md)                       | Scan pipeline                  |
+| [docs/rules.md](docs/rules.md)                                     | Stable rule IDs                |
+| [docs/exit-codes.md](docs/exit-codes.md)                           | Process exit codes             |
+| [docs/compatibility.md](docs/compatibility.md)                     | Beta compatibility promises    |
+| [docs/development.md](docs/development.md)                         | Local development              |
+| [docs/github-launch-checklist.md](docs/github-launch-checklist.md) | GitHub About / topics / launch |
+| [ROADMAP.md](ROADMAP.md)                                           | Near- and medium-term plans    |
+| [CHANGELOG.md](CHANGELOG.md)                                       | Release history                |
 
 ---
 
@@ -331,16 +304,26 @@ See [ROADMAP.md](ROADMAP.md). Highlights:
 Issues and pull requests are welcome.
 
 1. Read [CONTRIBUTING.md](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md)
-2. Set up locally with [docs/development.md](docs/development.md)
-3. Report security issues via [SECURITY.md](SECURITY.md)
+2. Prefer [good first issues](docs/good-first-issues.md) ideas
+3. Report security issues via [SECURITY.md](SECURITY.md) — never paste real secrets into issues
 
 ```bash
 git clone https://github.com/pranee54/AgentDoctor.git
 cd AgentDoctor
 npm install
-npm run typecheck && npm run lint && npm test && npm run build
+npm run verify
 node dist/cli/index.js ./fixtures/clean-configured-project
 ```
+
+---
+
+## Next steps
+
+- **Try it:** `npx @praneeth_54/agentdoctor`
+- **Report a false positive / false negative:** use the issue templates (include version, rule ID, anonymized evidence — no secrets)
+- **Propose a rule or adapter:** [feature request](.github/ISSUE_TEMPLATE/feature_request.md) / [rule proposal](.github/ISSUE_TEMPLATE/rule_proposal.md)
+- **Contribute:** [CONTRIBUTING.md](CONTRIBUTING.md)
+- **Useful?** Star or watch the repository so you see updates
 
 ---
 
