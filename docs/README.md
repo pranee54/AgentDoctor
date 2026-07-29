@@ -7,6 +7,7 @@
 | [exit-codes.md](exit-codes.md)                               | CLI process exit codes                |
 | [compatibility.md](compatibility.md)                         | Beta compatibility promises           |
 | [development.md](development.md)                             | Local setup and contributor workflows |
+| [release-notes-v0.1.1-beta.md](release-notes-v0.1.1-beta.md) | v0.1.1-beta release notes             |
 | [release-notes-v0.1.0-beta.md](release-notes-v0.1.0-beta.md) | v0.1.0-beta release notes             |
 | [images/](images/)                                           | Optional README screenshots           |
 

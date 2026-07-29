@@ -1,0 +1,15 @@
+---
+description: ProxyShield admin UI conventions
+alwaysApply: false
+---
+
+# ProxyShield admin
+
+Layout lives in `proxyshield/backend/admin/includes/layout.php`.
+Icons: `proxyshield/backend/admin/includes/icons.php`.
+Shared config: `proxyshield/backend/includes/config.php`.
+Country list: `proxyshield/backend/includes/countries.json`.
+
+Style the `.content` region carefully.
+
+Missing on purpose for regression: `proxyshield/backend/admin/includes/missing-helper.php`.

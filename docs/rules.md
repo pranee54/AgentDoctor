@@ -105,6 +105,8 @@ Exact token savings are never claimed.
 
 - **Severity:** warning
 - **Detects:** Conservative markdown-link / backtick local paths that do not exist (or escape the repo)
+- **Resolution:** `./` and `../` resolve from the instruction file directory; other candidates resolve from the repository root
+- **Non-paths:** CSS-like selectors (`.content`), CLI flags (`--verbose`), and spaced commands are ignored
 - **Fixability:** manual
 
 ---

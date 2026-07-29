@@ -68,7 +68,7 @@ jobs:
       - name: Pack npm tarball
         run: |
           npm pack
-          ls -la agentdoctor-*.tgz
+          ls -la *agentdoctor-*.tgz
 
       - name: Create draft release (with notes file)
         if: steps.notes.outputs.path != ''
@@ -82,7 +82,7 @@ jobs:
           files: |
             LICENSE
             README.md
-            agentdoctor-*.tgz
+            *agentdoctor-*.tgz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -97,6 +97,6 @@ jobs:
           files: |
             LICENSE
             README.md
-            agentdoctor-*.tgz
+            *agentdoctor-*.tgz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

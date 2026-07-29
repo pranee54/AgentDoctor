@@ -7,22 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
-
-- Publish as scoped package `@praneeth_54/agentdoctor` (unscoped `agentdoctor` blocked by npm as too similar to `agent-doctor`)
-
-### Fixed
-
-- Track fake credential fixtures required by CI (were excluded by `.gitignore`)
-- Align package and docs URLs with the public GitHub repository
-- Release workflow selects notes by tag and attaches the npm tarball
-- CLI help text matches shipped capabilities (`--min-score` no-op until scoring)
-
 ### Planned
 
 - Deterministic readiness scoring
 - Safe automatic fixes
 - Packaged GitHub Action
+
+## [0.1.1-beta] — 2026-07-29
+
+Patch release.
+
+### Fixed
+
+- False missing-path warnings for repository-root paths referenced from nested instruction files
+- CSS-like backtick tokens such as `.content` being interpreted as filesystem paths
+
+### Testing
+
+- Added real-world regression fixtures
+- Added 17 regression tests
+- Total test suite is now 91 tests
 
 ## [0.1.0-beta] — 2026-07-29
 
@@ -40,6 +44,10 @@ First public beta.
 - Programmatic `scan()` API
 - Fixture-based unit and integration tests
 
+### Changed
+
+- Published npm package as `@praneeth_54/agentdoctor` (unscoped `agentdoctor` blocked by npm as too similar to `agent-doctor`)
+
 ### Security
 
 - Conservative wording for exposure findings
@@ -54,5 +62,6 @@ First public beta.
 - Not a complete secret scanner
 - Git “tracked secret” detection deferred
 
-[Unreleased]: https://github.com/pranee54/AgentDoctor/compare/v0.1.0-beta...HEAD
+[Unreleased]: https://github.com/pranee54/AgentDoctor/compare/v0.1.1-beta...HEAD
+[0.1.1-beta]: https://github.com/pranee54/AgentDoctor/releases/tag/v0.1.1-beta
 [0.1.0-beta]: https://github.com/pranee54/AgentDoctor/releases/tag/v0.1.0-beta

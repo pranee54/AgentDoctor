@@ -1,0 +1,5 @@
+---
+alwaysApply: true
+---
+
+Use `project/backend/includes/config.php`.

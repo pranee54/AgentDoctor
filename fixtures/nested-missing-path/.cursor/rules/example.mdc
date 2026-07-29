@@ -1,0 +1,6 @@
+---
+alwaysApply: true
+---
+
+Missing `project/docs/does-not-exist.md`.
+Also broken `src/does-not-exist.ts`.
