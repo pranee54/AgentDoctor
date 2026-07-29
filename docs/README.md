@@ -2,14 +2,15 @@
 
 ## Product
 
-| Document                             | Description                         |
-| ------------------------------------ | ----------------------------------- |
-| [../README.md](../README.md)         | Product overview and quick start    |
-| [architecture.md](architecture.md)   | Scan pipeline and package layout    |
-| [rules.md](rules.md)                 | Stable rule IDs and severity policy |
-| [exit-codes.md](exit-codes.md)       | CLI process exit codes              |
-| [compatibility.md](compatibility.md) | Beta compatibility promises         |
-| [../SECURITY.md](../SECURITY.md)     | Vulnerability reporting             |
+| Document                             | Description                            |
+| ------------------------------------ | -------------------------------------- |
+| [../README.md](../README.md)         | Product overview and quick start       |
+| [architecture.md](architecture.md)   | Scan pipeline and package layout       |
+| [rules.md](rules.md)                 | Stable rule IDs and severity policy    |
+| [exit-codes.md](exit-codes.md)       | CLI process exit codes                 |
+| [scan-examples.md](scan-examples.md) | Reproducible fixture scan walkthroughs |
+| [compatibility.md](compatibility.md) | Beta compatibility promises            |
+| [../SECURITY.md](../SECURITY.md)     | Vulnerability reporting                |
 
 ## Development
 
