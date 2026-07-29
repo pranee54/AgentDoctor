@@ -4,7 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeAll, describe, expect, it } from "vitest";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(here, "../..");
@@ -22,6 +22,14 @@ afterEach(async () => {
 });
 
 describe("local CLI bin reliability", () => {
+  beforeAll(() => {
+    const build = spawnSync("npm", ["run", "build"], {
+      cwd: repoRoot,
+      encoding: "utf8",
+    });
+    expect(build.status, build.stderr || build.stdout).toBe(0);
+  });
+
   it("links agentdoctor into node_modules/.bin after ensure-cli-bin", () => {
     const result = spawnSync(process.execPath, ["scripts/ensure-cli-bin.mjs"], {
       cwd: repoRoot,

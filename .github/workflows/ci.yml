@@ -42,13 +42,13 @@ jobs:
       - name: Format check
         run: npm run format:check
 
+      - name: Build
+        run: npm run build
+
       - name: Test
         run: |
           mkdir -p test-results
           npm test -- --reporter=default --reporter=json --outputFile=test-results/results.json
-
-      - name: Build
-        run: npm run build
 
       - name: Pack dry-run
         run: npm pack --dry-run
