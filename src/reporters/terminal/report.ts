@@ -1,7 +1,7 @@
 import { PACKAGE_VERSION } from "../../constants.js";
 import { AGENT_DISPLAY_NAMES } from "../../constants.js";
-import { formatFramework } from "../../detectors/framework.js";
-import { formatLanguage } from "../../detectors/language.js";
+import { formatFramework, formatFrameworks } from "../../detectors/framework.js";
+import { formatLanguage, formatLanguages } from "../../detectors/language.js";
 import { formatMonorepo } from "../../detectors/monorepo.js";
 import { formatPackageManager, formatPackageManagers } from "../../detectors/package-manager.js";
 import type { AgentId, Finding, ScanResult, Severity } from "../../types/index.js";
@@ -13,6 +13,9 @@ export interface TerminalReportOptions {
 }
 
 const DEFAULT_FINDING_LIMIT = 12;
+
+const LIMITED_ANALYSIS_NOTE =
+  "No supported coding-agent configuration detected; agent-specific security exposure checks are limited.";
 
 function groupFindings(findings: Finding[]): Record<Severity, Finding[]> {
   return {
@@ -34,6 +37,15 @@ function agentGlyph(configured: boolean, detected: boolean): string {
 
 function formatAgents(agents: AgentId[]): string {
   return agents.map((id) => AGENT_DISPLAY_NAMES[id] ?? id).join(", ");
+}
+
+function isMultiStack(result: ScanResult): boolean {
+  if (result.repository.monorepo === "multi-project") {
+    return true;
+  }
+  const frameworks = result.repository.frameworks.filter((id) => id !== "unknown");
+  const managers = result.repository.packageManagers.filter((id) => id !== "unknown");
+  return frameworks.length > 1 || managers.length > 1;
 }
 
 function renderFindingBlock(finding: Finding, verbose: boolean): string[] {
@@ -80,18 +92,30 @@ export function renderTerminalReport(
   lines.push("");
 
   lines.push(colors.bold("Repository"));
-  lines.push(
-    `  Framework: ${sanitizeTerminalText(formatFramework(result.repository.primaryFramework))}`,
-  );
-  lines.push(
-    `  Language: ${sanitizeTerminalText(formatLanguage(result.repository.primaryLanguage))}`,
-  );
-  const packageManagerLabel =
-    result.repository.packageManagers.length > 1 ||
-    result.repository.primaryPackageManager === "unknown"
-      ? formatPackageManagers(result.repository.packageManagers)
-      : formatPackageManager(result.repository.primaryPackageManager);
-  lines.push(`  Package manager: ${sanitizeTerminalText(packageManagerLabel)}`);
+  if (isMultiStack(result)) {
+    lines.push(
+      `  Languages: ${sanitizeTerminalText(formatLanguages(result.repository.languages))}`,
+    );
+    lines.push(
+      `  Frameworks: ${sanitizeTerminalText(formatFrameworks(result.repository.frameworks))}`,
+    );
+    lines.push(
+      `  Package managers: ${sanitizeTerminalText(formatPackageManagers(result.repository.packageManagers))}`,
+    );
+  } else {
+    lines.push(
+      `  Framework: ${sanitizeTerminalText(formatFramework(result.repository.primaryFramework))}`,
+    );
+    lines.push(
+      `  Language: ${sanitizeTerminalText(formatLanguage(result.repository.primaryLanguage))}`,
+    );
+    const packageManagerLabel =
+      result.repository.packageManagers.length > 1 ||
+      result.repository.primaryPackageManager === "unknown"
+        ? formatPackageManagers(result.repository.packageManagers)
+        : formatPackageManager(result.repository.primaryPackageManager);
+    lines.push(`  Package manager: ${sanitizeTerminalText(packageManagerLabel)}`);
+  }
   if (result.repository.monorepo !== "none") {
     lines.push(`  Monorepo: ${sanitizeTerminalText(formatMonorepo(result.repository.monorepo))}`);
   }
@@ -117,12 +141,22 @@ export function renderTerminalReport(
 
   const grouped = groupFindings(result.findings);
   const total = result.summary.total;
+  const limited = result.agentSecurityAnalysis === "limited";
 
   lines.push(colors.bold("Findings"));
   lines.push("");
 
+  if (limited) {
+    lines.push(`  ${symbolWarn()} ${sanitizeTerminalText(LIMITED_ANALYSIS_NOTE)}`);
+    lines.push("");
+  }
+
   if (total === 0) {
-    lines.push(`  ${symbolOk()} No findings`);
+    if (limited) {
+      lines.push(`  ${symbolOk()} No agent-configuration findings`);
+    } else {
+      lines.push(`  ${symbolOk()} No findings`);
+    }
     lines.push("");
   } else {
     let shown = 0;

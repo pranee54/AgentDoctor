@@ -4,6 +4,8 @@ export interface FrameworkDetectionInput {
   relativePaths: string[];
   packageJsonDependencies?: Record<string, string>;
   composerJsonRequire?: Record<string, string>;
+  /** Lowercase dependency/package names discovered from Python manifests. */
+  pythonDependencyNames?: string[];
   pubspecName?: string;
 }
 
@@ -18,6 +20,10 @@ function hasDep(deps: Record<string, string> | undefined, name: string): boolean
 
 function hasFile(paths: Set<string>, ...names: string[]): boolean {
   return names.some((name) => paths.has(name.toLowerCase()));
+}
+
+function hasPythonDep(names: string[] | undefined, dep: string): boolean {
+  return Boolean(names?.includes(dep.toLowerCase()));
 }
 
 /**
@@ -36,6 +42,7 @@ export function detectFrameworks(input: FrameworkDetectionInput): FrameworkDetec
     ...(input.packageJsonDependencies ?? {}),
   };
   const composer = input.composerJsonRequire ?? {};
+  const pythonDeps = input.pythonDependencyNames ?? [];
 
   const detected: FrameworkId[] = [];
 
@@ -97,17 +104,14 @@ export function detectFrameworks(input: FrameworkDetectionInput): FrameworkDetec
     !isVue &&
     !isSvelte &&
     !isReact &&
-    (hasFile(basenames, "package.json") || hasDep(deps, "express") === false) &&
     hasFile(basenames, "package.json")
   ) {
-    // Generic Node.js project with package.json but no web framework
     if (!detected.includes("nodejs")) {
       detected.push("nodejs");
     }
   }
 
   if (hasFile(basenames, "pubspec.yaml") || input.pubspecName !== undefined) {
-    // Flutter: pubspec presence implies Flutter/Dart project context for detection
     if (hasFile(pathSet, "pubspec.yaml") || basenames.has("pubspec.yaml")) {
       detected.push("flutter");
     }
@@ -117,26 +121,26 @@ export function detectFrameworks(input: FrameworkDetectionInput): FrameworkDetec
     detected.push("laravel");
   }
 
-  if (
+  const isDjango =
     hasFile(basenames, "manage.py") ||
-    [...pathSet].some((p) => p.endsWith("/settings.py") || p === "settings.py")
-  ) {
+    hasPythonDep(pythonDeps, "django") ||
+    [...pathSet].some((p) => p.endsWith("/requirements-django.txt"));
+  if (isDjango) {
     detected.push("django");
   }
 
-  // FastAPI: path heuristics only (requirements/pyproject often lack a stable marker)
-  if (
-    [...pathSet].some(
-      (p) => p.includes("fastapi") || p.endsWith("requirements-fastapi.txt") || p === "app/main.py",
-    )
-  ) {
+  const hasFastApiDep =
+    hasPythonDep(pythonDeps, "fastapi") ||
+    [...pathSet].some((p) => p.includes("fastapi") || p.endsWith("requirements-fastapi.txt"));
+  const hasFastApiAppLayout = [...pathSet].some(
+    (p) => p === "app/main.py" || p.endsWith("/app/main.py"),
+  );
+  if (hasFastApiDep && hasFastApiAppLayout) {
     detected.push("fastapi");
   }
 
-  // Deduplicate while preserving order
   const unique = [...new Set(detected)];
 
-  // Priority for primary framework
   const priority: FrameworkId[] = [
     "nextjs",
     "nuxt",
@@ -196,4 +200,12 @@ export function formatFramework(framework: FrameworkId): string {
     default:
       return "Unknown";
   }
+}
+
+export function formatFrameworks(ids: FrameworkId[]): string {
+  const unique = [...new Set(ids)].filter((id) => id !== "unknown");
+  if (unique.length === 0) {
+    return "Unknown";
+  }
+  return unique.map((id) => formatFramework(id)).join(", ");
 }

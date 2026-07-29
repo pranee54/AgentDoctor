@@ -59,6 +59,14 @@ export async function scan(options: ScanOptions = {}): Promise<ScanResult> {
     warnings.push(sanitizeTerminalText(error));
   }
 
+  const agentsPresent = agents.some((a) => a.detected || a.configured);
+  const agentSecurityAnalysis = agentsPresent ? "full" : "limited";
+  if (agentSecurityAnalysis === "limited") {
+    warnings.push(
+      "No supported coding-agent configuration detected; agent-specific security exposure checks are limited.",
+    );
+  }
+
   return {
     version: PACKAGE_VERSION,
     repository,
@@ -67,6 +75,7 @@ export async function scan(options: ScanOptions = {}): Promise<ScanResult> {
     summary,
     scores: null,
     scoringAvailable: false,
+    agentSecurityAnalysis,
     timing: {
       discoveryMs: discovery.elapsedMs,
       detectionMs,

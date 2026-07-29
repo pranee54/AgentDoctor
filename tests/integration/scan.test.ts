@@ -17,7 +17,7 @@ describe("scan integration", () => {
     expect(result.repository.primaryPackageManager).toBe("npm");
     expect(result.repository.filesScanned).toBeGreaterThan(0);
     expect(result.findings).toEqual([]);
-    expect(result.version).toBe("0.1.2-beta");
+    expect(result.version).toBe("0.1.3-beta");
     expect(result.scoringAvailable).toBe(false);
   });
 

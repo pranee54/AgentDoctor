@@ -29,7 +29,7 @@ npx @praneeth_54/agentdoctor
 ```text
 $ npx @praneeth_54/agentdoctor
 
-AgentDoctor v0.1.2-beta
+AgentDoctor v0.1.3-beta
 
 Repository
   Framework: Next.js
@@ -88,13 +88,13 @@ AgentDoctor analyzes configuration files. It does not run agents or edit your pr
 ### One-shot
 
 ```bash
-npx @praneeth_54/agentdoctor@0.1.2-beta
+npx @praneeth_54/agentdoctor@0.1.3-beta
 ```
 
 ### Global (optional)
 
 ```bash
-npm install -g @praneeth_54/agentdoctor@0.1.2-beta
+npm install -g @praneeth_54/agentdoctor@0.1.3-beta
 agentdoctor
 ```
 
@@ -225,7 +225,7 @@ npx @praneeth_54/agentdoctor --json
 
 ```json
 {
-  "version": "0.1.2-beta",
+  "version": "0.1.3-beta",
   "repository": {
     "primaryFramework": "nextjs",
     "primaryLanguage": "typescript",

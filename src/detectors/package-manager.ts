@@ -2,6 +2,10 @@ import type { PackageManagerId } from "../types/index.js";
 
 export interface PackageManagerDetectionInput {
   relativePaths: string[];
+  /** True when a pyproject.toml contains a [tool.poetry] table. */
+  poetryToolDetected?: boolean;
+  /** True when a non-Poetry pyproject.toml (or similar) indicates a Python project. */
+  genericPyprojectDetected?: boolean;
 }
 
 export interface PackageManagerDetectionResult {
@@ -20,7 +24,7 @@ const MARKERS: Array<{ id: PackageManagerId; files: string[]; lockfiles: string[
   },
   { id: "composer", files: ["composer.lock", "composer.json"], lockfiles: ["composer.lock"] },
   { id: "pub", files: ["pubspec.yaml", "pubspec.lock"], lockfiles: ["pubspec.lock"] },
-  { id: "poetry", files: ["poetry.lock", "pyproject.toml"], lockfiles: ["poetry.lock"] },
+  { id: "poetry", files: ["poetry.lock"], lockfiles: ["poetry.lock"] },
   {
     id: "pip",
     files: ["requirements.txt", "Pipfile", "Pipfile.lock"],
@@ -48,6 +52,7 @@ function isRootPath(relativePath: string): boolean {
 /**
  * Detect package managers from lockfiles and manifests.
  * Primary selection prefers root-level evidence and avoids inventing certainty for mixed ecosystems.
+ * Poetry requires poetry.lock and/or [tool.poetry] — not bare pyproject.toml.
  */
 export function detectPackageManagers(
   input: PackageManagerDetectionInput,
@@ -80,6 +85,47 @@ export function detectPackageManagers(
         if (marker.lockfiles.some((f) => rootBasenames.has(f.toLowerCase()))) {
           rootLockFound.push("npm");
         }
+      }
+      continue;
+    }
+
+    if (marker.id === "poetry") {
+      const hasLock = basenames.has("poetry.lock");
+      const hasTool = input.poetryToolDetected === true;
+      if (!hasLock && !hasTool) {
+        continue;
+      }
+      found.push("poetry");
+      if (hasLock || (hasTool && rootBasenames.has("pyproject.toml"))) {
+        rootFound.push("poetry");
+      }
+      if (hasLock) {
+        lockFound.push("poetry");
+        if (rootBasenames.has("poetry.lock")) {
+          rootLockFound.push("poetry");
+        }
+      }
+      continue;
+    }
+
+    if (marker.id === "pip") {
+      const hasMarker = marker.files.some((f) => basenames.has(f.toLowerCase()));
+      const hasGenericPyproject = input.genericPyprojectDetected === true;
+      if (!hasMarker && !hasGenericPyproject) {
+        continue;
+      }
+      found.push("pip");
+      if (
+        marker.files.some((f) => rootBasenames.has(f.toLowerCase())) ||
+        (hasGenericPyproject && rootBasenames.has("pyproject.toml"))
+      ) {
+        rootFound.push("pip");
+      }
+      if (marker.lockfiles.some((f) => basenames.has(f.toLowerCase()))) {
+        lockFound.push("pip");
+      }
+      if (marker.lockfiles.some((f) => rootBasenames.has(f.toLowerCase()))) {
+        rootLockFound.push("pip");
       }
       continue;
     }

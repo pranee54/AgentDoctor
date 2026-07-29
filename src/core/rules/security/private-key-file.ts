@@ -46,7 +46,6 @@ export const privateKeyFileRule: RuleDefinition = {
   async check(context): Promise<FindingDraft[]> {
     const findings: FindingDraft[] = [];
     const affected = context.agents.filter((a) => a.detected || a.configured).map((a) => a.id);
-    const agents = affected.length > 0 ? affected : (["cursor", "claude-code", "codex"] as const);
 
     for (const file of context.discovery.files) {
       const base = file.relativePath.split("/").pop() ?? file.relativePath;
@@ -55,17 +54,19 @@ export const privateKeyFileRule: RuleDefinition = {
         continue;
       }
 
+      const agentsPresent = affected.length > 0;
       findings.push({
         ruleId: "security/private-key-file",
         category: "security",
         severity: "critical",
         title: "Private key or credential file present in repository",
         message: `Possible ${label} detected at ${file.relativePath}`,
-        whyItMatters:
-          "Credential material in the working tree can be read by AI coding agents and may leak into model context or logs. Filename heuristics only — contents were not inspected.",
+        whyItMatters: agentsPresent
+          ? "Credential material in the working tree can be read by AI coding agents and may leak into model context or logs. Filename heuristics only — contents were not inspected."
+          : "Credential material in the working tree is high-risk repository content. No supported coding-agent configuration was detected, so agent-specific exposure was not asserted. Filename heuristics only — contents were not inspected.",
         recommendation:
           "Remove the file from the repository, rotate the credential, add ignore rules, and never commit replacements.",
-        affectedAgents: [...agents],
+        affectedAgents: affected,
         evidence: { path: file.relativePath, detail: label },
         fixability: "manual",
       });

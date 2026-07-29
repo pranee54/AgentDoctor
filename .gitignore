@@ -26,3 +26,6 @@ tmp/
 !fixtures/**/*.der
 !fixtures/**/*.log
 !fixtures/**/build/**
+
+# Gradle caches (never commit)
+**/.gradle/

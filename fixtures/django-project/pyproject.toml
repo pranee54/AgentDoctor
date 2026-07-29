@@ -1,0 +1,3 @@
+[project]
+name = "django-fixture"
+dependencies = ["django>=5.0"]

@@ -9,6 +9,7 @@ export type {
   Scores,
   AgentPresence,
   AgentDetectionResult,
+  AgentSecurityAnalysisMode,
   CliOptions,
   ExitCode,
 } from "./types/index.js";

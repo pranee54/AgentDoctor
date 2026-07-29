@@ -31,11 +31,13 @@ Exact token savings are never claimed.
 
 ### `security/env-file-exposure`
 
-- **Severity:** critical
-- **Detects:** `.env` / `.env.*` files when configured agents may read them
-- **Why:** Credentials may enter model context
+- **Severity:** critical (runtime), warning (backup), info (template)
+- **Detects:** repository `.env` / `.env.*` files, plus conservative backup names such as `.env_backup`
+- **Semantics:** repository risk is reported even when no supported agent is configured (`affectedAgents` empty); agent exposure is asserted only for configured/detected agents without a clear exclusion
+- **Templates:** `.env.example`, `.env.sample`, `.env.template`, `.env.dist` are informational (filename classification only)
+- **Why:** Credentials may enter model context when agents can read the file; tracked/shared env files remain high-risk repository material either way
 - **Agents:** Cursor only if not covered by `.cursorignore` / `.gitignore` / documented default `.env*` ignore; Claude Code unless a Read deny exists; Codex when detected
-- **False positives:** Cursor’s documented default `.env*` ignore means Cursor is often not listed
+- **False positives:** Cursor’s documented default `.env*` ignore means Cursor is often not listed for agent exposure
 - **Fixability:** review
 
 ### `security/private-key-file`

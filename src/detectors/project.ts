@@ -6,8 +6,9 @@ import { detectFrameworks } from "./framework.js";
 import { detectLanguages } from "./language.js";
 import { detectMonorepo } from "./monorepo.js";
 import { detectPackageManagers } from "./package-manager.js";
+import { extractPythonDependencyNames, pyprojectHasPoetryTool } from "./python-deps.js";
 import type { DiscoveryResult, RepositoryInfo } from "../types/index.js";
-import { isDirectory, pathExists, readJsonFile } from "../utils/fs.js";
+import { isDirectory, readJsonFile, readTextFile } from "../utils/fs.js";
 import { resolveRepoRoot } from "../utils/path.js";
 
 export interface ProjectDetectionResult {
@@ -21,6 +22,16 @@ interface PackageJsonShape {
   devDependencies?: Record<string, string>;
   peerDependencies?: Record<string, string>;
   workspaces?: unknown;
+}
+
+interface ComposerJsonShape {
+  require?: Record<string, string>;
+  "require-dev"?: Record<string, string>;
+}
+
+function basename(relativePath: string): string {
+  const parts = relativePath.split("/");
+  return parts[parts.length - 1] ?? relativePath;
 }
 
 /**
@@ -51,33 +62,91 @@ export async function detectProject(
     diagnostics.push(`Permission/read issue: ${err}`);
   }
 
-  let packageJson: PackageJsonShape | undefined;
-  const packageJsonPath = path.join(root, "package.json");
-  const rootPackageExists = await pathExists(packageJsonPath);
-  if (rootPackageExists) {
-    const packageResult = await readJsonFile<PackageJsonShape>(packageJsonPath, maxFileSizeBytes);
-    if (packageResult.ok) {
-      packageJson = packageResult.data;
-    } else {
-      diagnostics.push(`Malformed package.json: ${packageResult.error}`);
+  const mergedPackageDeps: Record<string, string> = {};
+  let rootWorkspaces: unknown;
+  const packageJsonPaths = relativePaths.filter(
+    (p) => basename(p).toLowerCase() === "package.json",
+  );
+
+  for (const relative of packageJsonPaths) {
+    const absolute = path.join(root, relative);
+    const packageResult = await readJsonFile<PackageJsonShape>(absolute, maxFileSizeBytes);
+    if (!packageResult.ok) {
+      if (relative === "package.json") {
+        diagnostics.push(`Malformed package.json: ${packageResult.error}`);
+      }
+      continue;
+    }
+    Object.assign(
+      mergedPackageDeps,
+      packageResult.data.dependencies ?? {},
+      packageResult.data.devDependencies ?? {},
+      packageResult.data.peerDependencies ?? {},
+    );
+    if (relative === "package.json") {
+      rootWorkspaces = packageResult.data.workspaces;
     }
   }
 
-  const deps = {
-    ...(packageJson?.dependencies ?? {}),
-    ...(packageJson?.devDependencies ?? {}),
-    ...(packageJson?.peerDependencies ?? {}),
-  };
+  const composerRequire: Record<string, string> = {};
+  const composerPaths = relativePaths.filter((p) => basename(p).toLowerCase() === "composer.json");
+  for (const relative of composerPaths) {
+    const absolute = path.join(root, relative);
+    const result = await readJsonFile<ComposerJsonShape>(absolute, maxFileSizeBytes);
+    if (!result.ok) {
+      continue;
+    }
+    Object.assign(composerRequire, result.data.require ?? {}, result.data["require-dev"] ?? {});
+  }
+
+  const pythonDependencyNames = new Set<string>();
+  let poetryToolDetected = false;
+  let genericPyprojectDetected = false;
+
+  for (const relative of relativePaths) {
+    const base = basename(relative).toLowerCase();
+    if (
+      base !== "pyproject.toml" &&
+      base !== "requirements.txt" &&
+      !/^requirements(-[a-z0-9_-]+)?\.txt$/i.test(base)
+    ) {
+      continue;
+    }
+    const text = await readTextFile(path.join(root, relative), maxFileSizeBytes);
+    if (!text) {
+      continue;
+    }
+    for (const name of extractPythonDependencyNames(text)) {
+      pythonDependencyNames.add(name);
+    }
+    if (base === "pyproject.toml") {
+      if (pyprojectHasPoetryTool(text)) {
+        poetryToolDetected = true;
+      } else {
+        genericPyprojectDetected = true;
+      }
+    }
+  }
+
+  if (relativePaths.some((p) => basename(p).toLowerCase() === "pipfile")) {
+    genericPyprojectDetected = true;
+  }
 
   const languages = detectLanguages({ relativePaths });
   const frameworks = detectFrameworks({
     relativePaths,
-    packageJsonDependencies: deps,
+    packageJsonDependencies: mergedPackageDeps,
+    composerJsonRequire: composerRequire,
+    pythonDependencyNames: [...pythonDependencyNames],
   });
-  const packageManagers = detectPackageManagers({ relativePaths });
+  const packageManagers = detectPackageManagers({
+    relativePaths,
+    poetryToolDetected,
+    genericPyprojectDetected,
+  });
   const monorepo = detectMonorepo({
     relativePaths,
-    packageJsonWorkspaces: packageJson?.workspaces,
+    packageJsonWorkspaces: rootWorkspaces,
   });
 
   const repository: RepositoryInfo = {

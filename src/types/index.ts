@@ -160,6 +160,12 @@ export interface ScanDiagnostics {
   errors: string[];
 }
 
+/**
+ * Whether agent-specific security exposure checks had enough agent configuration
+ * to run meaningfully. Additive field — absent consumers may ignore it.
+ */
+export type AgentSecurityAnalysisMode = "full" | "limited";
+
 export interface ScanResult {
   version: string;
   repository: RepositoryInfo;
@@ -173,6 +179,11 @@ export interface ScanResult {
   scores: Scores | null;
   /** False until the readiness scoring model ships. */
   scoringAvailable: boolean;
+  /**
+   * `limited` when no supported coding agent is detected/configured.
+   * Repository-risk checks may still run; agent exposure claims are not asserted.
+   */
+  agentSecurityAnalysis: AgentSecurityAnalysisMode;
   timing: TimingInfo;
   diagnostics: ScanDiagnostics;
 }

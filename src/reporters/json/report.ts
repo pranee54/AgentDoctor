@@ -76,6 +76,7 @@ export function renderJsonReport(result: ScanResult): string {
     summary: result.summary,
     scoringAvailable: result.scoringAvailable,
     scores: result.scores,
+    agentSecurityAnalysis: result.agentSecurityAnalysis,
     timing: result.timing,
     diagnostics: {
       warnings: result.diagnostics.warnings.map(sanitizeForOutput),

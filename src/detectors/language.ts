@@ -143,3 +143,11 @@ export function formatLanguage(language: LanguageId): string {
       return "Unknown";
   }
 }
+
+export function formatLanguages(ids: LanguageId[]): string {
+  const unique = [...new Set(ids)].filter((id) => id !== "unknown");
+  if (unique.length === 0) {
+    return "Unknown";
+  }
+  return unique.map((id) => formatLanguage(id)).join(", ");
+}

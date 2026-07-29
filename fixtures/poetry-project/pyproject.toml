@@ -1,0 +1,13 @@
+[tool.poetry]
+name = "poetry-fixture"
+version = "0.1.0"
+description = ""
+authors = ["Test"]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.110.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

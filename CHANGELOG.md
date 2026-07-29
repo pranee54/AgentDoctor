@@ -13,6 +13,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Safe automatic fixes
 - Packaged GitHub Action
 
+## [0.1.3-beta] — 2026-07-29
+
+Backward-compatible security-signal and detection-quality patch.
+
+### Security
+
+- Repositories without supported agent configuration no longer receive an unqualified clean result when relevant repository-risk findings exist
+- Agent exposure and repository risk remain semantically distinct (`affectedAgents` is empty when exposure is not asserted)
+- Additive `agentSecurityAnalysis` field: `full` | `limited`
+- Environment templates (`.env.example`, `.env.sample`, `.env.template`, `.env.dist`) receive informational treatment
+- Common environment backup filenames (`.env_backup`, `.env_old`, `.env_local`) receive conservative warning treatment
+
+### Detection
+
+- Prevent false Django detection from arbitrary nested `settings.py` files
+- Detect nested FastAPI projects using dependency + `app/main.py` structure evidence
+- Detect React from nested project manifests
+- Prevent Poetry detection from generic non-Poetry `pyproject.toml` files (for example hatchling)
+- Improve multi-stack terminal summaries for multi-project repositories
+
+### Testing
+
+- Added Excepta FastAPI/React/Flutter and security-semantics fixtures/tests
+- Total test suite is now 122 tests
+- Three real-world regression families validated (ProxyShield, Flutter/Laravel multi-app, Excepta)
+
 ## [0.1.2-beta] — 2026-07-29
 
 Backward-compatible quality patch.
@@ -81,7 +107,8 @@ First public beta.
 - Not a complete secret scanner
 - Git “tracked secret” detection deferred
 
-[Unreleased]: https://github.com/pranee54/AgentDoctor/compare/v0.1.2-beta...HEAD
+[Unreleased]: https://github.com/pranee54/AgentDoctor/compare/v0.1.3-beta...HEAD
+[0.1.3-beta]: https://github.com/pranee54/AgentDoctor/releases/tag/v0.1.3-beta
 [0.1.2-beta]: https://github.com/pranee54/AgentDoctor/releases/tag/v0.1.2-beta
 [0.1.1-beta]: https://github.com/pranee54/AgentDoctor/releases/tag/v0.1.1-beta
 [0.1.0-beta]: https://github.com/pranee54/AgentDoctor/releases/tag/v0.1.0-beta
