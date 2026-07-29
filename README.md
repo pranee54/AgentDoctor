@@ -22,6 +22,10 @@ Public beta (`0.1.x-beta`). Readiness scoring and automatic fixes are not availa
 
 ## What you get
 
+![AgentDoctor scanning a repository and reporting coding-agent security findings](docs/images/cli-scan.png)
+
+_Real scan of the included `insecure-agent-project` fixture using AgentDoctor v0.1.3-beta._
+
 ```text
 $ npx @praneeth_54/agentdoctor
 
@@ -70,7 +74,7 @@ Summary
 Scoring: not included in this release
 ```
 
-Example abbreviated from a real fixture scan (`fixtures/insecure-agent-project`). Secret values are never printed.
+Abbreviated text example from the same fixture for accessibility and search. Secret values are never printed.
 
 ---
 
