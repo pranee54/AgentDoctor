@@ -23,7 +23,8 @@ Conservative, reversible fixes with dry-run and confirmation:
 
 ### CI packaging
 
-First-class GitHub Action wrapping the CLI with threshold and severity policies.
+- First-class GitHub Action wrapping the published CLI and emitting a JSON artifact
+- Threshold and severity policies after deterministic readiness scoring ships
 
 ## Medium term
 

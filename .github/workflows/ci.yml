@@ -67,3 +67,42 @@ jobs:
         with:
           name: dist
           path: dist/
+
+  action-smoke:
+    name: GitHub Action smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run AgentDoctor action
+        id: agentdoctor
+        uses: ./
+        with:
+          path: fixtures/clean-configured-project
+          output-file: test-results/action-report.json
+
+      - name: Validate JSON report
+        env:
+          REPORT_PATH: ${{ steps.agentdoctor.outputs.report-path }}
+        run: |
+          node <<'NODE'
+          const fs = require("node:fs");
+
+          const report = JSON.parse(fs.readFileSync(process.env.REPORT_PATH, "utf8"));
+          if (report.version !== "0.1.3-beta") {
+            throw new Error(`unexpected AgentDoctor version: ${report.version}`);
+          }
+          if (!Array.isArray(report.findings) || report.scoringAvailable !== false) {
+            throw new Error("action report does not match the current JSON contract");
+          }
+          NODE
+
+      - name: Upload AgentDoctor report
+        uses: actions/upload-artifact@v4
+        with:
+          name: agentdoctor-report
+          path: test-results/action-report.json
+          if-no-files-found: error

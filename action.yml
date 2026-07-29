@@ -1,0 +1,140 @@
+name: AgentDoctor
+description: Audit project-level coding-agent configuration and emit a machine-readable report.
+author: AgentDoctor Contributors
+
+branding:
+  icon: activity
+  color: blue
+
+inputs:
+  path:
+    description: Repository-relative directory to scan.
+    required: false
+    default: .
+  version:
+    description: Published AgentDoctor npm version or supported dist-tag.
+    required: false
+    default: 0.1.3-beta
+  output-file:
+    description: Repository-relative path for the JSON report.
+    required: false
+    default: agentdoctor-report.json
+
+outputs:
+  report-path:
+    description: Absolute path to the generated JSON report.
+    value: ${{ steps.validate.outputs.report-path }}
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: "20"
+
+    - name: Validate action inputs
+      id: validate
+      shell: bash
+      env:
+        AGENTDOCTOR_PATH: ${{ inputs.path }}
+        AGENTDOCTOR_OUTPUT_FILE: ${{ inputs.output-file }}
+      run: |
+        set -euo pipefail
+        node <<'NODE'
+        const fs = require("node:fs");
+        const path = require("node:path");
+
+        const workspaceInput = process.env.GITHUB_WORKSPACE;
+        const targetInput = process.env.AGENTDOCTOR_PATH;
+        const outputInput = process.env.AGENTDOCTOR_OUTPUT_FILE;
+        const githubOutput = process.env.GITHUB_OUTPUT;
+
+        if (!workspaceInput || !targetInput || !outputInput || !githubOutput) {
+          throw new Error("GitHub Actions did not provide the required environment");
+        }
+        if ([workspaceInput, targetInput, outputInput].some((value) => /[\r\n]/.test(value))) {
+          throw new Error("Action paths must not contain newlines");
+        }
+
+        const workspace = fs.realpathSync(workspaceInput);
+        const isInsideWorkspace = (candidate) => {
+          const relative = path.relative(workspace, candidate);
+          return relative === "" || (!relative.startsWith(`..${path.sep}`) && relative !== "..");
+        };
+
+        const target = fs.realpathSync(path.resolve(workspace, targetInput));
+        if (!isInsideWorkspace(target) || !fs.statSync(target).isDirectory()) {
+          throw new Error("path must resolve to a directory inside GITHUB_WORKSPACE");
+        }
+
+        const reportPath = path.resolve(workspace, outputInput);
+        if (reportPath === workspace || !isInsideWorkspace(reportPath)) {
+          throw new Error("output-file must resolve to a file inside GITHUB_WORKSPACE");
+        }
+
+        fs.mkdirSync(path.dirname(reportPath), { recursive: true });
+        const reportParent = fs.realpathSync(path.dirname(reportPath));
+        if (!isInsideWorkspace(reportParent)) {
+          throw new Error("output-file parent must remain inside GITHUB_WORKSPACE");
+        }
+
+        fs.appendFileSync(githubOutput, `target-path=${target}\nreport-path=${reportPath}\n`);
+        NODE
+
+    - name: Run AgentDoctor
+      shell: bash
+      env:
+        AGENTDOCTOR_TARGET_PATH: ${{ steps.validate.outputs.target-path }}
+        AGENTDOCTOR_REPORT_PATH: ${{ steps.validate.outputs.report-path }}
+        AGENTDOCTOR_VERSION: ${{ inputs.version }}
+      run: |
+        set -euo pipefail
+        node <<'NODE'
+        const fs = require("node:fs");
+        const { spawnSync } = require("node:child_process");
+
+        const version = process.env.AGENTDOCTOR_VERSION;
+        const targetPath = process.env.AGENTDOCTOR_TARGET_PATH;
+        const reportPath = process.env.AGENTDOCTOR_REPORT_PATH;
+        const runnerTemp = process.env.RUNNER_TEMP;
+
+        if (!version || !targetPath || !reportPath || !runnerTemp) {
+          throw new Error("GitHub Actions did not provide the validated action environment");
+        }
+        if (!/^(latest|beta|[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?)$/.test(version)) {
+          throw new Error("version must be an exact npm version or the latest/beta dist-tag");
+        }
+
+        const packageSpec = `@praneeth_54/agentdoctor@${version}`;
+        const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
+        const result = spawnSync(
+          npmCommand,
+          [
+            "exec",
+            "--yes",
+            `--package=${packageSpec}`,
+            "--",
+            "agentdoctor",
+            targetPath,
+            "--ci",
+            "--json",
+          ],
+          {
+            cwd: runnerTemp,
+            encoding: "utf8",
+            maxBuffer: 64 * 1024 * 1024,
+            stdio: ["ignore", "pipe", "inherit"],
+          },
+        );
+
+        if (result.error) {
+          throw result.error;
+        }
+        if (result.status !== 0) {
+          process.exit(result.status ?? 3);
+        }
+
+        JSON.parse(result.stdout);
+        fs.writeFileSync(reportPath, result.stdout, "utf8");
+        NODE
