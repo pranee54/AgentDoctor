@@ -68,15 +68,60 @@ runs:
           throw new Error("path must resolve to a directory inside GITHUB_WORKSPACE");
         }
 
-        const reportPath = path.resolve(workspace, outputInput);
-        if (reportPath === workspace || !isInsideWorkspace(reportPath)) {
+        const requestedReportPath = path.resolve(workspace, outputInput);
+        if (requestedReportPath === workspace || !isInsideWorkspace(requestedReportPath)) {
           throw new Error("output-file must resolve to a file inside GITHUB_WORKSPACE");
         }
 
-        fs.mkdirSync(path.dirname(reportPath), { recursive: true });
-        const reportParent = fs.realpathSync(path.dirname(reportPath));
-        if (!isInsideWorkspace(reportParent)) {
-          throw new Error("output-file parent must remain inside GITHUB_WORKSPACE");
+        const reportRelativePath = path.relative(workspace, requestedReportPath);
+        const reportParts = reportRelativePath.split(path.sep);
+        const reportName = reportParts.pop();
+        let reportParent = workspace;
+
+        for (const part of reportParts) {
+          const candidate = path.join(reportParent, part);
+          let state;
+
+          try {
+            state = fs.lstatSync(candidate);
+          } catch (error) {
+            if (error.code !== "ENOENT") {
+              throw error;
+            }
+
+            try {
+              fs.mkdirSync(candidate);
+            } catch (mkdirError) {
+              if (mkdirError.code !== "EEXIST") {
+                throw mkdirError;
+              }
+            }
+            state = fs.lstatSync(candidate);
+          }
+
+          if (state.isSymbolicLink() || !state.isDirectory()) {
+            throw new Error("output-file parent must not contain symbolic links or non-directories");
+          }
+
+          reportParent = fs.realpathSync(candidate);
+          if (!isInsideWorkspace(reportParent)) {
+            throw new Error("output-file parent must remain inside GITHUB_WORKSPACE");
+          }
+        }
+
+        const reportPath = path.join(reportParent, reportName);
+        try {
+          const reportState = fs.lstatSync(reportPath);
+          if (reportState.isSymbolicLink()) {
+            throw new Error("output-file must not be a symbolic link");
+          }
+          if (!reportState.isFile()) {
+            throw new Error("output-file must be a regular file");
+          }
+        } catch (error) {
+          if (error.code !== "ENOENT") {
+            throw error;
+          }
         }
 
         fs.appendFileSync(githubOutput, `target-path=${target}\nreport-path=${reportPath}\n`);
@@ -92,6 +137,7 @@ runs:
         set -euo pipefail
         node <<'NODE'
         const fs = require("node:fs");
+        const path = require("node:path");
         const { spawnSync } = require("node:child_process");
 
         const version = process.env.AGENTDOCTOR_VERSION;
@@ -136,5 +182,40 @@ runs:
         }
 
         JSON.parse(result.stdout);
-        fs.writeFileSync(reportPath, result.stdout, "utf8");
+        const reportParent = path.dirname(reportPath);
+        const temporaryReportPath = path.join(
+          reportParent,
+          `.agentdoctor-report-${process.pid}-${Date.now()}.tmp`,
+        );
+        let temporaryReportCreated = false;
+
+        try {
+          fs.writeFileSync(temporaryReportPath, result.stdout, {
+            encoding: "utf8",
+            flag: "wx",
+            mode: 0o600,
+          });
+          temporaryReportCreated = true;
+
+          try {
+            const reportState = fs.lstatSync(reportPath);
+            if (reportState.isSymbolicLink()) {
+              throw new Error("output-file became a symbolic link before the report was written");
+            }
+            if (!reportState.isFile()) {
+              throw new Error("output-file became a non-regular file before the report was written");
+            }
+          } catch (error) {
+            if (error.code !== "ENOENT") {
+              throw error;
+            }
+          }
+
+          fs.renameSync(temporaryReportPath, reportPath);
+          temporaryReportCreated = false;
+        } finally {
+          if (temporaryReportCreated) {
+            fs.rmSync(temporaryReportPath, { force: true });
+          }
+        }
         NODE

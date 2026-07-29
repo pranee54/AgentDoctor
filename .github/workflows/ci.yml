@@ -69,22 +69,95 @@ jobs:
           path: dist/
 
   action-smoke:
-    name: GitHub Action smoke
+    name: GitHub Action smoke · ${{ matrix.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: normal output
+            case: normal
+            output-file: test-results/action-report.json
+            expected: success
+          - name: nested output
+            case: nested
+            output-file: test-results/nested/action-report.json
+            expected: success
+          - name: traversal rejected
+            case: traversal
+            output-file: ../report.json
+            expected: failure
+          - name: escaping parent symlink rejected
+            case: parent-symlink
+            output-file: test-results/escape-parent/report.json
+            expected: failure
+          - name: output symlink rejected
+            case: output-symlink
+            output-file: test-results/output-symlink.json
+            expected: failure
+          - name: directory rejected
+            case: directory
+            output-file: test-results/output-directory
+            expected: failure
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Prepare output-path case
+        env:
+          CASE: ${{ matrix.case }}
+        run: |
+          set -euo pipefail
+          mkdir -p test-results
+          case "$CASE" in
+            parent-symlink)
+              ln -s "$RUNNER_TEMP" test-results/escape-parent
+              ;;
+            output-symlink)
+              ln -s "$RUNNER_TEMP/outside-report.json" test-results/output-symlink.json
+              ;;
+            directory)
+              mkdir -p test-results/output-directory
+              ;;
+          esac
+
       - name: Run AgentDoctor action
         id: agentdoctor
+        continue-on-error: ${{ matrix.expected == 'failure' }}
         uses: ./
         with:
           path: fixtures/clean-configured-project
-          output-file: test-results/action-report.json
+          output-file: ${{ matrix.output-file }}
+
+      - name: Validate expected outcome
+        env:
+          ACTUAL_OUTCOME: ${{ steps.agentdoctor.outcome }}
+          EXPECTED_OUTCOME: ${{ matrix.expected }}
+        run: |
+          if [ "$ACTUAL_OUTCOME" != "$EXPECTED_OUTCOME" ]; then
+            echo "expected $EXPECTED_OUTCOME, got $ACTUAL_OUTCOME" >&2
+            exit 1
+          fi
+
+      - name: Validate containment
+        if: matrix.expected == 'failure'
+        env:
+          CASE: ${{ matrix.case }}
+        run: |
+          set -euo pipefail
+          case "$CASE" in
+            parent-symlink)
+              test ! -e "$RUNNER_TEMP/report.json"
+              ;;
+            output-symlink)
+              test ! -e "$RUNNER_TEMP/outside-report.json"
+              ;;
+          esac
 
       - name: Validate JSON report
+        if: matrix.expected == 'success'
         env:
           REPORT_PATH: ${{ steps.agentdoctor.outputs.report-path }}
         run: |
@@ -101,8 +174,9 @@ jobs:
           NODE
 
       - name: Upload AgentDoctor report
+        if: matrix.expected == 'success'
         uses: actions/upload-artifact@v4
         with:
-          name: agentdoctor-report
-          path: test-results/action-report.json
+          name: agentdoctor-report-${{ matrix.case }}
+          path: ${{ matrix.output-file }}
           if-no-files-found: error

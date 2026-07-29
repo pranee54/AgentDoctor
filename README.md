@@ -259,7 +259,7 @@ steps:
 
   - name: Audit coding-agent configuration
     id: agentdoctor
-    uses: pranee54/AgentDoctor@v0
+    uses: pranee54/AgentDoctor@v0.1.3-beta
     with:
       path: .
       output-file: agentdoctor-report.json
