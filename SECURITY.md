@@ -13,7 +13,7 @@ Please report security issues privately. Do not open a public GitHub issue.
 
 Preferred channel:
 
-1. [GitHub Security Advisories](https://github.com/agentdoctor/agentdoctor/security/advisories/new) on this repository
+1. [GitHub Security Advisories](https://github.com/pranee54/AgentDoctor/security/advisories/new) on this repository
 
 Include:
 
@@ -23,6 +23,8 @@ Include:
 - Any suggested fix
 
 Please allow reasonable time for a fix before public disclosure.
+
+We aim to acknowledge valid reports within **7 days** and provide a remediation plan or fix timeline for confirmed issues affecting current supported versions.
 
 ## Scope notes
 

@@ -15,7 +15,7 @@ npx agentdoctor
 | **Install**    | `npx agentdoctor` or `npm install -g agentdoctor`                                   |
 | **Requires**   | Node.js 20+                                                                         |
 
-[![CI](https://img.shields.io/github/actions/workflow/status/agentdoctor/agentdoctor/ci.yml?branch=main&label=CI)](https://github.com/agentdoctor/agentdoctor/actions)
+[![CI](https://img.shields.io/github/actions/workflow/status/pranee54/AgentDoctor/ci.yml?branch=main&label=CI)](https://github.com/pranee54/AgentDoctor/actions)
 [![npm](https://img.shields.io/npm/v/agentdoctor?label=npm)](https://www.npmjs.com/package/agentdoctor)
 [![Node](https://img.shields.io/node/v/agentdoctor)](https://nodejs.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -300,14 +300,15 @@ npx agentdoctor explain <rule-id>
 
 Start at [docs/README.md](docs/README.md).
 
-| Doc                                          | Contents                    |
-| -------------------------------------------- | --------------------------- |
-| [docs/architecture.md](docs/architecture.md) | Pipeline and package layout |
-| [docs/rules.md](docs/rules.md)               | Stable rule IDs             |
-| [docs/exit-codes.md](docs/exit-codes.md)     | Process exit codes          |
-| [docs/development.md](docs/development.md)   | Local development           |
-| [ROADMAP.md](ROADMAP.md)                     | Near- and medium-term plans |
-| [CHANGELOG.md](CHANGELOG.md)                 | Release history             |
+| Doc                                            | Contents                    |
+| ---------------------------------------------- | --------------------------- |
+| [docs/architecture.md](docs/architecture.md)   | Pipeline and package layout |
+| [docs/rules.md](docs/rules.md)                 | Stable rule IDs             |
+| [docs/exit-codes.md](docs/exit-codes.md)       | Process exit codes          |
+| [docs/compatibility.md](docs/compatibility.md) | Beta compatibility promises |
+| [docs/development.md](docs/development.md)     | Local development           |
+| [ROADMAP.md](ROADMAP.md)                       | Near- and medium-term plans |
+| [CHANGELOG.md](CHANGELOG.md)                   | Release history             |
 
 ---
 
@@ -331,8 +332,8 @@ Issues and pull requests are welcome.
 3. Report security issues via [SECURITY.md](SECURITY.md)
 
 ```bash
-git clone https://github.com/agentdoctor/agentdoctor.git
-cd agentdoctor
+git clone https://github.com/pranee54/AgentDoctor.git
+cd AgentDoctor
 npm install
 npm run typecheck && npm run lint && npm test && npm run build
 node dist/cli/index.js ./fixtures/clean-configured-project

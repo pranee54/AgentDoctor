@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Track fake credential fixtures required by CI (were excluded by `.gitignore`)
+- Align package and docs URLs with the public GitHub repository
+- Release workflow selects notes by tag and attaches the npm tarball
+- CLI help text matches shipped capabilities (`--min-score` no-op until scoring)
+
 ### Planned
 
 - Deterministic readiness scoring
@@ -43,5 +50,5 @@ First public beta.
 - Not a complete secret scanner
 - Git “tracked secret” detection deferred
 
-[Unreleased]: https://github.com/agentdoctor/agentdoctor/compare/v0.1.0-beta...HEAD
-[0.1.0-beta]: https://github.com/agentdoctor/agentdoctor/releases/tag/v0.1.0-beta
+[Unreleased]: https://github.com/pranee54/AgentDoctor/compare/v0.1.0-beta...HEAD
+[0.1.0-beta]: https://github.com/pranee54/AgentDoctor/releases/tag/v0.1.0-beta

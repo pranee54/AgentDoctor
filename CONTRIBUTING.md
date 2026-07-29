@@ -2,12 +2,39 @@
 
 Thanks for helping improve AgentDoctor.
 
+## Quick start for new contributors
+
+1. Fork and clone the repository.
+2. Install with Node.js 20+:
+
+   ```bash
+   npm install
+   ```
+
+3. Verify:
+
+   ```bash
+   npm run verify
+   ```
+
+4. Try a local scan:
+
+   ```bash
+   npm run build
+   node dist/cli/index.js ./fixtures/clean-configured-project
+   ```
+
+5. Prefer issues labeled `good first issue` or `help wanted`.
+
+6. Open a focused pull request (one concern per PR).
+
 ## Ground rules
 
 - Be respectful — see [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
 - Prefer small, focused pull requests
-- Do not commit secrets or real credentials
+- Do not commit real secrets or credentials (fixtures may use `FAKE_TEST_CREDENTIAL` only)
 - Keep documentation accurate to implemented behavior
+- New or changed rules must update [docs/rules.md](docs/rules.md)
 
 ## Development setup
 
@@ -15,10 +42,7 @@ See [docs/development.md](docs/development.md).
 
 ```bash
 npm install
-npm run typecheck
-npm run lint
-npm test
-npm run build
+npm run verify
 ```
 
 ## Pull requests

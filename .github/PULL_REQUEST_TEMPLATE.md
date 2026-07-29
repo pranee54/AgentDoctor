@@ -12,13 +12,11 @@ Briefly describe the change.
 
 ## Checklist
 
-- [ ] `npm run typecheck` passes
-- [ ] `npm run lint` passes
-- [ ] `npm test` passes
-- [ ] `npm run build` passes
+- [ ] `npm run verify` passes (or typecheck / lint / test / build individually)
 - [ ] Docs updated when user-facing behavior changes
-- [ ] New rules documented in `docs/rules.md`
-- [ ] No secrets or real credentials added
+- [ ] New or changed rules documented in `docs/rules.md`
+- [ ] Fixtures use `FAKE_TEST_CREDENTIAL` only — no real secrets
+- [ ] False-positive risk considered for rule/adapter changes
 
 ## Test plan
 

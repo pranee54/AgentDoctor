@@ -15,6 +15,10 @@ jobs:
     name: Typecheck · Lint · Test · Build
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ["20", "22"]
 
     steps:
       - name: Checkout
@@ -23,7 +27,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: ${{ matrix.node-version }}
           cache: npm
 
       - name: Install dependencies
@@ -46,16 +50,19 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Pack dry-run
+        run: npm pack --dry-run
+
       - name: Upload test report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
+          name: test-results-node-${{ matrix.node-version }}
           path: test-results/
           if-no-files-found: ignore
 
       - name: Upload build artifact
-        if: success()
+        if: success() && matrix.node-version == '20'
         uses: actions/upload-artifact@v4
         with:
           name: dist

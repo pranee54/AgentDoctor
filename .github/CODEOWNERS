@@ -1,4 +1,2 @@
-# CODEOWNERS
-#
-# Uncomment and set real GitHub usernames or a team after the org exists.
-# * @your-org/maintainers
+# Default owners for this repository.
+* @pranee54

@@ -18,3 +18,9 @@ tmp/
 *.pfx
 !.vscode/extensions.json
 !.vscode/settings.json
+
+# Fake credential fixtures required by tests (not real secrets)
+!fixtures/**/.env
+!fixtures/**/.env.*
+!fixtures/**/*.pem
+!fixtures/**/*.log

@@ -11,5 +11,9 @@ package-lock.json
 !SECURITY.md
 !CODE_OF_CONDUCT.md
 !ROADMAP.md
+fixtures/**/.env
+fixtures/**/.env.*
+fixtures/**/*.pem
+fixtures/**/*.log
 fixtures/malformed-agent-config/**
 fixtures/malformed-mcp-project/**

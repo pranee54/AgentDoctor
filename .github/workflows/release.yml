@@ -52,16 +52,51 @@ jobs:
             echo "name=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Create draft release
+      - name: Resolve release notes
+        id: notes
+        run: |
+          TAG="${{ steps.tag.outputs.name }}"
+          # Strip leading v for filename match: v0.1.0-beta -> 0.1.0-beta
+          VER="${TAG#v}"
+          CANDIDATE="docs/release-notes-v${VER}.md"
+          if [ -f "$CANDIDATE" ]; then
+            echo "path=$CANDIDATE" >> "$GITHUB_OUTPUT"
+          else
+            echo "path=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Pack npm tarball
+        run: |
+          npm pack
+          ls -la agentdoctor-*.tgz
+
+      - name: Create draft release (with notes file)
+        if: steps.notes.outputs.path != ''
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.tag.outputs.name }}
           name: AgentDoctor ${{ steps.tag.outputs.name }}
           draft: true
           generate_release_notes: true
-          body_path: docs/release-notes-v0.1.0-beta.md
+          body_path: ${{ steps.notes.outputs.path }}
           files: |
             LICENSE
             README.md
+            agentdoctor-*.tgz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create draft release (generated notes only)
+        if: steps.notes.outputs.path == ''
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.name }}
+          name: AgentDoctor ${{ steps.tag.outputs.name }}
+          draft: true
+          generate_release_notes: true
+          files: |
+            LICENSE
+            README.md
+            agentdoctor-*.tgz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

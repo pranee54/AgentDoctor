@@ -33,7 +33,8 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepublishOnly": "npm run typecheck && npm run lint && npm test && npm run build"
+    "verify": "npm run typecheck && npm run lint && npm run format:check && npm test && npm run build",
+    "prepublishOnly": "npm run verify"
   },
   "keywords": [
     "ai",
@@ -53,12 +54,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/agentdoctor/agentdoctor.git"
+    "url": "git+https://github.com/pranee54/AgentDoctor.git"
   },
   "bugs": {
-    "url": "https://github.com/agentdoctor/agentdoctor/issues"
+    "url": "https://github.com/pranee54/AgentDoctor/issues"
   },
-  "homepage": "https://github.com/agentdoctor/agentdoctor#readme",
+  "homepage": "https://github.com/pranee54/AgentDoctor#readme",
   "publishConfig": {
     "access": "public"
   },

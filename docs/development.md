@@ -60,10 +60,15 @@ Hostile-input coverage lives in `tests/unit/rules/hostile.test.ts`.
 
 ## Release checklist (maintainers)
 
-1. Update `CHANGELOG.md`
+1. Update `CHANGELOG.md` and `docs/release-notes-vX.Y.Z.md` when tagging
 2. Bump `package.json` / `src/constants.ts` version together
 3. Ensure CI is green on `main`
-4. Tag and publish manually (see release workflow — no auto-publish)
+4. Tag `vX.Y.Z` (draft release workflow runs; no auto npm publish)
+5. Publish to npm manually after reviewing the draft GitHub release:
+
+   ```bash
+   npm publish --tag beta   # for 0.x-beta
+   ```
 
 ## Editor
 

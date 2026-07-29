@@ -31,14 +31,18 @@ export function createProgram(): Command {
   program
     .name("agentdoctor")
     .description(
-      "Lighthouse for AI coding agents — audit, score, secure, and optimize your repository.",
+      "Audit AI coding agent configuration in a repository (local, deterministic, no API key).",
     )
     .version(PACKAGE_VERSION, "-V, --version", "Print AgentDoctor version")
     .argument("[path]", "Repository path to scan (default: current directory)")
     .option("--json", "Emit machine-readable JSON (no decorative output)", false)
-    .option("--ci", "CI mode (non-interactive; use with --min-score)", false)
+    .option("--ci", "CI mode (non-interactive; --min-score is ignored until scoring ships)", false)
     .option("--verbose", "Show timing and extra diagnostics", false)
-    .option("--min-score <number>", "Fail CI when overall score is below this", parseMinScore)
+    .option(
+      "--min-score <number>",
+      "Fail when overall score is below this (no-op until scoring ships)",
+      parseMinScore,
+    )
     .action(async (pathArg: string | undefined, options) => {
       const minScore = readMinScore(options);
       const code = await runScanCommand({
@@ -53,12 +57,16 @@ export function createProgram(): Command {
 
   program
     .command("scan")
-    .description("Scan a repository for AI coding agent readiness (default command)")
+    .description("Scan a repository for AI coding agent configuration issues (default command)")
     .argument("[path]", "Repository path to scan")
     .option("--json", "Emit machine-readable JSON", false)
-    .option("--ci", "CI mode", false)
+    .option("--ci", "CI mode (--min-score ignored until scoring ships)", false)
     .option("--verbose", "Show timing and extra diagnostics", false)
-    .option("--min-score <number>", "Fail when overall score is below this", parseMinScore)
+    .option(
+      "--min-score <number>",
+      "Fail when overall score is below this (no-op until scoring ships)",
+      parseMinScore,
+    )
     .action(async (pathArg: string | undefined, options) => {
       const minScore = readMinScore(options);
       const code = await runScanCommand({
@@ -87,7 +95,7 @@ export function createProgram(): Command {
   program
     .command("explain")
     .description("Explain a rule by id")
-    .argument("<rule>", "Rule id, e.g. security/env-exposure")
+    .argument("<rule>", "Rule id, e.g. security/env-file-exposure")
     .action(async (rule: string) => {
       const code = await runExplainCommand(rule);
       process.exitCode = code;
