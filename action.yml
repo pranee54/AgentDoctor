@@ -1,0 +1,221 @@
+name: AgentDoctor
+description: Audit project-level coding-agent configuration and emit a machine-readable report.
+author: AgentDoctor Contributors
+
+branding:
+  icon: activity
+  color: blue
+
+inputs:
+  path:
+    description: Repository-relative directory to scan.
+    required: false
+    default: .
+  version:
+    description: Published AgentDoctor npm version or supported dist-tag.
+    required: false
+    default: 0.1.3-beta
+  output-file:
+    description: Repository-relative path for the JSON report.
+    required: false
+    default: agentdoctor-report.json
+
+outputs:
+  report-path:
+    description: Absolute path to the generated JSON report.
+    value: ${{ steps.validate.outputs.report-path }}
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: "20"
+
+    - name: Validate action inputs
+      id: validate
+      shell: bash
+      env:
+        AGENTDOCTOR_PATH: ${{ inputs.path }}
+        AGENTDOCTOR_OUTPUT_FILE: ${{ inputs.output-file }}
+      run: |
+        set -euo pipefail
+        node <<'NODE'
+        const fs = require("node:fs");
+        const path = require("node:path");
+
+        const workspaceInput = process.env.GITHUB_WORKSPACE;
+        const targetInput = process.env.AGENTDOCTOR_PATH;
+        const outputInput = process.env.AGENTDOCTOR_OUTPUT_FILE;
+        const githubOutput = process.env.GITHUB_OUTPUT;
+
+        if (!workspaceInput || !targetInput || !outputInput || !githubOutput) {
+          throw new Error("GitHub Actions did not provide the required environment");
+        }
+        if ([workspaceInput, targetInput, outputInput].some((value) => /[\r\n]/.test(value))) {
+          throw new Error("Action paths must not contain newlines");
+        }
+
+        const workspace = fs.realpathSync(workspaceInput);
+        const isInsideWorkspace = (candidate) => {
+          const relative = path.relative(workspace, candidate);
+          return relative === "" || (!relative.startsWith(`..${path.sep}`) && relative !== "..");
+        };
+
+        const target = fs.realpathSync(path.resolve(workspace, targetInput));
+        if (!isInsideWorkspace(target) || !fs.statSync(target).isDirectory()) {
+          throw new Error("path must resolve to a directory inside GITHUB_WORKSPACE");
+        }
+
+        const requestedReportPath = path.resolve(workspace, outputInput);
+        if (requestedReportPath === workspace || !isInsideWorkspace(requestedReportPath)) {
+          throw new Error("output-file must resolve to a file inside GITHUB_WORKSPACE");
+        }
+
+        const reportRelativePath = path.relative(workspace, requestedReportPath);
+        const reportParts = reportRelativePath.split(path.sep);
+        const reportName = reportParts.pop();
+        let reportParent = workspace;
+
+        for (const part of reportParts) {
+          const candidate = path.join(reportParent, part);
+          let state;
+
+          try {
+            state = fs.lstatSync(candidate);
+          } catch (error) {
+            if (error.code !== "ENOENT") {
+              throw error;
+            }
+
+            try {
+              fs.mkdirSync(candidate);
+            } catch (mkdirError) {
+              if (mkdirError.code !== "EEXIST") {
+                throw mkdirError;
+              }
+            }
+            state = fs.lstatSync(candidate);
+          }
+
+          if (state.isSymbolicLink() || !state.isDirectory()) {
+            throw new Error("output-file parent must not contain symbolic links or non-directories");
+          }
+
+          reportParent = fs.realpathSync(candidate);
+          if (!isInsideWorkspace(reportParent)) {
+            throw new Error("output-file parent must remain inside GITHUB_WORKSPACE");
+          }
+        }
+
+        const reportPath = path.join(reportParent, reportName);
+        try {
+          const reportState = fs.lstatSync(reportPath);
+          if (reportState.isSymbolicLink()) {
+            throw new Error("output-file must not be a symbolic link");
+          }
+          if (!reportState.isFile()) {
+            throw new Error("output-file must be a regular file");
+          }
+        } catch (error) {
+          if (error.code !== "ENOENT") {
+            throw error;
+          }
+        }
+
+        fs.appendFileSync(githubOutput, `target-path=${target}\nreport-path=${reportPath}\n`);
+        NODE
+
+    - name: Run AgentDoctor
+      shell: bash
+      env:
+        AGENTDOCTOR_TARGET_PATH: ${{ steps.validate.outputs.target-path }}
+        AGENTDOCTOR_REPORT_PATH: ${{ steps.validate.outputs.report-path }}
+        AGENTDOCTOR_VERSION: ${{ inputs.version }}
+      run: |
+        set -euo pipefail
+        node <<'NODE'
+        const fs = require("node:fs");
+        const path = require("node:path");
+        const { spawnSync } = require("node:child_process");
+
+        const version = process.env.AGENTDOCTOR_VERSION;
+        const targetPath = process.env.AGENTDOCTOR_TARGET_PATH;
+        const reportPath = process.env.AGENTDOCTOR_REPORT_PATH;
+        const runnerTemp = process.env.RUNNER_TEMP;
+
+        if (!version || !targetPath || !reportPath || !runnerTemp) {
+          throw new Error("GitHub Actions did not provide the validated action environment");
+        }
+        if (!/^(latest|beta|[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?)$/.test(version)) {
+          throw new Error("version must be an exact npm version or the latest/beta dist-tag");
+        }
+
+        const packageSpec = `@praneeth_54/agentdoctor@${version}`;
+        const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
+        const result = spawnSync(
+          npmCommand,
+          [
+            "exec",
+            "--yes",
+            `--package=${packageSpec}`,
+            "--",
+            "agentdoctor",
+            targetPath,
+            "--ci",
+            "--json",
+          ],
+          {
+            cwd: runnerTemp,
+            encoding: "utf8",
+            maxBuffer: 64 * 1024 * 1024,
+            stdio: ["ignore", "pipe", "inherit"],
+          },
+        );
+
+        if (result.error) {
+          throw result.error;
+        }
+        if (result.status !== 0) {
+          process.exit(result.status ?? 3);
+        }
+
+        JSON.parse(result.stdout);
+        const reportParent = path.dirname(reportPath);
+        const temporaryReportPath = path.join(
+          reportParent,
+          `.agentdoctor-report-${process.pid}-${Date.now()}.tmp`,
+        );
+        let temporaryReportCreated = false;
+
+        try {
+          fs.writeFileSync(temporaryReportPath, result.stdout, {
+            encoding: "utf8",
+            flag: "wx",
+            mode: 0o600,
+          });
+          temporaryReportCreated = true;
+
+          try {
+            const reportState = fs.lstatSync(reportPath);
+            if (reportState.isSymbolicLink()) {
+              throw new Error("output-file became a symbolic link before the report was written");
+            }
+            if (!reportState.isFile()) {
+              throw new Error("output-file became a non-regular file before the report was written");
+            }
+          } catch (error) {
+            if (error.code !== "ENOENT") {
+              throw error;
+            }
+          }
+
+          fs.renameSync(temporaryReportPath, reportPath);
+          temporaryReportCreated = false;
+        } finally {
+          if (temporaryReportCreated) {
+            fs.rmSync(temporaryReportPath, { force: true });
+          }
+        }
+        NODE

@@ -246,15 +246,45 @@ This is still software that reads untrusted repository trees. Treat findings as 
 
 ## CI usage
 
-Use JSON for automation:
+### GitHub Action
+
+Run AgentDoctor directly in a workflow:
+
+```yaml
+permissions:
+  contents: read
+
+steps:
+  - uses: actions/checkout@v4
+
+  - name: Audit coding-agent configuration
+    id: agentdoctor
+    uses: pranee54/AgentDoctor@v0.1.3-beta
+    with:
+      path: .
+      output-file: agentdoctor-report.json
+
+  - name: Upload AgentDoctor report
+    uses: actions/upload-artifact@v4
+    with:
+      name: agentdoctor-report
+      path: ${{ steps.agentdoctor.outputs.report-path }}
+```
+
+The action installs the published `@praneeth_54/agentdoctor@0.1.3-beta` package, runs it with
+`--ci --json`, and writes the report inside the checked-out workspace. It sets up Node.js 20
+for the CLI. The optional `version` input accepts an exact npm version or the `latest` / `beta`
+dist-tag.
+
+### CLI
+
+Use JSON directly in other CI systems:
 
 ```bash
-npx @praneeth_54/agentdoctor --json
+npx @praneeth_54/agentdoctor --ci --json
 ```
 
 `--ci` runs non-interactively. Until readiness scoring ships, successful scans exit `0` even when findings exist, and `--min-score` is accepted but ignored.
-
-There is no packaged GitHub Action yet (planned — [ROADMAP.md](ROADMAP.md)).
 
 Exit codes: [docs/exit-codes.md](docs/exit-codes.md). Compatibility promises: [docs/compatibility.md](docs/compatibility.md).
 
