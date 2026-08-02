@@ -14,8 +14,8 @@ describe("scan() agent integration", () => {
   it("clean-project has no configured agents", async () => {
     const result = await scan({ cwd: path.join(fixturesRoot, "clean-project") });
     expect(result.agents.every((a) => !a.configured)).toBe(true);
-    expect(result.scoringAvailable).toBe(false);
-    expect(result.scores).toBeNull();
+    expect(result.scoringAvailable).toBe(true);
+    expect(result.scores?.overall).toBeDefined();
   });
 
   it("cursor-project configures Cursor only", async () => {
@@ -76,8 +76,8 @@ describe("scan() agent integration", () => {
       summary: { total: number };
       agents: Array<{ id: string; configured: boolean; configFiles: unknown[] }>;
     };
-    expect(parsed.scoringAvailable).toBe(false);
-    expect(parsed.scores).toBeNull();
+    expect(parsed.scoringAvailable).toBe(true);
+    expect(parsed.scores).not.toBeNull();
     expect(parsed.summary).toBeDefined();
     const cursor = parsed.agents.find((a) => a.id === "cursor");
     expect(cursor?.configured).toBe(true);

@@ -165,10 +165,15 @@ jobs:
           const fs = require("node:fs");
 
           const report = JSON.parse(fs.readFileSync(process.env.REPORT_PATH, "utf8"));
-          if (report.version !== "0.1.4-beta") {
+          if (report.version !== "0.2.0-beta") {
             throw new Error(`unexpected AgentDoctor version: ${report.version}`);
           }
-          if (!Array.isArray(report.findings) || report.scoringAvailable !== false) {
+          if (
+            !Array.isArray(report.findings) ||
+            report.scoringAvailable !== true ||
+            report.scores == null ||
+            typeof report.scores.overall !== "number"
+          ) {
             throw new Error("action report does not match the current JSON contract");
           }
           NODE

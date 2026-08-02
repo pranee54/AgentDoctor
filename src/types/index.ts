@@ -173,11 +173,11 @@ export interface ScanResult {
   findings: Finding[];
   summary: FindingsSummary;
   /**
-   * Readiness scores when scoring is available.
-   * Null while scoring is unavailable — do not treat as readiness.
+   * Readiness scores (v1). Always populated when `scoringAvailable` is true.
+   * Remains typed as nullable for older consumers / transitional tooling.
    */
   scores: Scores | null;
-  /** False until the readiness scoring model ships. */
+  /** True when the readiness scoring model is active and `scores` is populated. */
   scoringAvailable: boolean;
   /**
    * `limited` when no supported coding agent is detected/configured.

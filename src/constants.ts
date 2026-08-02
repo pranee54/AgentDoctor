@@ -1,4 +1,4 @@
-export const PACKAGE_VERSION = "0.1.4-beta";
+export const PACKAGE_VERSION = "0.2.0-beta";
 
 export const DEFAULT_MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024; // 2 MiB
 

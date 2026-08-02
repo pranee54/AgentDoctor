@@ -28,7 +28,7 @@ AI coding agents leave config all over a repo — rules, AGENTS.md, MCP, ignore 
 AgentDoctor is a local deterministic audit for that surface. Stable rule IDs + JSON for CI. Not an LLM product.
 
 **3/4**  
-Beta limits are honest: no scoring yet, no auto-fix, conservative filename heuristics (not a full secret scanner).
+Beta limits are honest: scores ship in JSON (terminal N/100 and Action gates still deferred), no auto-fix, conservative filename heuristics (not a full secret scanner).
 
 **4/4**  
 Try: `npx @praneeth_54/agentdoctor`  

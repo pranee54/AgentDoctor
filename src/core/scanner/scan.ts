@@ -5,11 +5,11 @@ import { sanitizeTerminalText } from "../../security/redaction.js";
 import type { ScanOptions, ScanResult } from "../../types/index.js";
 import { buildRuleContext } from "../rules/build-context.js";
 import { runRules } from "../rules/run-rules.js";
+import { computeReadinessScores } from "../scoring/compute-scores.js";
 
 /**
  * Public scan entry point.
- * Pipeline: discovery → project detection → agent adapters → rule engine → findings.
- * Readiness scoring is reserved for a later release (`scores` remains null for now).
+ * Pipeline: discovery → project detection → agent adapters → rule engine → findings → scores.
  */
 export async function scan(options: ScanOptions = {}): Promise<ScanResult> {
   const totalStarted = performance.now();
@@ -67,21 +67,25 @@ export async function scan(options: ScanOptions = {}): Promise<ScanResult> {
     );
   }
 
+  const scoringStarted = performance.now();
+  const scores = computeReadinessScores(findings);
+  const scoringMs = Math.round(performance.now() - scoringStarted);
+
   return {
     version: PACKAGE_VERSION,
     repository,
     agents,
     findings,
     summary,
-    scores: null,
-    scoringAvailable: false,
+    scores,
+    scoringAvailable: true,
     agentSecurityAnalysis,
     timing: {
       discoveryMs: discovery.elapsedMs,
       detectionMs,
       agentsMs,
       rulesMs,
-      scoringMs: 0,
+      scoringMs,
       totalMs: Math.round(performance.now() - totalStarted),
     },
     diagnostics: {

@@ -9,8 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Planned
 
-- Deterministic readiness scoring
 - Safe automatic fixes
+- Terminal readiness line and GitHub Action score-gate inputs (deferred; see scoring.md v2+)
+
+## [0.2.0-beta] — 2026-08-02
+
+Minor beta: deterministic readiness scoring and CLI `--min-score` enforcement.
+
+### Added
+
+- Deterministic readiness scoring (v1): `scan()` populates `scoringAvailable: true` and
+  `scores` (`overall`, `categories`, `agents`) from post-dedupe findings
+  ([docs/scoring.md](docs/scoring.md))
+- CLI `--min-score N` enforcement: exit code `1` when `scores.overall < N`
+- `--ci` without `--min-score` remains report-only (exit `0` on successful scan)
+- Scoring specification and compatibility / exit-code docs updated for shipped behavior
+
+### Compatibility
+
+- No new JSON top-level fields (`scoringModel` / `scoreExplanation` deferred)
+- Findings, rule IDs, and agent detection unchanged
+- GitHub Action remains `--ci --json` report-only (no score-gate inputs)
+- Default Action `version` input is `0.2.0-beta`
 
 ## [0.1.4-beta] — 2026-08-02
 
@@ -123,7 +143,8 @@ First public beta.
 - Not a complete secret scanner
 - Git “tracked secret” detection deferred
 
-[Unreleased]: https://github.com/pranee54/AgentDoctor/compare/v0.1.4-beta...HEAD
+[Unreleased]: https://github.com/pranee54/AgentDoctor/compare/v0.2.0-beta...HEAD
+[0.2.0-beta]: https://github.com/pranee54/AgentDoctor/releases/tag/v0.2.0-beta
 [0.1.4-beta]: https://github.com/pranee54/AgentDoctor/releases/tag/v0.1.4-beta
 [0.1.3-beta]: https://github.com/pranee54/AgentDoctor/releases/tag/v0.1.3-beta
 [0.1.2-beta]: https://github.com/pranee54/AgentDoctor/releases/tag/v0.1.2-beta

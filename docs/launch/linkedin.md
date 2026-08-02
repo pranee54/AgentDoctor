@@ -24,4 +24,4 @@ npx @praneeth_54/agentdoctor
 GitHub: https://github.com/pranee54/AgentDoctor  
 npm: https://www.npmjs.com/package/@praneeth_54/agentdoctor
 
-It is a public beta — scoring and auto-fix are not available yet. I would appreciate feedback, especially false positives and misses from real agent setups.
+It is a public beta — readiness scores ship in JSON (`--min-score` is enforced; `--ci` alone stays report-only). Automatic fixes are not available yet. I would appreciate feedback, especially false positives and misses from real agent setups.

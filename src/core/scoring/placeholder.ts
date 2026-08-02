@@ -1,9 +1,9 @@
 import type { Scores } from "../../types/index.js";
 
 /**
- * Internal scoring stub retained for upcoming readiness scores.
- * Production scans currently return `scores: null`.
- * A clean undetected-agent repo stays below 100 by design.
+ * Historical filesScanned-based stub. Kept for unit tests that document the
+ * pre-v1 placeholder behavior. Production scans use computeReadinessScores
+ * (docs/scoring.md) — do not call this from scan().
  */
 export function computePlaceholderScores(filesScanned: number): Scores {
   const base = 72;

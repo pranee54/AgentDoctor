@@ -26,7 +26,7 @@ Design choices:
 - stable rule IDs + JSON for CI
 - intentionally conservative security findings
 
-Not included yet: readiness scoring, auto-fix, packaged GitHub Action.
+Not included yet: auto-fix, and GitHub Action score-gate inputs (Action is report-only; CLI `--min-score` works today). Readiness scores ship in JSON.
 
 ```bash
 npx @praneeth_54/agentdoctor
