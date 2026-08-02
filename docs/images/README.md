@@ -8,7 +8,7 @@ Screenshots and short recordings for the README and social channels.
 
 | File                 | Status        | Description                                                                     |
 | -------------------- | ------------- | ------------------------------------------------------------------------------- |
-| `cli-scan.png`       | **Available** | Real CLI scan of `fixtures/insecure-agent-project` with AgentDoctor v0.1.3-beta |
+| `cli-scan.png`       | **Available** | Real CLI scan of `fixtures/insecure-agent-project` with AgentDoctor v0.1.4-beta |
 | `cli-json.png`       | Pending       | Short JSON mode excerpt                                                         |
 | `cli-explain.png`    | Pending       | `explain` command                                                               |
 | `demo.gif`           | Pending       | 10–20s animated terminal demo                                                   |
@@ -21,7 +21,7 @@ Spec for social preview: [social-preview-spec.md](social-preview-spec.md).
 Captured from the published package:
 
 ```bash
-npx @praneeth_54/agentdoctor@0.1.3-beta ./fixtures/insecure-agent-project
+npx @praneeth_54/agentdoctor@0.1.4-beta ./fixtures/insecure-agent-project
 ```
 
 Shows repository detection, three configured agents, critical env/credential findings, and the Claude Code `bypassPermissions` warning. Linked from the root README under **What you get**.

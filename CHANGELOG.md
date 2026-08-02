@@ -11,7 +11,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Deterministic readiness scoring
 - Safe automatic fixes
-- Packaged GitHub Action
+
+## [0.1.4-beta] — 2026-08-02
+
+Backward-compatible distribution release: first-class GitHub Action packaging. CLI and scanner behavior are unchanged from 0.1.3-beta.
+
+### Added
+
+- Composite GitHub Action (`action.yml`) that installs the published `@praneeth_54/agentdoctor` package and emits a workspace-contained JSON report
+- CI `action-smoke` matrix covering normal/nested output paths and rejection of traversal, parent-symlink escape, final-file symlink, and directory output targets
+- README GitHub Action usage section and ROADMAP update for CI packaging
+
+### Compatibility
+
+- No scanner, rule, or JSON finding-schema changes
+- Scoring remains unavailable (`scoringAvailable: false`)
+- `--min-score` remains accepted but ignored until scoring ships
+- Default Action `version` input is `0.1.4-beta` (exact npm version or `latest` / `beta` dist-tags)
 
 ## [0.1.3-beta] — 2026-07-29
 
@@ -107,7 +123,8 @@ First public beta.
 - Not a complete secret scanner
 - Git “tracked secret” detection deferred
 
-[Unreleased]: https://github.com/pranee54/AgentDoctor/compare/v0.1.3-beta...HEAD
+[Unreleased]: https://github.com/pranee54/AgentDoctor/compare/v0.1.4-beta...HEAD
+[0.1.4-beta]: https://github.com/pranee54/AgentDoctor/releases/tag/v0.1.4-beta
 [0.1.3-beta]: https://github.com/pranee54/AgentDoctor/releases/tag/v0.1.3-beta
 [0.1.2-beta]: https://github.com/pranee54/AgentDoctor/releases/tag/v0.1.2-beta
 [0.1.1-beta]: https://github.com/pranee54/AgentDoctor/releases/tag/v0.1.1-beta

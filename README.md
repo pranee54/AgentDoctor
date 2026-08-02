@@ -24,12 +24,12 @@ Public beta (`0.1.x-beta`). Readiness scoring and automatic fixes are not availa
 
 ![AgentDoctor scanning a repository and reporting coding-agent security findings](docs/images/cli-scan.png)
 
-_Real scan of the included `insecure-agent-project` fixture using AgentDoctor v0.1.3-beta._
+_Real scan of the included `insecure-agent-project` fixture using AgentDoctor v0.1.4-beta._
 
 ```text
 $ npx @praneeth_54/agentdoctor
 
-🩺 AgentDoctor v0.1.3-beta
+🩺 AgentDoctor v0.1.4-beta
 
 Scanning repository...
 
@@ -155,7 +155,7 @@ npx @praneeth_54/agentdoctor
 Pin a beta version when you need a fixed install:
 
 ```bash
-npx @praneeth_54/agentdoctor@0.1.3-beta
+npx @praneeth_54/agentdoctor@0.1.4-beta
 ```
 
 ### Global (optional)
@@ -259,7 +259,7 @@ steps:
 
   - name: Audit coding-agent configuration
     id: agentdoctor
-    uses: pranee54/AgentDoctor@v0.1.3-beta
+    uses: pranee54/AgentDoctor@v0.1.4-beta
     with:
       path: .
       output-file: agentdoctor-report.json
@@ -271,7 +271,7 @@ steps:
       path: ${{ steps.agentdoctor.outputs.report-path }}
 ```
 
-The action installs the published `@praneeth_54/agentdoctor@0.1.3-beta` package, runs it with
+The action installs the published `@praneeth_54/agentdoctor@0.1.4-beta` package, runs it with
 `--ci --json`, and writes the report inside the checked-out workspace. It sets up Node.js 20
 for the CLI. The optional `version` input accepts an exact npm version or the `latest` / `beta`
 dist-tag.
@@ -303,7 +303,7 @@ Honest limits of the current public beta:
 | Detection style                     | Intentionally conservative; false security findings are avoided |
 | Agent coverage                      | Cursor, Claude Code, Codex project configs                      |
 
-See [CHANGELOG.md](CHANGELOG.md) and [docs/release-notes-v0.1.3-beta.md](docs/release-notes-v0.1.3-beta.md).
+See [CHANGELOG.md](CHANGELOG.md) and [docs/release-notes-v0.1.4-beta.md](docs/release-notes-v0.1.4-beta.md).
 
 ---
 

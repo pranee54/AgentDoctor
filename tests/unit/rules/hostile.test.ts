@@ -75,7 +75,7 @@ describe("hostile repository input", () => {
     await fs.writeFile(path.join(root, "CLAUDE.md"), buf);
 
     const result = await scan({ cwd: root });
-    expect(result.version).toBe("0.1.3-beta");
+    expect(result.version).toBe("0.1.4-beta");
     expect(result.scores).toBeNull();
   });
 });
