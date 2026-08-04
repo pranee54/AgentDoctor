@@ -24,7 +24,7 @@ describe("coding-agent edge-case fixtures", () => {
     });
   });
 
-  it("reports a repeated safe-scope MCP server name once", async () => {
+  it("reports a repeated safe-scope Codex MCP server name once", async () => {
     const result = await scan({ cwd: path.join(fixturesRoot, "mcp-duplicate-servers-project") });
     const duplicates = result.findings.filter(
       (finding) => finding.ruleId === "mcp/duplicate-server",
@@ -32,7 +32,8 @@ describe("coding-agent edge-case fixtures", () => {
 
     expect(duplicates).toHaveLength(1);
     expect(duplicates[0]?.severity).toBe("info");
-    expect(duplicates[0]?.evidence?.path).toBe(".cursor/mcp.json");
+    expect(duplicates[0]?.affectedAgents).toEqual(["codex"]);
+    expect(duplicates[0]?.evidence?.path).toBe(".codex/config.toml");
     expect(result.findings).not.toContainEqual(
       expect.objectContaining({ ruleId: "security/mcp-broad-filesystem" }),
     );

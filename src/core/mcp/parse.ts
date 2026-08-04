@@ -130,45 +130,6 @@ function parseMcpServersObject(
   return { servers };
 }
 
-/** JSON.parse keeps only the final value for a repeated object key. Preserve the repeated
- * server names so the duplicate-server rule can still report ambiguous MCP configuration. */
-function duplicateMcpServerNames(text: string): string[] {
-  const match = /"mcpServers"\s*:\s*\{/.exec(text);
-  if (!match) return [];
-  const openBrace = match.index + match[0].lastIndexOf("{");
-  const seen = new Set<string>();
-  const duplicates: string[] = [];
-  let depth = 1;
-
-  for (let index = openBrace + 1; index < text.length && depth > 0; index += 1) {
-    const char = text[index];
-    if (char === '"') {
-      const start = index;
-      index += 1;
-      while (index < text.length) {
-        if (text[index] === "\\") index += 2;
-        else if (text[index] === '"') break;
-        else index += 1;
-      }
-      if (depth !== 1 || index >= text.length) continue;
-      let next = index + 1;
-      while (/\s/.test(text[next] ?? "")) next += 1;
-      if (text[next] !== ":") continue;
-      try {
-        const name = JSON.parse(text.slice(start, index + 1)) as string;
-        if (seen.has(name)) duplicates.push(name);
-        else seen.add(name);
-      } catch {
-        return [];
-      }
-      continue;
-    }
-    if (char === "{") depth += 1;
-    else if (char === "}") depth -= 1;
-  }
-  return duplicates;
-}
-
 /**
  * Minimal TOML extractor for Codex `[mcp_servers.<name>]` tables.
  * Does not evaluate values beyond strings/arrays needed for command/args.
@@ -321,10 +282,6 @@ export async function parseProjectMcpConfigs(
       });
     }
     servers.push(...parsed.servers);
-    for (const duplicateName of duplicateMcpServerNames(inspected.text)) {
-      const duplicate = parsed.servers.find((server) => server.name === duplicateName);
-      if (duplicate) servers.push({ ...duplicate });
-    }
   }
 
   const codexConfig = ".codex/config.toml";
