@@ -52,7 +52,7 @@ describe("framework detection precision", () => {
   it("detects React from nested package.json dependencies", () => {
     const result = detectFrameworks({
       relativePaths: ["admin-panel/package.json", "admin-panel/src/App.jsx"],
-      packageJsonDependencies: { react: "^18.3.1", "react-dom": "^18.3.1", vite: "^5.4.0" },
+      packageJsonDependencies: { react: "^18.3.1", "react-dom": "^18.3.1", vite: "^6.4.3" },
     });
     expect(result.frameworks).toContain("react");
     expect(result.primaryFramework).toBe("react");
