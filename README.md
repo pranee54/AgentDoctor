@@ -16,7 +16,7 @@ AgentDoctor is a local CLI that inspects project-level AI coding agent setup —
 npx @praneeth_54/agentdoctor
 ```
 
-Public beta (`0.1.x-beta`). Readiness scoring and automatic fixes are not available yet.
+Public beta (`0.1.x-beta`). Deterministic readiness scores ship in JSON; automatic fixes are not available yet.
 
 ---
 
@@ -24,12 +24,12 @@ Public beta (`0.1.x-beta`). Readiness scoring and automatic fixes are not availa
 
 ![AgentDoctor scanning a repository and reporting coding-agent security findings](docs/images/cli-scan.png)
 
-_Real scan of the included `insecure-agent-project` fixture using AgentDoctor v0.1.3-beta._
+_Real scan of the included `insecure-agent-project` fixture using AgentDoctor v0.2.0-beta._
 
 ```text
 $ npx @praneeth_54/agentdoctor
 
-🩺 AgentDoctor v0.1.3-beta
+🩺 AgentDoctor v0.2.0-beta
 
 Scanning repository...
 
@@ -155,7 +155,7 @@ npx @praneeth_54/agentdoctor
 Pin a beta version when you need a fixed install:
 
 ```bash
-npx @praneeth_54/agentdoctor@0.1.3-beta
+npx @praneeth_54/agentdoctor@0.2.0-beta
 ```
 
 ### Global (optional)
@@ -259,7 +259,7 @@ steps:
 
   - name: Audit coding-agent configuration
     id: agentdoctor
-    uses: pranee54/AgentDoctor@v0.1.3-beta
+    uses: pranee54/AgentDoctor@v0.2.0-beta
     with:
       path: .
       output-file: agentdoctor-report.json
@@ -271,7 +271,7 @@ steps:
       path: ${{ steps.agentdoctor.outputs.report-path }}
 ```
 
-The action installs the published `@praneeth_54/agentdoctor@0.1.3-beta` package, runs it with
+The action installs the published `@praneeth_54/agentdoctor@0.2.0-beta` package, runs it with
 `--ci --json`, and writes the report inside the checked-out workspace. It sets up Node.js 20
 for the CLI. The optional `version` input accepts an exact npm version or the `latest` / `beta`
 dist-tag.
@@ -281,12 +281,27 @@ dist-tag.
 Use JSON directly in other CI systems:
 
 ```bash
+# Report-only (exit 0 even when findings exist; scores still in JSON)
 npx @praneeth_54/agentdoctor --ci --json
+
+# Fail CI when overall readiness is below 70
+npx @praneeth_54/agentdoctor --ci --json --min-score 70
 ```
 
-`--ci` runs non-interactively. Until readiness scoring ships, successful scans exit `0` even when findings exist, and `--min-score` is accepted but ignored.
+`--ci` runs non-interactively and does **not** apply an implicit score threshold.
+Use `--min-score N` (with or without `--ci`) to fail with exit code `1` when
+`scores.overall < N`.
 
 Exit codes: [docs/exit-codes.md](docs/exit-codes.md). Compatibility promises: [docs/compatibility.md](docs/compatibility.md).
+
+### Readiness scoring
+
+Scans populate `scoringAvailable: true` and a deterministic `scores` object
+(overall, categories, agents). The terminal report does not render a readiness line yet;
+scores are available in JSON (`--json`).
+
+`--min-score N` is enforced by the CLI. Details (weights, security caps, threshold rules,
+and deferred v2 items): [docs/scoring.md](docs/scoring.md).
 
 ---
 
@@ -296,21 +311,21 @@ Honest limits of the current public beta:
 
 | Limitation                          | Status                                                          |
 | ----------------------------------- | --------------------------------------------------------------- |
-| Readiness scoring                   | Not available (`scores` is `null`, `scoringAvailable: false`)   |
-| `--min-score`                       | Accepted, ignored until scoring ships                           |
+| Terminal readiness line             | Scores ship in JSON only; terminal does not print N/100 yet     |
+| GitHub Action score gates           | Action remains `--ci --json` report-only (no `min-score` input) |
 | Automatic fixes (`agentdoctor fix`) | Stub only — does not modify files                               |
 | Secret-content scanning             | Filename / config heuristics only                               |
 | Detection style                     | Intentionally conservative; false security findings are avoided |
 | Agent coverage                      | Cursor, Claude Code, Codex project configs                      |
 
-See [CHANGELOG.md](CHANGELOG.md) and [docs/release-notes-v0.1.3-beta.md](docs/release-notes-v0.1.3-beta.md).
+See [CHANGELOG.md](CHANGELOG.md) and [docs/release-notes-v0.2.0-beta.md](docs/release-notes-v0.2.0-beta.md).
 
 ---
 
 ## Architecture
 
 ```text
-Discovery → Project detect → Agent adapters → Rule engine → Findings → Terminal / JSON
+Discovery → Project detect → Agent adapters → Rule engine → Findings → Scores → Terminal / JSON
 ```
 
 Details: [docs/architecture.md](docs/architecture.md)
@@ -319,17 +334,18 @@ Details: [docs/architecture.md](docs/architecture.md)
 
 ## Documentation
 
-| Doc                                                                | Contents                       |
-| ------------------------------------------------------------------ | ------------------------------ |
-| [docs/README.md](docs/README.md)                                   | Documentation index            |
-| [docs/architecture.md](docs/architecture.md)                       | Scan pipeline                  |
-| [docs/rules.md](docs/rules.md)                                     | Stable rule IDs                |
-| [docs/exit-codes.md](docs/exit-codes.md)                           | Process exit codes             |
-| [docs/compatibility.md](docs/compatibility.md)                     | Beta compatibility promises    |
-| [docs/development.md](docs/development.md)                         | Local development              |
-| [docs/github-launch-checklist.md](docs/github-launch-checklist.md) | GitHub About / topics / launch |
-| [ROADMAP.md](ROADMAP.md)                                           | Near- and medium-term plans    |
-| [CHANGELOG.md](CHANGELOG.md)                                       | Release history                |
+| Doc                                                                | Contents                        |
+| ------------------------------------------------------------------ | ------------------------------- |
+| [docs/README.md](docs/README.md)                                   | Documentation index             |
+| [docs/architecture.md](docs/architecture.md)                       | Scan pipeline                   |
+| [docs/rules.md](docs/rules.md)                                     | Stable rule IDs                 |
+| [docs/exit-codes.md](docs/exit-codes.md)                           | Process exit codes              |
+| [docs/scoring.md](docs/scoring.md)                                 | Readiness scoring specification |
+| [docs/compatibility.md](docs/compatibility.md)                     | Beta compatibility promises     |
+| [docs/development.md](docs/development.md)                         | Local development               |
+| [docs/github-launch-checklist.md](docs/github-launch-checklist.md) | GitHub About / topics / launch  |
+| [ROADMAP.md](ROADMAP.md)                                           | Near- and medium-term plans     |
+| [CHANGELOG.md](CHANGELOG.md)                                       | Release history                 |
 
 ---
 

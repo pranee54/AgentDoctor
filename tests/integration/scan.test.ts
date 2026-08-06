@@ -17,8 +17,11 @@ describe("scan integration", () => {
     expect(result.repository.primaryPackageManager).toBe("npm");
     expect(result.repository.filesScanned).toBeGreaterThan(0);
     expect(result.findings).toEqual([]);
-    expect(result.version).toBe("0.1.3-beta");
-    expect(result.scoringAvailable).toBe(false);
+    expect(result.version).toBe("0.2.0-beta");
+    expect(result.scoringAvailable).toBe(true);
+    expect(result.scores).not.toBeNull();
+    expect(result.scores?.overall).toBe(100);
+    expect(result.timing.scoringMs).toBeGreaterThanOrEqual(0);
   });
 
   it("detects Next.js on nextjs-project", async () => {

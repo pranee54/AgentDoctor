@@ -8,6 +8,7 @@
 | [architecture.md](architecture.md)   | Scan pipeline and package layout       |
 | [rules.md](rules.md)                 | Stable rule IDs and severity policy    |
 | [exit-codes.md](exit-codes.md)       | CLI process exit codes                 |
+| [scoring.md](scoring.md)             | Readiness scoring specification (v1)   |
 | [scan-examples.md](scan-examples.md) | Reproducible fixture scan walkthroughs |
 | [compatibility.md](compatibility.md) | Beta compatibility promises            |
 | [../SECURITY.md](../SECURITY.md)     | Vulnerability reporting                |
@@ -36,6 +37,8 @@
 | Document                                                     | Description               |
 | ------------------------------------------------------------ | ------------------------- |
 | [../CHANGELOG.md](../CHANGELOG.md)                           | Release history           |
+| [release-notes-v0.2.0-beta.md](release-notes-v0.2.0-beta.md) | v0.2.0-beta release notes |
+| [release-notes-v0.1.4-beta.md](release-notes-v0.1.4-beta.md) | v0.1.4-beta release notes |
 | [release-notes-v0.1.3-beta.md](release-notes-v0.1.3-beta.md) | v0.1.3-beta release notes |
 | [release-notes-v0.1.2-beta.md](release-notes-v0.1.2-beta.md) | v0.1.2-beta release notes |
 | [release-notes-v0.1.1-beta.md](release-notes-v0.1.1-beta.md) | v0.1.1-beta release notes |

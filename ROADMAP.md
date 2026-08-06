@@ -2,17 +2,24 @@
 
 AgentDoctor aims to be the standard health check for AI coding agent environments.
 
-## Near term
+## Released
 
-### Readiness scoring
+### Readiness scoring (v0.2.0-beta)
 
 Deterministic 0–100 scores derived from current findings:
 
 - Overall
-- Security / Context / Instructions / MCP / Compatibility
+- Security / Context / Instructions / MCP / Compatibility / Performance
 - Per-agent readiness
+- CLI `--min-score` enforcement (`--ci` alone remains report-only)
 
-Documented algorithm. No arbitrary scores.
+Documented in [docs/scoring.md](docs/scoring.md).
+
+### CI packaging (v0.1.4-beta)
+
+- First-class GitHub Action wrapping the published CLI and emitting a JSON artifact
+
+## Near term
 
 ### Safe fixes
 
@@ -21,10 +28,11 @@ Conservative, reversible fixes with dry-run and confirmation:
 - Ignore entries for sensitive / generated paths
 - Non-destructive boilerplate only when safe
 
-### CI packaging
+### Scoring follow-ups (v2+)
 
-- First-class GitHub Action wrapping the published CLI and emitting a JSON artifact
-- Threshold and severity policies after deterministic readiness scoring ships
+- Terminal readiness line
+- GitHub Action `min-score` / severity-gate inputs
+- Other deferred items listed in [docs/scoring.md](docs/scoring.md)
 
 ## Medium term
 

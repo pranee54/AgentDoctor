@@ -119,8 +119,10 @@ describe("mcp rules", () => {
   it("flags malformed MCP config without crashing", async () => {
     const result = await scan({ cwd: path.join(fixturesRoot, "malformed-mcp-project") });
     expect(result.findings.some((f) => f.ruleId === "mcp/malformed-config")).toBe(true);
-    expect(result.scoringAvailable).toBe(false);
-    expect(result.scores).toBeNull();
+    expect(result.scoringAvailable).toBe(true);
+    expect(result.scores).not.toBeNull();
+    expect(result.scores?.overall).toBeGreaterThanOrEqual(0);
+    expect(result.scores?.overall).toBeLessThanOrEqual(100);
   });
 
   it("parses safe MCP scope without false broad finding for repo-relative path", async () => {

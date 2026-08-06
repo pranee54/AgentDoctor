@@ -39,23 +39,14 @@ export async function runScanCommand(options: ScanCommandOptions): Promise<ExitC
       );
     }
 
-    if (options.ci || options.minScore !== undefined) {
-      if (!result.scoringAvailable || result.scores === null) {
+    if (options.minScore !== undefined && result.scores !== null) {
+      if (result.scores.overall < options.minScore) {
         if (!options.json) {
           console.error(
-            "Note: readiness scoring is not available in this release; --min-score was ignored.",
+            `\nCI check failed: overall score ${result.scores.overall} is below --min-score ${options.minScore}`,
           );
         }
-      } else {
-        const threshold = options.minScore ?? 0;
-        if (result.scores.overall < threshold) {
-          if (!options.json) {
-            console.error(
-              `\nCI check failed: overall score ${result.scores.overall} is below --min-score ${threshold}`,
-            );
-          }
-          return EXIT_CODES.ISSUES_OR_THRESHOLD;
-        }
+        return EXIT_CODES.ISSUES_OR_THRESHOLD;
       }
     }
 

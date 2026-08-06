@@ -36,11 +36,11 @@ export function createProgram(): Command {
     .version(PACKAGE_VERSION, "-V, --version", "Print AgentDoctor version")
     .argument("[path]", "Repository path to scan (default: current directory)")
     .option("--json", "Emit machine-readable JSON (no decorative output)", false)
-    .option("--ci", "CI mode (non-interactive; --min-score is ignored until scoring ships)", false)
+    .option("--ci", "CI mode (non-interactive; report-only unless --min-score is set)", false)
     .option("--verbose", "Show timing and extra diagnostics", false)
     .option(
       "--min-score <number>",
-      "Fail when overall score is below this (no-op until scoring ships)",
+      "Exit 1 when overall readiness score is below this (0-100)",
       parseMinScore,
     )
     .action(async (pathArg: string | undefined, options) => {
@@ -60,11 +60,11 @@ export function createProgram(): Command {
     .description("Scan a repository for AI coding agent configuration issues (default command)")
     .argument("[path]", "Repository path to scan")
     .option("--json", "Emit machine-readable JSON", false)
-    .option("--ci", "CI mode (--min-score ignored until scoring ships)", false)
+    .option("--ci", "CI mode (non-interactive; report-only unless --min-score is set)", false)
     .option("--verbose", "Show timing and extra diagnostics", false)
     .option(
       "--min-score <number>",
-      "Fail when overall score is below this (no-op until scoring ships)",
+      "Exit 1 when overall readiness score is below this (0-100)",
       parseMinScore,
     )
     .action(async (pathArg: string | undefined, options) => {
