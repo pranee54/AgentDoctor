@@ -7,13 +7,14 @@ on:
     branches: [main, master]
   schedule:
     - cron: "17 4 * * 1"
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
   group: codeql-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   analyze:
