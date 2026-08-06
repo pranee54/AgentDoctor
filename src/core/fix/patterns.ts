@@ -1,9 +1,6 @@
 import type { Finding } from "../../types/index.js";
 
-const SAFE_CONTEXT_RULES = new Set([
-  "context/generated-directory",
-  "context/large-log-file",
-]);
+const SAFE_CONTEXT_RULES = new Set(["context/generated-directory", "context/large-log-file"]);
 
 export function isSafeContextFixRule(ruleId: string): boolean {
   return SAFE_CONTEXT_RULES.has(ruleId);

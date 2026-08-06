@@ -65,7 +65,10 @@ export async function buildFixPlan(result: ScanResult): Promise<FixPlan> {
 
     const wantsCursor = finding.affectedAgents.includes("cursor");
     if (wantsCursor && hasCursor) {
-      if (cursorIndex.matchesCursorignore(evidencePath) || cursorIndex.matchesCursorignore(pattern)) {
+      if (
+        cursorIndex.matchesCursorignore(evidencePath) ||
+        cursorIndex.matchesCursorignore(pattern)
+      ) {
         skipped.push({
           findingId: finding.id,
           ruleId: finding.ruleId,
@@ -139,7 +142,10 @@ export function missingPatternsForCursorignore(
     if (existing.includes(pattern)) {
       continue;
     }
-    if (pathMatchesAny(pattern.replace(/\/$/, ""), existing) && existing.some((p) => p === pattern)) {
+    if (
+      pathMatchesAny(pattern.replace(/\/$/, ""), existing) &&
+      existing.some((p) => p === pattern)
+    ) {
       continue;
     }
     // Also skip if an existing pattern already excludes this path
