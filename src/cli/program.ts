@@ -81,11 +81,15 @@ export function createProgram(): Command {
 
   program
     .command("fix")
-    .description("Apply safe automatic fixes (not implemented yet)")
+    .description(
+      "Apply safe automatic fixes (Week 1: Cursor .cursorignore for safe context findings)",
+    )
+    .argument("[path]", "Repository path (default: current directory)")
     .option("--dry-run", "Show proposed fixes without writing files", false)
     .option("-y, --yes", "Skip confirmation prompts", false)
-    .action(async (options) => {
+    .action(async (pathArg: string | undefined, options) => {
       const code = await runFixCommand({
+        targetPath: resolveTargetArgument(pathArg),
         dryRun: Boolean(options.dryRun),
         yes: Boolean(options.yes),
       });

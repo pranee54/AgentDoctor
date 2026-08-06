@@ -18,3 +18,7 @@ export { agentRegistry } from "./agents/registry.js";
 export { detectAgents } from "./agents/detect-agents.js";
 export { ruleRegistry, getRuleById } from "./core/rules/registry.js";
 export { runRules } from "./core/rules/run-rules.js";
+export { buildFixPlan } from "./core/fix/plan.js";
+export { applyFixPlan } from "./core/fix/apply.js";
+export { runFix } from "./core/fix/run.js";
+export type { FixPlan, FixAction, FixApplyResult } from "./core/fix/types.js";
