@@ -3,7 +3,11 @@ import type { AgentId } from "../../types/index.js";
 export type FixKind = "append-ignore-pattern";
 
 /** Allowlisted relative paths fix may create or modify. */
-export const FIX_PATH_ALLOWLIST = [".cursorignore"] as const;
+export const FIX_PATH_ALLOWLIST = [
+  ".cursorignore",
+  ".claude/settings.json",
+  ".codex/config.toml",
+] as const;
 
 export type FixAllowlistedPath = (typeof FIX_PATH_ALLOWLIST)[number];
 

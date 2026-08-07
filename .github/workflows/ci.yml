@@ -74,6 +74,7 @@ jobs:
     name: GitHub Action smoke · ${{ matrix.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    needs: quality
     strategy:
       fail-fast: false
       matrix:
@@ -82,30 +83,112 @@ jobs:
             case: normal
             output-file: test-results/action-report.json
             expected: success
+            path: fixtures/clean-configured-project
+            version: 0.3.0-beta
+            minimum-score: ""
+            fail-on-severity: ""
+            expected-outcome: success
+            summary: "false"
+            annotations: "false"
           - name: nested output
             case: nested
             output-file: test-results/nested/action-report.json
             expected: success
+            path: fixtures/clean-configured-project
+            version: 0.3.0-beta
+            minimum-score: ""
+            fail-on-severity: ""
+            expected-outcome: success
+            summary: "false"
+            annotations: "false"
           - name: traversal rejected
             case: traversal
             output-file: ../report.json
             expected: failure
+            path: fixtures/clean-configured-project
+            version: 0.3.0-beta
+            minimum-score: ""
+            fail-on-severity: ""
+            expected-outcome: ""
+            summary: "false"
+            annotations: "false"
           - name: escaping parent symlink rejected
             case: parent-symlink
             output-file: test-results/escape-parent/report.json
             expected: failure
+            path: fixtures/clean-configured-project
+            version: 0.3.0-beta
+            minimum-score: ""
+            fail-on-severity: ""
+            expected-outcome: ""
+            summary: "false"
+            annotations: "false"
           - name: output symlink rejected
             case: output-symlink
             output-file: test-results/output-symlink.json
             expected: failure
+            path: fixtures/clean-configured-project
+            version: 0.3.0-beta
+            minimum-score: ""
+            fail-on-severity: ""
+            expected-outcome: ""
+            summary: "false"
+            annotations: "false"
           - name: directory rejected
             case: directory
             output-file: test-results/output-directory
             expected: failure
+            path: fixtures/clean-configured-project
+            version: 0.3.0-beta
+            minimum-score: ""
+            fail-on-severity: ""
+            expected-outcome: ""
+            summary: "false"
+            annotations: "false"
+          - name: policy min-score fails
+            case: policy-min-score
+            output-file: test-results/policy-min-score.json
+            expected: failure
+            path: fixtures/insecure-agent-project
+            version: workspace
+            minimum-score: "90"
+            fail-on-severity: ""
+            expected-outcome: policy-failure
+            summary: "true"
+            annotations: "true"
+          - name: policy severity fails
+            case: policy-severity
+            output-file: test-results/policy-severity.json
+            expected: failure
+            path: fixtures/insecure-agent-project
+            version: workspace
+            minimum-score: ""
+            fail-on-severity: critical
+            expected-outcome: policy-failure
+            summary: "true"
+            annotations: "true"
+          - name: policy clean passes
+            case: policy-clean
+            output-file: test-results/policy-clean.json
+            expected: success
+            path: fixtures/clean-configured-project
+            version: workspace
+            minimum-score: "90"
+            fail-on-severity: critical
+            expected-outcome: success
+            summary: "true"
+            annotations: "true"
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Download build artifact
+        if: matrix.version == 'workspace'
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
 
       - name: Prepare output-path case
         env:
@@ -130,12 +213,15 @@ jobs:
         continue-on-error: ${{ matrix.expected == 'failure' }}
         uses: ./
         with:
-          path: fixtures/clean-configured-project
+          path: ${{ matrix.path }}
           output-file: ${{ matrix.output-file }}
-          # Published package under latest/beta
-          version: 0.3.0-beta
+          version: ${{ matrix.version }}
+          minimum-score: ${{ matrix.minimum-score }}
+          fail-on-severity: ${{ matrix.fail-on-severity }}
+          summary: ${{ matrix.summary }}
+          annotations: ${{ matrix.annotations }}
 
-      - name: Validate expected outcome
+      - name: Validate expected step outcome
         env:
           ACTUAL_OUTCOME: ${{ steps.agentdoctor.outcome }}
           EXPECTED_OUTCOME: ${{ matrix.expected }}
@@ -145,8 +231,19 @@ jobs:
             exit 1
           fi
 
+      - name: Validate action outcome output
+        if: matrix.expected-outcome != ''
+        env:
+          ACTUAL: ${{ steps.agentdoctor.outputs.outcome }}
+          EXPECTED: ${{ matrix.expected-outcome }}
+        run: |
+          if [ "$ACTUAL" != "$EXPECTED" ]; then
+            echo "expected outcome=$EXPECTED, got $ACTUAL" >&2
+            exit 1
+          fi
+
       - name: Validate containment
-        if: matrix.expected == 'failure'
+        if: matrix.expected == 'failure' && matrix.version != 'workspace'
         env:
           CASE: ${{ matrix.case }}
         run: |
@@ -161,15 +258,16 @@ jobs:
           esac
 
       - name: Validate JSON report
-        if: matrix.expected == 'success'
+        if: matrix.expected == 'success' || startsWith(matrix.case, 'policy-')
         env:
           REPORT_PATH: ${{ steps.agentdoctor.outputs.report-path }}
+          VERSION_MODE: ${{ matrix.version }}
         run: |
           node <<'NODE'
           const fs = require("node:fs");
 
           const report = JSON.parse(fs.readFileSync(process.env.REPORT_PATH, "utf8"));
-          if (report.version !== "0.3.0-beta") {
+          if (process.env.VERSION_MODE !== "workspace" && report.version !== "0.3.0-beta") {
             throw new Error(`unexpected AgentDoctor version: ${report.version}`);
           }
           if (
@@ -183,7 +281,7 @@ jobs:
           NODE
 
       - name: Upload AgentDoctor report
-        if: matrix.expected == 'success'
+        if: matrix.expected == 'success' || startsWith(matrix.case, 'policy-')
         uses: actions/upload-artifact@v4
         with:
           name: agentdoctor-report-${{ matrix.case }}

@@ -45,7 +45,7 @@ export async function runExplainCommand(ruleId: string | undefined): Promise<Exi
   lines.push(colors.bold("Can AgentDoctor safely fix it?"));
   lines.push(
     rule.fixability === "safe"
-      ? "  Yes for Cursor context exclusions (`agentdoctor fix`). Other agents may still need a manual step."
+      ? "  Yes for Cursor (`.cursorignore`), Claude Code (Read deny in `.claude/settings.json`), and Codex (filesystem deny in `.codex/config.toml`)."
       : rule.fixability === "review"
         ? "  No — requires human review. Fix reports why and leaves the file unchanged."
         : rule.fixability === "manual"

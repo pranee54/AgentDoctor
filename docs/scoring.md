@@ -25,22 +25,22 @@ revision explicitly supersedes it.
 - Secret-content scanning as part of scoring.
 - Treating the score as security certification.
 - Scoring from repository size, file counts, timing, or popularity.
-- Shipping GitHub Action `min-score` / severity-gate inputs in the first scoring release.
 
 ---
 
 ## Shipped v1 behavior
 
-| Surface                       | Behavior                                                             |
-| ----------------------------- | -------------------------------------------------------------------- |
-| `scoringAvailable`            | `true`                                                               |
-| `scores`                      | Populated `{ overall, categories, agents }`                          |
-| `--min-score N`               | Exit `1` if `scores.overall < N`                                     |
-| `--ci` without `--min-score`  | Report mode; exit `0` on successful scan (**no** implicit threshold) |
-| Successful scan with findings | Exit code `0` unless a `--min-score` threshold fails                 |
-| Exit code `1`                 | Score threshold failure (`--min-score`)                              |
-| Terminal                      | Does not render a readiness score (JSON only in v1)                  |
-| GitHub Action                 | Runs `--ci --json` only (report generator; no score-gate inputs yet) |
+| Surface                      | Behavior                                                                                         |
+| ---------------------------- | ------------------------------------------------------------------------------------------------ |
+| `scoringAvailable`           | `true`                                                                                           |
+| `scores`                     | Populated `{ overall, categories, agents }`                                                      |
+| `--min-score N`              | Exit `1` if `scores.overall < N`, or if analysis is `limited` (no supported agents)              |
+| `--ci` (this repository)     | Exit `1` on any **critical** finding (override with `--fail-on-severity`)                        |
+| `--ci` (published `0.3.0-beta`) | Report-only; exit `0` on successful scan unless `--min-score` fails                           |
+| Successful scan with findings | Exit code `0` unless a policy / threshold gate fails                                            |
+| Exit code `1`                | Policy / threshold / CI gate failure                                                             |
+| Terminal                     | Prints overall readiness (`N/100`, or `n/a` when analysis is limited); category/agent via JSON   |
+| GitHub Action                | Published `@v0.3.0-beta` report-only; Unreleased Action adds policy inputs (see README / CHANGELOG) |
 
 Production scoring uses `computeReadinessScores` (pure function of post-dedupe findings).
 An internal `filesScanned`-based placeholder exists for historical unit tests only and
@@ -155,7 +155,9 @@ When `agentSecurityAnalysis` is `limited` (no supported agent detected/configure
 - Repository-risk findings still deduct and still trigger security caps.
 - Empty `affectedAgents` is expected for some findings; those findings still affect
   overall and category scores.
-- v1 does **not** apply an overall penalty merely because no agents are configured.
+- Terminal readiness prints **n/a** (scores remain in JSON for repository-risk only).
+- `--min-score N` / Action `minimum-score` **fail** when analysis is `limited` — an
+  empty or agentless tree must not pass a CI readiness gate with a vacuous 100.
 
 ---
 
@@ -163,12 +165,13 @@ When `agentSecurityAnalysis` is `limited` (no supported agent detected/configure
 
 With `scoringAvailable === true` and `scores` non-null:
 
-| Invocation                   | Behavior                                                             |
-| ---------------------------- | -------------------------------------------------------------------- |
-| No `--ci`, no `--min-score`  | Exit `0` on successful scan; scores present in JSON                  |
-| `--min-score N`              | Exit `1` if `scores.overall < N`                                     |
-| `--ci` without `--min-score` | Exit `0` on successful scan (report mode; **no** implicit threshold) |
-| `--ci --min-score N`         | Enforce threshold                                                    |
+| Invocation                  | Behavior                                                                     |
+| --------------------------- | ---------------------------------------------------------------------------- |
+| No `--ci`, no `--min-score` | Exit `0` on successful scan; scores present in JSON                          |
+| `--min-score N`             | Exit `1` if `scores.overall < N`, or if analysis is `limited`                |
+| `--ci`                      | Exit `1` if any critical finding exists (override with `--fail-on-severity`) |
+| `--ci` without other gates  | Still enforces the critical severity gate                                    |
+| `--ci --min-score N`        | Enforces critical findings **and** the score threshold                       |
 
 `N` must be a number from **0** to **100** (already validated by the CLI).
 
@@ -218,12 +221,9 @@ Given the same AgentDoctor version and the same post-dedupe finding set:
 
 - Additive JSON such as `scoringModel` or `scoreExplanation`
 - Soft cap for security warnings
-- Terminal “Readiness: N/100” line
-- Overall penalty for “no agents configured”
+- Overall score penalty for “no agents configured” (CLI `--min-score` already fails when analysis is `limited`)
 - Per-agent `not_configured` status fields
 - Category-level security caps
-- GitHub Action `min-score` / severity-gate inputs
-- Fail-on-critical independent of the numeric score
 - Programmatic threshold enforcement inside `scan()` (CLI-only for v1)
 - Weight retunes without an explicit spec revision
 

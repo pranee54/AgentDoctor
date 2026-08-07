@@ -1,6 +1,7 @@
 import path from "node:path";
 
 import { pathExistsInsideRoot } from "../../../agents/inspect.js";
+import { preparePathReference } from "../../path-resolution/index.js";
 import { isPathInsideRoot } from "../../../utils/path.js";
 import type { FindingDraft, RuleDefinition } from "../types.js";
 
@@ -253,7 +254,15 @@ export const missingPathReferenceRule: RuleDefinition = {
 
         const candidates = extractPathCandidates(cached.text);
         for (const candidate of candidates) {
-          const resolved = resolveInstructionPathReference(file.relativePath, candidate);
+          const prepared = preparePathReference(candidate);
+          if (prepared.status === "reject") {
+            continue;
+          }
+
+          const resolved = resolveInstructionPathReference(
+            file.relativePath,
+            prepared.normalized,
+          );
 
           if (resolved.status === "escape") {
             findings.push({
@@ -261,14 +270,14 @@ export const missingPathReferenceRule: RuleDefinition = {
               category: "instructions",
               severity: "warning",
               title: "Instruction references a missing path",
-              message: `${file.relativePath} references \`${candidate}\`, which escapes the repository root`,
+              message: `${file.relativePath} references \`${prepared.original}\`, which escapes the repository root`,
               whyItMatters:
                 "Path references outside the repository cannot be validated and may confuse agents.",
               recommendation: "Use repository-relative paths only.",
               affectedAgents: context.agents
                 .filter((a) => a.configPaths.includes(file.relativePath))
                 .map((a) => a.id),
-              evidence: { path: file.relativePath, detail: `ref=${candidate}` },
+              evidence: { path: file.relativePath, detail: `ref=${prepared.original}` },
               fixability: "manual",
             });
             continue;
@@ -295,7 +304,7 @@ export const missingPathReferenceRule: RuleDefinition = {
             category: "instructions",
             severity: "warning",
             title: "Instruction references a missing path",
-            message: `${file.relativePath} references \`${candidate}\`, but that path does not exist`,
+            message: `${file.relativePath} references \`${prepared.original}\`, but that path does not exist`,
             whyItMatters:
               "Agents may follow documented paths that no longer exist, causing failed reads and wasted context.",
             recommendation: "Fix the path or remove the stale reference.",

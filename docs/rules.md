@@ -36,7 +36,7 @@ Exact token savings are never claimed.
 - **Semantics:** repository risk is reported even when no supported agent is configured (`affectedAgents` empty); agent exposure is asserted only for configured/detected agents without a clear exclusion
 - **Templates:** `.env.example`, `.env.sample`, `.env.template`, `.env.dist` are informational (filename classification only)
 - **Why:** Credentials may enter model context when agents can read the file; tracked/shared env files remain high-risk repository material either way
-- **Agents:** Cursor only if not covered by `.cursorignore` / `.gitignore` / documented default `.env*` ignore; Claude Code unless a Read deny exists; Codex when detected
+- **Agents:** Cursor only if not covered by `.cursorignore` / `.gitignore` / documented default `.env*` ignore; Claude Code unless a Read deny exists; Codex unless a filesystem deny exists in `.codex/config.toml`
 - **False positives:** Cursor’s documented default `.env*` ignore means Cursor is often not listed for agent exposure
 - **Fixability:** review
 
@@ -75,14 +75,15 @@ Exact token savings are never claimed.
 ### `context/large-log-file`
 
 - **Severity:** info
-- **Detects:** Large `*.log` / dump-like files not already ignored
+- **Detects:** Large `*.log` / dump-like files not already ignored (including files larger than the content-read size limit; size is taken from metadata without reading contents)
 - **Fixability:** safe
 
 ### `context/generated-directory`
 
 - **Severity:** info
 - **Detects:** Common generated directories with exact repository-relative evidence (e.g. `mobile-apps/build`) when no matching ignore pattern applies
-- **Ignores:** Root and nested `.gitignore` / `.cursorignore`, including `build/` and `**/build/`
+- **Ignores:** Root and nested `.gitignore` / `.cursorignore`, including `build/` and `**/build/`; Claude Code `permissions.deny` Read rules (`Read(./path/**)`); Codex filesystem deny keys in `.codex/config.toml`
+- **Fix:** `agentdoctor fix` can append `.cursorignore` patterns, Claude Code Read deny rules, and/or Codex filesystem deny keys
 - **Note:** `vendor/` only flagged outside PHP/Composer
 - **Fixability:** safe
 

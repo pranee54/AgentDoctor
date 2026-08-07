@@ -1,5 +1,13 @@
-import { isSampleOrTestPath, isSourceNamedArtifactCollision } from "../path-kind.js";
-import type { FindingDraft, RuleDefinition } from "../types.js";
+import type { AgentId } from "../../../types/index.js";
+import { claudeDeniesPath } from "../claude-deny.js";
+import { codexDeniesPath } from "../codex-deny.js";
+import {
+  isCheckedInGithubActionDist,
+  isSampleOrTestPath,
+  isSourceNamedArtifactCollision,
+} from "../path-kind.js";
+import type { FindingDraft, RuleContext, RuleDefinition } from "../types.js";
+
 
 /** Directories commonly generated/build-related. vendor/ is ecosystem-aware. */
 const GENERATED = [
@@ -17,15 +25,36 @@ function isGeneratedPath(relativePath: string, name: string): boolean {
   return relativePath === name || relativePath.endsWith(`/${name}`);
 }
 
-function isExcluded(
-  context: Parameters<RuleDefinition["check"]>[0],
-  relativePath: string,
-): boolean {
-  const variants = [relativePath, `${relativePath}/`];
-  return variants.some(
-    (candidate) =>
-      context.ignore.matchesGitignore(candidate) || context.ignore.matchesCursorignore(candidate),
+function isGitIgnored(context: RuleContext, relativePath: string): boolean {
+  return (
+    context.ignore.matchesGitignore(relativePath) ||
+    context.ignore.matchesGitignore(`${relativePath}/`)
   );
+}
+
+async function agentsStillExposed(
+  context: RuleContext,
+  relativePath: string,
+  configured: AgentId[],
+): Promise<AgentId[]> {
+  const exposed: AgentId[] = [];
+  for (const agent of configured) {
+    if (
+      agent === "cursor" &&
+      (context.ignore.matchesCursorignore(relativePath) ||
+        context.ignore.matchesCursorignore(`${relativePath}/`))
+    ) {
+      continue;
+    }
+    if (agent === "claude-code" && (await claudeDeniesPath(context, relativePath))) {
+      continue;
+    }
+    if (agent === "codex" && (await codexDeniesPath(context, relativePath))) {
+      continue;
+    }
+    exposed.push(agent);
+  }
+  return exposed;
 }
 
 export const generatedDirectoryRule: RuleDefinition = {
@@ -41,8 +70,8 @@ export const generatedDirectoryRule: RuleDefinition = {
     "Ensure generated directories are listed in .gitignore and agent ignore configuration where applicable.",
   async check(context): Promise<FindingDraft[]> {
     const findings: FindingDraft[] = [];
-    const affected = context.agents.filter((a) => a.configured || a.detected).map((a) => a.id);
-    if (affected.length === 0) {
+    const configured = context.agents.filter((a) => a.configured || a.detected).map((a) => a.id);
+    if (configured.length === 0) {
       return [];
     }
 
@@ -57,7 +86,15 @@ export const generatedDirectoryRule: RuleDefinition = {
         if (isSourceNamedArtifactCollision(relativePath)) {
           continue;
         }
-        if (isExcluded(context, relativePath)) {
+        if (isCheckedInGithubActionDist(relativePath)) {
+          continue;
+        }
+        if (isGitIgnored(context, relativePath)) {
+          continue;
+        }
+
+        const affected = await agentsStillExposed(context, relativePath, configured);
+        if (affected.length === 0) {
           continue;
         }
 
@@ -69,7 +106,7 @@ export const generatedDirectoryRule: RuleDefinition = {
           message: `${relativePath}/ (${entry.label}) is present and no project ignore pattern was detected`,
           whyItMatters:
             "Generated directories are usually low-value for coding agents and can bloat indexing/context when not excluded.",
-          recommendation: `Add an ignore pattern covering ${relativePath}/ to .gitignore and, for Cursor, .cursorignore if you need agent-specific exclusion beyond gitignore.`,
+          recommendation: `Add an ignore pattern covering ${relativePath}/ to .gitignore and agent exclusions (.cursorignore, Claude Code Read deny, and/or Codex filesystem deny).`,
           affectedAgents: affected,
           evidence: { path: relativePath },
           fixability: "safe",
@@ -90,7 +127,14 @@ export const generatedDirectoryRule: RuleDefinition = {
         if (isSampleOrTestPath(relativePath)) {
           continue;
         }
-        if (isExcluded(context, relativePath)) {
+        if (isSourceNamedArtifactCollision(relativePath)) {
+          continue;
+        }
+        if (isGitIgnored(context, relativePath)) {
+          continue;
+        }
+        const affected = await agentsStillExposed(context, relativePath, configured);
+        if (affected.length === 0) {
           continue;
         }
         findings.push({

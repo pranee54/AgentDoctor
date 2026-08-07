@@ -25,4 +25,17 @@ export { runRules } from "./core/rules/run-rules.js";
 export { buildFixPlan } from "./core/fix/plan.js";
 export { applyFixPlan } from "./core/fix/apply.js";
 export { runFix } from "./core/fix/run.js";
+export {
+  evaluatePolicy,
+  evaluateScanPolicy,
+  evaluateVerifyPolicy,
+  parseFailOnRules,
+  parseSeverityGate,
+} from "./core/policy/evaluate.js";
+export type {
+  PolicyOptions,
+  PolicyViolation,
+  PolicyViolationCode,
+  PolicyInput,
+} from "./core/policy/evaluate.js";
 export type { FixPlan, FixAction, FixApplyResult } from "./core/fix/types.js";

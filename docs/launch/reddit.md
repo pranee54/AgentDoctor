@@ -26,7 +26,7 @@ Design choices:
 - stable rule IDs + JSON for CI
 - intentionally conservative security findings
 
-Not included yet: auto-fix, and GitHub Action score-gate inputs (Action is report-only; CLI `--min-score` works today). Readiness scores ship in JSON.
+Published `0.3.0-beta` includes Cursor `.cursorignore` safe-context Fix and CLI `--min-score`. `--ci` alone stays report-only; GitHub Action `@v0.3.0-beta` is report-only (no score-gate inputs yet). Readiness scores ship in JSON and the terminal.
 
 ```bash
 npx @praneeth_54/agentdoctor

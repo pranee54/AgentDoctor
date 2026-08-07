@@ -62,5 +62,46 @@ export function renderVerifyTerminalReport(result: VerifyResult, verbose = false
     );
   }
   lines.push("");
+  lines.push(...renderVerifyNextSteps(result));
   return `${lines.join("\n")}\n`;
+}
+
+/**
+ * Close the verify step: tell a first-time user what to do with Fixed / Remaining / New.
+ */
+export function renderVerifyNextSteps(result: VerifyResult): string[] {
+  const lines: string[] = [];
+  const { fixed, remaining, new: newly } = result.summary;
+
+  lines.push(colors.bold("Next"));
+  if (remaining === 0 && newly === 0) {
+    lines.push(
+      fixed > 0
+        ? "  All tracked findings cleared. Optional: gate CI with agentdoctor scan --ci"
+        : "  No regressions vs baseline. Optional: gate CI with agentdoctor scan --ci",
+    );
+  } else {
+    if (newly > 0) {
+      lines.push(
+        `  ${newly} new finding(s) appeared since the baseline — inspect: agentdoctor scan`,
+      );
+    }
+    if (remaining > 0) {
+      lines.push(
+        `  ${remaining} finding(s) still open — auto-fixable ones: agentdoctor fix --dry-run`,
+      );
+      lines.push(
+        colors.dim(
+          "  Review/manual leftovers: agentdoctor explain <rule-id>  (ids in scan --json)",
+        ),
+      );
+    }
+    lines.push(
+      colors.dim(
+        "  After more fixes, re-check: agentdoctor verify --baseline agentdoctor-report.json",
+      ),
+    );
+  }
+  lines.push("");
+  return lines;
 }

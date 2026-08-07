@@ -1,4 +1,6 @@
+import { evaluateVerifyPolicy, type PolicyOptions } from "../../core/policy/evaluate.js";
 import { verify } from "../../core/verify/verify.js";
+import { emitGithubReports } from "../../reporters/github/emit.js";
 import { renderVerifyJsonReport } from "../../reporters/verify/json.js";
 import { renderVerifyTerminalReport } from "../../reporters/verify/terminal.js";
 import { EXIT_CODES, type ExitCode } from "../../types/index.js";
@@ -12,6 +14,11 @@ export interface VerifyCommandOptions {
   ci?: boolean;
   verbose?: boolean;
   minScore?: number;
+  failOnSeverity?: PolicyOptions["failOnSeverity"];
+  failOnRules?: string[];
+  failOnNew?: boolean;
+  summary?: boolean;
+  annotations?: boolean;
 }
 
 /**
@@ -38,23 +45,32 @@ export async function runVerifyCommand(options: VerifyCommandOptions): Promise<E
       process.stdout.write(renderVerifyTerminalReport(result, options.verbose === true));
     }
 
-    if (options.minScore !== undefined && result.scores !== null) {
-      if (result.scores.overall < options.minScore) {
-        if (!options.json) {
-          console.error(
-            `\nCI check failed: overall score ${result.scores.overall} is below --min-score ${options.minScore}`,
-          );
-        }
-        return EXIT_CODES.ISSUES_OR_THRESHOLD;
-      }
-    }
+    const failOnNew = options.failOnNew === true || options.ci === true;
+    const policy = {
+      ...(options.minScore !== undefined ? { minimumScore: options.minScore } : {}),
+      ...(options.failOnSeverity !== undefined ? { failOnSeverity: options.failOnSeverity } : {}),
+      ...(options.failOnRules && options.failOnRules.length > 0
+        ? { failOnRules: options.failOnRules }
+        : {}),
+      ...(failOnNew ? { failOnNew: true } : {}),
+    };
+    const violations = evaluateVerifyPolicy(result, policy);
 
-    // In CI, newly introduced findings are regressions after Fix.
-    if (options.ci === true && result.summary.new > 0) {
+    await emitGithubReports({
+      mode: "verify",
+      findings: result.after.findings,
+      overallScore: result.scores?.overall ?? null,
+      violations,
+      verifySummary: result.summary,
+      summary: options.summary === true,
+      annotations: options.annotations === true,
+    });
+
+    if (violations.length > 0) {
       if (!options.json) {
-        console.error(
-          `\nCI check failed: verify found ${result.summary.new} new finding(s) not present in the baseline`,
-        );
+        for (const violation of violations) {
+          console.error(`\n${violation.message}`);
+        }
       }
       return EXIT_CODES.ISSUES_OR_THRESHOLD;
     }
