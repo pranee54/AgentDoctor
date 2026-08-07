@@ -14,7 +14,7 @@ inputs:
   version:
     description: Published AgentDoctor npm version or supported dist-tag.
     required: false
-    default: 0.2.0-beta
+    default: 0.3.0-beta
   output-file:
     description: Repository-relative path for the JSON report.
     required: false

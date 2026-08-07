@@ -203,7 +203,12 @@ export function renderTerminalReport(
   lines.push(`  ${result.summary.warning} warning`);
   lines.push(`  ${result.summary.info} info`);
   lines.push("");
-  lines.push(colors.dim("Scoring: not included in this release"));
+  if (result.scoringAvailable && result.scores) {
+    lines.push(`  Readiness: ${result.scores.overall}/100`);
+    lines.push(colors.dim("  Category and agent scores: agentdoctor scan --json"));
+  } else {
+    lines.push(colors.dim("  Readiness scoring unavailable for this scan"));
+  }
   lines.push("");
 
   if (verbose) {

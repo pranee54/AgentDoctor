@@ -45,6 +45,25 @@ describe("isLikelyLocalPathReference", () => {
     expect(isLikelyLocalPathReference("ClassName")).toBe(false);
   });
 
+  it("rejects module imports, globs, code tokens, and bare build roots", () => {
+    expect(isLikelyLocalPathReference("github.com/containerd/errdefs")).toBe(false);
+    expect(isLikelyLocalPathReference("@react-router/dev")).toBe(false);
+    expect(isLikelyLocalPathReference("@vitejs/plugin-rsc")).toBe(false);
+    expect(isLikelyLocalPathReference("golang.org/x/exp/maps")).toBe(false);
+    expect(isLikelyLocalPathReference("gopkg.in/yaml.v3")).toBe(false);
+    expect(isLikelyLocalPathReference("try/finally")).toBe(false);
+    expect(isLikelyLocalPathReference("if/else")).toBe(false);
+    expect(isLikelyLocalPathReference("io/ioutil")).toBe(false);
+    expect(isLikelyLocalPathReference("net/http")).toBe(false);
+    expect(isLikelyLocalPathReference("path/filepath")).toBe(false);
+    expect(isLikelyLocalPathReference("lib/**/*.js")).toBe(false);
+    expect(isLikelyLocalPathReference("tests/unit/**/*.test.js")).toBe(false);
+    expect(isLikelyLocalPathReference("dist/")).toBe(false);
+    expect(isLikelyLocalPathReference("dist")).toBe(false);
+    expect(isLikelyLocalPathReference("build/")).toBe(false);
+    expect(isLikelyLocalPathReference(".next")).toBe(false);
+  });
+
   it("accepts repository-style and relative path references", () => {
     expect(isLikelyLocalPathReference("docs/API.md")).toBe(true);
     expect(isLikelyLocalPathReference("src/core/scanner/scan.ts")).toBe(true);
@@ -52,6 +71,8 @@ describe("isLikelyLocalPathReference", () => {
     expect(isLikelyLocalPathReference("../shared/types.ts")).toBe(true);
     expect(isLikelyLocalPathReference("packages/mobile/")).toBe(true);
     expect(isLikelyLocalPathReference("proxyshield/backend/includes/config.php")).toBe(true);
+    expect(isLikelyLocalPathReference("dist/node/axios.cjs")).toBe(true);
+    expect(isLikelyLocalPathReference("src/utils")).toBe(true);
   });
 });
 
@@ -93,6 +114,15 @@ describe("extractPathCandidates", () => {
       "Read `docs/API.md` and [guide](docs/guide.md).",
     ].join("\n");
     expect(extractPathCandidates(text).sort()).toEqual(["docs/API.md", "docs/guide.md"]);
+  });
+
+  it("ignores Go modules, globs, and try/finally from real AGENTS.md prose", () => {
+    const text = [
+      "Import `github.com/pkg/errors` and `golang.org/x/exp/maps`.",
+      "Cover `lib/**/*.js` and use `try/finally`.",
+      "Ship to `dist/` then open `docs/API.md`.",
+    ].join("\n");
+    expect(extractPathCandidates(text)).toEqual(["docs/API.md"]);
   });
 });
 
@@ -225,5 +255,21 @@ describe("instructions/missing-path-reference regressions", () => {
     expect(findings[0]?.evidence?.detail).toBe(
       "missing=proxyshield/backend/admin/includes/missing-helper.php",
     );
+  });
+
+  it("does not flag Go module paths or try/finally in AGENTS.md", async () => {
+    const root = await tempRepo();
+    await fs.writeFile(path.join(root, "package.json"), "{}\n");
+    await fs.writeFile(
+      path.join(root, "AGENTS.md"),
+      [
+        "Use `github.com/containerd/errdefs` and `golang.org/x/exp/maps`.",
+        "Prefer `try/finally` and match `tests/**/*.test.js`.",
+        "Artifacts land in `dist/`.",
+      ].join("\n"),
+    );
+
+    const findings = missingPathFindings(await scan({ cwd: root }));
+    expect(findings).toHaveLength(0);
   });
 });

@@ -19,6 +19,8 @@ describe("classifyEnvBasename", () => {
     expect(classifyEnvBasename(".env.sample")).toBe("template");
     expect(classifyEnvBasename(".env.template")).toBe("template");
     expect(classifyEnvBasename(".env.dist")).toBe("template");
+    expect(classifyEnvBasename(".env.local.example")).toBe("template");
+    expect(classifyEnvBasename(".env.testing.example")).toBe("template");
     expect(classifyEnvBasename(".env_backup")).toBe("backup");
     expect(classifyEnvBasename(".env_old")).toBe("backup");
     expect(classifyEnvBasename(".env_local")).toBe("backup");
@@ -84,7 +86,7 @@ describe("security semantics: agents vs repository risk", () => {
     expect(env?.affectedAgents).not.toContain("cursor");
   });
 
-  it("templates are info; backups are warning; runtime is critical for Codex", async () => {
+  it("templates are ignored; backups are warning; runtime is critical for Codex", async () => {
     const result = await scan({ cwd: path.join(fixturesRoot, "env-template-codex") });
     const byPath = Object.fromEntries(
       result.findings
@@ -93,9 +95,8 @@ describe("security semantics: agents vs repository risk", () => {
     );
     expect(byPath[".env"]?.severity).toBe("critical");
     expect(byPath[".env"]?.affectedAgents).toContain("codex");
-    expect(byPath[".env.example"]?.severity).toBe("info");
-    expect(byPath[".env.example"]?.affectedAgents).toEqual([]);
-    expect(byPath[".env.sample"]?.severity).toBe("info");
+    expect(byPath[".env.example"]).toBeUndefined();
+    expect(byPath[".env.sample"]).toBeUndefined();
     expect(byPath[".env_backup"]?.severity).toBe("warning");
     expect(byPath[".env_backup"]?.affectedAgents).toContain("codex");
   });

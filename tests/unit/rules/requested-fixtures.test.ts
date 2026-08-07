@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
+import { classifyEnvBasename } from "../../../src/core/rules/security/env-file-exposure.js";
 import { scan } from "../../../src/index.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -39,18 +40,14 @@ describe("coding-agent edge-case fixtures", () => {
     );
   });
 
-  it("classifies .env.dist and .env.template as agent-neutral templates", async () => {
+  it("does not flag .env.dist and .env.template as findings", async () => {
     const result = await scan({ cwd: path.join(fixturesRoot, "env-dist-template-project") });
-    const templates = result.findings.filter(
+    const env = result.findings.filter(
       (finding) => finding.ruleId === "security/env-file-exposure",
     );
 
-    expect(templates).toHaveLength(2);
-    expect(templates.map((finding) => finding.evidence?.path).sort()).toEqual([
-      ".env.dist",
-      ".env.template",
-    ]);
-    expect(templates.every((finding) => finding.severity === "info")).toBe(true);
-    expect(templates.every((finding) => finding.affectedAgents.length === 0)).toBe(true);
+    expect(env).toHaveLength(0);
+    expect(classifyEnvBasename(".env.dist")).toBe("template");
+    expect(classifyEnvBasename(".env.template")).toBe("template");
   });
 });
