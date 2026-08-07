@@ -18,6 +18,79 @@ const INSTRUCTION_KINDS = new Set([
 const BARE_FILE_EXTENSION =
   /\.(mdc?|txt|tsx?|jsx?|mjs|cjs|json|ya?ml|toml|php|py|rb|go|rs|java|kt|css|scss|html|vue|svelte|sh|bash|zsh|sql|xml|svg|png|jpe?g|gif|webp|wasm|lock)$/i;
 
+/** Host-like first segments for Go/npm module paths (`github.com/…`, `golang.org/…`). */
+const MODULE_HOST_SEGMENT =
+  /^(?:[a-z0-9-]+\.)+(?:com|org|net|io|dev|ai|app|cloud|co|edu|gov|info|me|tv|xyz|in|to|cc)$/i;
+
+/** Control-flow / language tokens that appear as `a/b` in prose, not filesystem paths. */
+const CODE_SLASH_TOKEN = /^(?:try\/finally|if\/else|for\/of|for\/in|async\/await|do\/while)$/i;
+
+/**
+ * First path segment of Go standard-library import paths (`io/ioutil`, `net/http`).
+ * Kept narrow so `src/utils`-style repo paths still validate.
+ */
+const GO_STDLIB_ROOTS = new Set([
+  "archive",
+  "bufio",
+  "bytes",
+  "cmp",
+  "compress",
+  "container",
+  "context",
+  "crypto",
+  "database",
+  "debug",
+  "embed",
+  "encoding",
+  "errors",
+  "expvar",
+  "flag",
+  "fmt",
+  "go",
+  "hash",
+  "html",
+  "image",
+  "index",
+  "io",
+  "log",
+  "maps",
+  "math",
+  "mime",
+  "net",
+  "os",
+  "path",
+  "plugin",
+  "reflect",
+  "regexp",
+  "runtime",
+  "slices",
+  "structs",
+  "sync",
+  "syscall",
+  "testing",
+  "text",
+  "time",
+  "unicode",
+  "unique",
+  "unsafe",
+  "weak",
+]);
+
+/** Optional build-output roots often documented before `npm run build`. */
+const OPTIONAL_BUILD_ROOTS = new Set(["dist", "build", "out", "target", ".next", "coverage"]);
+
+function isGoStdImportPath(normalized: string): boolean {
+  const parts = normalized.split("/");
+  if (parts.length < 2 || parts.length > 4) {
+    return false;
+  }
+  const root = parts[0] ?? "";
+  if (!GO_STDLIB_ROOTS.has(root)) {
+    return false;
+  }
+  return parts.every((part) => /^[a-z][a-z0-9]*$/.test(part));
+}
+
 export type ResolvedPathReference =
   | {
       status: "ok";
@@ -52,11 +125,30 @@ export function isLikelyLocalPathReference(value: string): boolean {
   if (value.startsWith("/") || /^[A-Za-z]:[\\/]/.test(value)) return false;
   // CSS class / id-like bare selectors: `.content`, `.button`
   if (/^\.[A-Za-z_][\w-]*$/.test(value)) return false;
+  // npm scoped packages: `@scope/name`
+  if (/^@[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+/.test(value)) return false;
+  // Glob / brace patterns are not concrete paths
+  if (/[*?[\]{}]/.test(value)) return false;
+  // Language tokens that look like paths (`try/finally`)
+  if (CODE_SLASH_TOKEN.test(value)) return false;
+
+  const withoutDotSlash = value.replace(/^\.\//, "");
+  const trimmedDir = withoutDotSlash.replace(/\/+$/, "");
+  // Documented build outputs often missing until a local build
+  if (OPTIONAL_BUILD_ROOTS.has(trimmedDir)) return false;
 
   if (value.includes("/")) {
-    // Reject empty segments like `foo//bar` while allowing trailing slash dirs
     const normalized = value.replace(/\/+$/, "");
     if (!normalized || normalized.split("/").some((part) => part === "")) {
+      return false;
+    }
+    const firstSegment = normalized.split("/")[0] ?? "";
+    // Go/npm module imports: `github.com/foo/bar`, `golang.org/x/…`
+    if (MODULE_HOST_SEGMENT.test(firstSegment)) {
+      return false;
+    }
+    // Go stdlib: `io/ioutil`, `net/http`, `path/filepath`
+    if (isGoStdImportPath(normalized)) {
       return false;
     }
     return true;

@@ -16,7 +16,7 @@ AgentDoctor is a local CLI that inspects project-level AI coding agent setup —
 npx @praneeth_54/agentdoctor
 ```
 
-Public beta (`0.1.x-beta`). Deterministic readiness scores ship in JSON; automatic fixes are not available yet.
+Public beta (`0.3.0-beta`). Scan → Fix → Verify. Deterministic scores in the terminal and JSON.
 
 ---
 
@@ -24,12 +24,12 @@ Public beta (`0.1.x-beta`). Deterministic readiness scores ship in JSON; automat
 
 ![AgentDoctor scanning a repository and reporting coding-agent security findings](docs/images/cli-scan.png)
 
-_Real scan of the included `insecure-agent-project` fixture using AgentDoctor v0.2.0-beta._
+_Real scan of the included `insecure-agent-project` fixture using AgentDoctor v0.3.0-beta._
 
 ```text
 $ npx @praneeth_54/agentdoctor
 
-🩺 AgentDoctor v0.2.0-beta
+🩺 AgentDoctor v0.3.0-beta
 
 Scanning repository...
 
@@ -71,10 +71,11 @@ Summary
   1 warning
   0 info
 
-Scoring: not included in this release
+  Readiness: 13/100
+  Category and agent scores: agentdoctor scan --json
 ```
 
-Abbreviated text example from the same fixture for accessibility and search. Secret values are never printed.
+Abbreviated text example from the same fixture for accessibility and search. Secret values are never printed. Re-run the scan if counts change.
 
 ---
 
@@ -99,7 +100,7 @@ Manually reviewing all of that across Cursor, Claude Code, and Codex is slow and
 | ESLint          | Source code                      |
 | **AgentDoctor** | **AI coding agent environments** |
 
-AgentDoctor analyzes configuration. It does not run agents, call an LLM, or modify your repository in this release.
+AgentDoctor analyzes configuration. It does not run agents or call an LLM. `agentdoctor fix` may append safe Cursor ignore patterns; it does not rewrite security settings or credentials.
 
 ---
 
@@ -139,8 +140,9 @@ You get deterministic findings with:
 - evidence paths
 - affected agents when exposure claims are supported
 - conservative recommendations
+- readiness score (`scores.overall` in JSON; overall line in the terminal)
 
-Automatic repair is **not** included in this beta. Findings tell you what to review; you decide what to change.
+Safe Cursor context exclusions can be applied with `agentdoctor fix`. Security and review findings stay manual — Fix explains why and does not invent unsafe edits.
 
 ---
 
@@ -155,7 +157,7 @@ npx @praneeth_54/agentdoctor
 Pin a beta version when you need a fixed install:
 
 ```bash
-npx @praneeth_54/agentdoctor@0.2.0-beta
+npx @praneeth_54/agentdoctor@0.3.0-beta
 ```
 
 ### Global (optional)
@@ -165,12 +167,29 @@ npm install -g @praneeth_54/agentdoctor
 agentdoctor
 ```
 
+### Scan → Fix → Verify
+
+```bash
+# 1. Scan (save a baseline for Verify)
+npx @praneeth_54/agentdoctor scan . --json > agentdoctor-report.json
+
+# 2. Fix safe Cursor context exclusions (preview first with --dry-run)
+npx @praneeth_54/agentdoctor fix . --dry-run
+npx @praneeth_54/agentdoctor fix . -y
+
+# 3. Verify against the baseline
+npx @praneeth_54/agentdoctor verify . --baseline agentdoctor-report.json
+```
+
+`fix` currently writes `.cursorignore` patterns for safe context findings (for example unignored `build/` or large logs). Review/manual security findings are listed as skipped — address those yourself, then re-run `verify`.
+
 ### Common commands
 
 ```bash
 agentdoctor .
-agentdoctor . --json
-agentdoctor . --verbose
+agentdoctor scan . --json
+agentdoctor fix . --dry-run
+agentdoctor verify . --ci --baseline agentdoctor-report.json
 agentdoctor explain security/env-file-exposure
 agentdoctor doctor
 ```
@@ -184,10 +203,11 @@ npm install @praneeth_54/agentdoctor
 ```
 
 ```ts
-import { scan } from "@praneeth_54/agentdoctor";
+import { scan, verify, buildFixPlan, applyFixPlan } from "@praneeth_54/agentdoctor";
 
 const result = await scan({ cwd: process.cwd() });
 console.log(result.summary);
+console.log(result.scores?.overall);
 console.log(result.agentSecurityAnalysis); // "full" | "limited"
 ```
 
@@ -259,7 +279,7 @@ steps:
 
   - name: Audit coding-agent configuration
     id: agentdoctor
-    uses: pranee54/AgentDoctor@v0.2.0-beta
+    uses: pranee54/AgentDoctor@v0.3.0-beta
     with:
       path: .
       output-file: agentdoctor-report.json
@@ -271,7 +291,7 @@ steps:
       path: ${{ steps.agentdoctor.outputs.report-path }}
 ```
 
-The action installs the published `@praneeth_54/agentdoctor@0.2.0-beta` package, runs it with
+The action installs the published `@praneeth_54/agentdoctor@0.3.0-beta` package, runs it with
 `--ci --json`, and writes the report inside the checked-out workspace. It sets up Node.js 20
 for the CLI. The optional `version` input accepts an exact npm version or the `latest` / `beta`
 dist-tag.
@@ -297,8 +317,8 @@ Exit codes: [docs/exit-codes.md](docs/exit-codes.md). Compatibility promises: [d
 ### Readiness scoring
 
 Scans populate `scoringAvailable: true` and a deterministic `scores` object
-(overall, categories, agents). The terminal report does not render a readiness line yet;
-scores are available in JSON (`--json`).
+(overall, categories, agents). The terminal prints overall readiness; category and agent
+scores are in JSON (`--json`).
 
 `--min-score N` is enforced by the CLI. Details (weights, security caps, threshold rules,
 and deferred v2 items): [docs/scoring.md](docs/scoring.md).
@@ -309,16 +329,17 @@ and deferred v2 items): [docs/scoring.md](docs/scoring.md).
 
 Honest limits of the current public beta:
 
-| Limitation                          | Status                                                          |
-| ----------------------------------- | --------------------------------------------------------------- |
-| Terminal readiness line             | Scores ship in JSON only; terminal does not print N/100 yet     |
-| GitHub Action score gates           | Action remains `--ci --json` report-only (no `min-score` input) |
-| Automatic fixes (`agentdoctor fix`) | Stub only — does not modify files                               |
-| Secret-content scanning             | Filename / config heuristics only                               |
-| Detection style                     | Intentionally conservative; false security findings are avoided |
-| Agent coverage                      | Cursor, Claude Code, Codex project configs                      |
+| Limitation                  | Status                                                              |
+| --------------------------- | ------------------------------------------------------------------- |
+| Automatic fixes             | Safe Cursor `.cursorignore` context exclusions only                 |
+| Claude Code / Codex writers | Not implemented — Fix skips with an explicit reason                 |
+| Security findings           | Review/manual — Fix does not rewrite secrets or permission settings |
+| GitHub Action score gates   | Action remains `--ci --json` report-only (no `min-score` input)     |
+| Secret-content scanning     | Filename / config heuristics only                                   |
+| Detection style             | Intentionally conservative; false security findings are avoided     |
+| Agent coverage              | Cursor, Claude Code, Codex project configs                          |
 
-See [CHANGELOG.md](CHANGELOG.md) and [docs/release-notes-v0.2.0-beta.md](docs/release-notes-v0.2.0-beta.md).
+See [CHANGELOG.md](CHANGELOG.md) and [docs/compatibility.md](docs/compatibility.md).
 
 ---
 

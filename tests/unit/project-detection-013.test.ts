@@ -125,9 +125,7 @@ describe("excepta multi-stack fixture", () => {
     expect(env.some((f) => f.evidence?.path === "backend/.env" && f.severity === "critical")).toBe(
       true,
     );
-    expect(
-      env.some((f) => f.evidence?.path === "backend/.env.example" && f.severity === "info"),
-    ).toBe(true);
+    expect(env.every((f) => f.evidence?.path !== "backend/.env.example")).toBe(true);
     expect(env.every((f) => f.affectedAgents.length === 0)).toBe(true);
 
     const terminal = renderTerminalReport(result);

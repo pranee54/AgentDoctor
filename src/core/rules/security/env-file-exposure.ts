@@ -1,4 +1,5 @@
 import type { AgentId } from "../../../types/index.js";
+import { isSampleOrTestPath } from "../path-kind.js";
 import type { FindingDraft, RuleContext, RuleDefinition } from "../types.js";
 
 export type EnvFileKind = "runtime" | "template" | "backup";
@@ -17,11 +18,18 @@ export function classifyEnvBasename(base: string): EnvFileKind | null {
     return null;
   }
   const lower = normalized.toLowerCase();
+  if (BACKUP_BASENAMES.has(lower)) {
+    return "backup";
+  }
   if (TEMPLATE_BASENAMES.has(lower)) {
     return "template";
   }
-  if (BACKUP_BASENAMES.has(lower)) {
-    return "backup";
+  // .env.local.example, .env.testing.example, .env.example.local, etc.
+  if (/\.(?:example|sample|template)(?:\.|$)/i.test(normalized)) {
+    return "template";
+  }
+  if (/\.env(?:\.[A-Za-z0-9_-]+)*\.(?:example|sample|template)$/i.test(normalized)) {
+    return "template";
   }
   if (lower === ".env") {
     return "runtime";
@@ -117,22 +125,11 @@ export const envFileExposureRule: RuleDefinition = {
       if (!kind) {
         continue;
       }
-
+      if (isSampleOrTestPath(file.relativePath)) {
+        continue;
+      }
+      // Templates document variable names; they are not agent-readiness findings.
       if (kind === "template") {
-        findings.push({
-          ruleId: "security/env-file-exposure",
-          category: "security",
-          severity: "info",
-          title: "Environment template file present",
-          message: `Environment template file detected at ${file.relativePath}`,
-          whyItMatters:
-            "Template env files are usually placeholders, but they can still document secret names. Filename classification only — contents were not inspected.",
-          recommendation:
-            "Keep templates free of real credentials. Prefer documenting variable names without values.",
-          affectedAgents: [],
-          evidence: { path: file.relativePath, detail: "template" },
-          fixability: "review",
-        });
         continue;
       }
 

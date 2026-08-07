@@ -173,4 +173,24 @@ describe("fix plan + cursorignore writer", () => {
       await fs.rm(root, { recursive: true, force: true });
     }
   });
+
+  it("records skip reasons for review/manual findings instead of silent empty plan", async () => {
+    const result = await scan({
+      cwd: path.join(fixturesRoot, "insecure-agent-project"),
+    });
+    expect(result.findings.length).toBeGreaterThan(0);
+    expect(result.findings.every((f) => f.fixability !== "safe")).toBe(true);
+
+    const plan = await buildFixPlan(result);
+    expect(plan.actions).toHaveLength(0);
+    expect(plan.skipped.length).toBe(result.findings.length);
+    expect(
+      plan.skipped.every(
+        (s) =>
+          s.reason.includes("review") ||
+          s.reason.includes("Manual") ||
+          s.reason.includes("Not auto-fixable"),
+      ),
+    ).toBe(true);
+  });
 });

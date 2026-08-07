@@ -1,3 +1,4 @@
+import { isSampleOrTestPath, isSourceNamedArtifactCollision } from "../path-kind.js";
 import type { FindingDraft, RuleDefinition } from "../types.js";
 
 /** Directories commonly generated/build-related. vendor/ is ecosystem-aware. */
@@ -50,6 +51,12 @@ export const generatedDirectoryRule: RuleDefinition = {
         isGeneratedPath(dir, entry.name),
       );
       for (const relativePath of matches) {
+        if (isSampleOrTestPath(relativePath)) {
+          continue;
+        }
+        if (isSourceNamedArtifactCollision(relativePath)) {
+          continue;
+        }
         if (isExcluded(context, relativePath)) {
           continue;
         }
@@ -80,6 +87,9 @@ export const generatedDirectoryRule: RuleDefinition = {
       context.repository.primaryLanguage !== "php"
     ) {
       for (const relativePath of vendorPaths) {
+        if (isSampleOrTestPath(relativePath)) {
+          continue;
+        }
         if (isExcluded(context, relativePath)) {
           continue;
         }

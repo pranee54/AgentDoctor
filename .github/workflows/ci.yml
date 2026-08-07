@@ -5,10 +5,12 @@ on:
     branches: [main, master]
   pull_request:
     branches: [main, master]
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # Keep PR supersession; never cancel in-flight main runs (reruns/outages were wiping them).
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   quality:
@@ -130,6 +132,8 @@ jobs:
         with:
           path: fixtures/clean-configured-project
           output-file: ${{ matrix.output-file }}
+          # Pin to last published npm until 0.3.0-beta is released
+          version: 0.2.0-beta
 
       - name: Validate expected outcome
         env:

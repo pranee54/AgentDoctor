@@ -109,7 +109,7 @@ Exact token savings are never claimed.
 - **Severity:** warning
 - **Detects:** Conservative markdown-link / backtick local paths that do not exist (or escape the repo)
 - **Resolution:** `./` and `../` resolve from the instruction file directory; other candidates resolve from the repository root
-- **Non-paths:** CSS-like selectors (`.content`), CLI flags (`--verbose`), and spaced commands are ignored
+- **Non-paths:** CSS-like selectors (`.content`), CLI flags (`--verbose`), spaced commands, Go/npm module hosts (`github.com/…`), scoped packages (`@scope/pkg`), Go stdlib imports (`io/ioutil`), globs (`**/*`), code tokens (`try/finally`), and bare build roots (`dist/`) are ignored
 - **Fixability:** manual
 
 ---

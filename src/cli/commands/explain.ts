@@ -45,9 +45,9 @@ export async function runExplainCommand(ruleId: string | undefined): Promise<Exi
   lines.push(colors.bold("Can AgentDoctor safely fix it?"));
   lines.push(
     rule.fixability === "safe"
-      ? "  Potentially yes. Conservative auto-fix is planned but not applied today."
+      ? "  Yes for Cursor context exclusions (`agentdoctor fix`). Other agents may still need a manual step."
       : rule.fixability === "review"
-        ? "  Only with review. Automatic fixes are not applied today."
+        ? "  No — requires human review. Fix reports why and leaves the file unchanged."
         : rule.fixability === "manual"
           ? "  No automatic fix. Manual remediation required."
           : "  No fix available.",

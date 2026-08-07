@@ -40,6 +40,16 @@ export async function buildFixPlan(result: ScanResult): Promise<FixPlan> {
 
   for (const finding of result.findings) {
     if (finding.fixability !== "safe") {
+      skipped.push({
+        findingId: finding.id,
+        ruleId: finding.ruleId,
+        reason:
+          finding.fixability === "review"
+            ? "Requires human review (not auto-fixed)"
+            : finding.fixability === "manual"
+              ? "Manual remediation required (not auto-fixed)"
+              : "Not auto-fixable",
+      });
       continue;
     }
 

@@ -1,3 +1,4 @@
+import { isSampleOrTestPath } from "../path-kind.js";
 import type { FindingDraft, RuleDefinition } from "../types.js";
 
 const PRIVATE_KEY_PATTERNS: Array<{ test: (base: string) => boolean; label: string }> = [
@@ -48,6 +49,9 @@ export const privateKeyFileRule: RuleDefinition = {
     const affected = context.agents.filter((a) => a.detected || a.configured).map((a) => a.id);
 
     for (const file of context.discovery.files) {
+      if (isSampleOrTestPath(file.relativePath)) {
+        continue;
+      }
       const base = file.relativePath.split("/").pop() ?? file.relativePath;
       const label = classify(base);
       if (!label) {

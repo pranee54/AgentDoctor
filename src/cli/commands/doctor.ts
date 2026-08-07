@@ -16,7 +16,7 @@ export async function runDoctorCommand(): Promise<ExitCode> {
   lines.push(`  ${symbolOk()} Core scan API available`);
   lines.push("");
   lines.push(colors.dim("Environment looks ready."));
-  lines.push(colors.dim("Run agentdoctor fix --dry-run to preview safe fixes."));
+  lines.push(colors.dim("Run agentdoctor scan → fix → verify to complete the readiness loop."));
   lines.push("");
   process.stdout.write(lines.join("\n"));
   return EXIT_CODES.SUCCESS;
