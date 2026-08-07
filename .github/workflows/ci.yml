@@ -132,8 +132,8 @@ jobs:
         with:
           path: fixtures/clean-configured-project
           output-file: ${{ matrix.output-file }}
-          # Pin to last published npm until 0.3.0-beta is released
-          version: 0.2.0-beta
+          # Published package under latest/beta
+          version: 0.3.0-beta
 
       - name: Validate expected outcome
         env:
@@ -169,7 +169,7 @@ jobs:
           const fs = require("node:fs");
 
           const report = JSON.parse(fs.readFileSync(process.env.REPORT_PATH, "utf8"));
-          if (report.version !== "0.2.0-beta") {
+          if (report.version !== "0.3.0-beta") {
             throw new Error(`unexpected AgentDoctor version: ${report.version}`);
           }
           if (
