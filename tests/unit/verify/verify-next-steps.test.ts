@@ -27,7 +27,15 @@ function emptyScan(): ScanResult {
     scores: null,
     scoringAvailable: false,
     agentSecurityAnalysis: "full",
-    timing: { discoveryMs: 0, detectionMs: 0, agentsMs: 0, rulesMs: 0, totalMs: 0 },
+    timing: {
+      discoveryMs: 0,
+      detectionMs: 0,
+      agentsMs: 0,
+      rulesMs: 0,
+      scoringMs: 0,
+      totalMs: 0,
+    },
+    diagnostics: { warnings: [], errors: [] },
   };
 }
 
@@ -43,7 +51,18 @@ function baseResult(
     new: [],
     unchanged: [],
     after: emptyScan(),
-    scores: { overall: 100, byCategory: {}, byAgent: {} },
+    scores: {
+      overall: 100,
+      categories: {
+        security: 100,
+        context: 100,
+        instructions: 100,
+        mcp: 100,
+        compatibility: 100,
+        performance: 100,
+      },
+      agents: { cursor: 100, "claude-code": 100, codex: 100 },
+    },
     scoringAvailable: true,
     timing: { scanMs: 1, compareMs: 1, totalMs: 2 },
     ...overrides,

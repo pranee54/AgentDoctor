@@ -29,15 +29,9 @@ export function renderFixPlanTerminal(
       }
       lines.push("");
       lines.push("Next");
-      lines.push(
-        "  Inspect a finding: agentdoctor explain <rule-id>  (ids in scan --json)",
-      );
-      lines.push(
-        "  Confirm with verify: agentdoctor verify --baseline agentdoctor-report.json",
-      );
-      lines.push(
-        "  No baseline yet? agentdoctor scan --json > agentdoctor-report.json",
-      );
+      lines.push("  Inspect a finding: agentdoctor explain <rule-id>  (ids in scan --json)");
+      lines.push("  Confirm with verify: agentdoctor verify --baseline agentdoctor-report.json");
+      lines.push("  No baseline yet? agentdoctor scan --json > agentdoctor-report.json");
     } else {
       lines.push("  Scan found nothing that Fix can change.");
       lines.push("");
@@ -130,16 +124,10 @@ export function renderFixPlanTerminal(
     lines.push("  Apply these changes: agentdoctor fix -y");
   }
   if (plan.skipped.length > 0) {
-    lines.push(
-      "  Review/manual findings stay open — inspect with: agentdoctor explain <rule-id>",
-    );
+    lines.push("  Review/manual findings stay open — inspect with: agentdoctor explain <rule-id>");
   }
-  lines.push(
-    "  Confirm with verify: agentdoctor verify --baseline agentdoctor-report.json",
-  );
-  lines.push(
-    "  No baseline yet? agentdoctor scan --json > agentdoctor-report.json",
-  );
+  lines.push("  Confirm with verify: agentdoctor verify --baseline agentdoctor-report.json");
+  lines.push("  No baseline yet? agentdoctor scan --json > agentdoctor-report.json");
   lines.push("");
   return lines.join("\n");
 }

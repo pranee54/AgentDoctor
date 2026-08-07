@@ -92,8 +92,9 @@ function renderGithubNextSteps(input: GithubSummaryInput): string[] {
   lines.push("");
 
   const hasSafe = input.findings.some((f) => f.fixability === "safe");
-  const topRule = [...input.findings]
-    .sort((a, b) => severityOrder(b.severity) - severityOrder(a.severity))[0]?.ruleId;
+  const topRule = [...input.findings].sort(
+    (a, b) => severityOrder(b.severity) - severityOrder(a.severity),
+  )[0]?.ruleId;
 
   if (input.mode === "verify") {
     lines.push("1. Reproduce locally: `npx @praneeth_54/agentdoctor verify`");
@@ -120,9 +121,7 @@ function renderGithubNextSteps(input: GithubSummaryInput): string[] {
   }
 
   lines.push("");
-  lines.push(
-    "Preview before applying: `npx @praneeth_54/agentdoctor fix --dry-run`",
-  );
+  lines.push("Preview before applying: `npx @praneeth_54/agentdoctor fix --dry-run`");
   lines.push("");
   return lines;
 }

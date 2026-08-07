@@ -190,6 +190,10 @@ jobs:
           name: dist
           path: dist
 
+      - name: Install runtime dependencies for workspace CLI
+        if: matrix.version == 'workspace'
+        run: npm ci --omit=dev
+
       - name: Prepare output-path case
         env:
           CASE: ${{ matrix.case }}

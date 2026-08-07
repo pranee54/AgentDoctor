@@ -186,7 +186,11 @@ function isEscapingRepoRelative(relativePath: string): boolean {
 /**
  * Resolve a candidate path reference with repository-aware semantics:
  * - `./` and `../` → relative to the instruction file directory
- * - otherwise → repository-root relative (avoids nesting under `.cursor/rules/`)
+ * - otherwise → repository-root relative, plus the same path under the
+ *   instruction file directory when nested (monorepo package docs)
+ *
+ * Does not search sibling packages: a root `AGENTS.md` reference must still
+ * exist at the repository root (or via `./` / `../`).
  */
 export function resolveInstructionPathReference(
   instructionRelativePath: string,
@@ -216,9 +220,22 @@ export function resolveInstructionPathReference(
     return { status: "escape", attempted: rootRelative };
   }
 
+  const pathsToCheck = [rootRelative];
+
+  if (instructionDir !== ".") {
+    const fromInstruction = path.posix.normalize(path.posix.join(instructionDir, rootRelative));
+    if (
+      !isEscapingRepoRelative(fromInstruction) &&
+      !fromInstruction.startsWith("/") &&
+      fromInstruction !== rootRelative
+    ) {
+      pathsToCheck.push(fromInstruction);
+    }
+  }
+
   return {
     status: "ok",
-    pathsToCheck: [rootRelative],
+    pathsToCheck,
     primaryRelative: rootRelative,
   };
 }
@@ -259,10 +276,7 @@ export const missingPathReferenceRule: RuleDefinition = {
             continue;
           }
 
-          const resolved = resolveInstructionPathReference(
-            file.relativePath,
-            prepared.normalized,
-          );
+          const resolved = resolveInstructionPathReference(file.relativePath, prepared.normalized);
 
           if (resolved.status === "escape") {
             findings.push({

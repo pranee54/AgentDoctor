@@ -8,7 +8,6 @@ import {
 } from "../path-kind.js";
 import type { FindingDraft, RuleContext, RuleDefinition } from "../types.js";
 
-
 /** Directories commonly generated/build-related. vendor/ is ecosystem-aware. */
 const GENERATED = [
   { name: "dist", label: "build output" },

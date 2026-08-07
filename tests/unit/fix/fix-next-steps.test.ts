@@ -6,13 +6,15 @@ import type { FixPlan } from "../../../src/core/fix/types.js";
 describe("fix Next steps workflow", () => {
   it("dry-run with actions points at fix -y then verify", () => {
     const plan: FixPlan = {
+      root: "/tmp",
       actions: [
         {
           id: "a1",
           agent: "cursor",
-          kind: "cursorignore-append",
+          kind: "append-ignore-pattern",
           description: "Ignore dist/",
           pattern: "dist/",
+          evidencePath: "dist",
           findingIds: ["f1"],
           targetRelativePath: ".cursorignore",
         },
@@ -40,6 +42,7 @@ describe("fix Next steps workflow", () => {
 
   it("review-only plan points at explain and verify, not fix -y", () => {
     const plan: FixPlan = {
+      root: "/tmp",
       actions: [],
       skipped: [
         {

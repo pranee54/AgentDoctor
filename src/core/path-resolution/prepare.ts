@@ -10,13 +10,7 @@
  */
 
 export type PathConcreteRejectReason =
-  | "empty"
-  | "placeholder"
-  | "ellipsis"
-  | "home"
-  | "git-ref"
-  | "bundler-module-type"
-  | "undecodable";
+  "empty" | "placeholder" | "ellipsis" | "home" | "git-ref" | "bundler-module-type" | "undecodable";
 
 export type PreparedPathReference =
   | {
@@ -63,7 +57,8 @@ function looksLikeGitRef(normalized: string): boolean {
  * Bundler module-type tokens (`asset/resource`, `javascript/auto`) — not paths.
  * Generalized type/name pattern; no bundler product names.
  */
-const BUNDLER_MODULE_TYPE = /^(?:asset|javascript|css|json|wasm|webassembly|runtime)\/[A-Za-z0-9_-]+$/;
+const BUNDLER_MODULE_TYPE =
+  /^(?:asset|javascript|css|json|wasm|webassembly|runtime)\/[A-Za-z0-9_-]+$/;
 
 /**
  * Normalize a path reference for filesystem checks:
