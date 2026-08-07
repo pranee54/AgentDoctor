@@ -28,6 +28,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `instructions/missing-path-reference` also resolves non-`./` paths relative to the
+  instruction file directory (monorepo package docs), while root-level instruction
+  files still require repository-root paths. Corpus-100: 121 → 88 findings for this
+  rule (−33); other rules unchanged.
 - `context/generated-directory` and `context/large-log-file` honor Claude Code Read
   deny exclusions when computing `affectedAgents`, so Fix → Verify clears Claude
   context findings after a deny rule is applied.

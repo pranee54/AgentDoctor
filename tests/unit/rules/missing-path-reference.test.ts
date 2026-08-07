@@ -77,15 +77,42 @@ describe("isLikelyLocalPathReference", () => {
 });
 
 describe("resolveInstructionPathReference", () => {
-  it("resolves repo-root-style paths from repository root", () => {
+  it("resolves repo-root-style paths from repository root and nested instruction dir", () => {
     const result = resolveInstructionPathReference(
       ".cursor/rules/example.mdc",
       "project/backend/includes/config.php",
     );
     expect(result).toEqual({
       status: "ok",
-      pathsToCheck: ["project/backend/includes/config.php"],
+      pathsToCheck: [
+        "project/backend/includes/config.php",
+        ".cursor/rules/project/backend/includes/config.php",
+      ],
       primaryRelative: "project/backend/includes/config.php",
+    });
+  });
+
+  it("resolves package-local shorthand from a nested instruction file", () => {
+    const result = resolveInstructionPathReference(
+      "compiler/CLAUDE.md",
+      "packages/babel-plugin-react-compiler/",
+    );
+    expect(result).toEqual({
+      status: "ok",
+      pathsToCheck: [
+        "packages/babel-plugin-react-compiler/",
+        "compiler/packages/babel-plugin-react-compiler/",
+      ],
+      primaryRelative: "packages/babel-plugin-react-compiler/",
+    });
+  });
+
+  it("keeps root instruction paths root-only", () => {
+    const result = resolveInstructionPathReference("AGENTS.md", "src/");
+    expect(result).toEqual({
+      status: "ok",
+      pathsToCheck: ["src/"],
+      primaryRelative: "src/",
     });
   });
 
@@ -271,5 +298,31 @@ describe("instructions/missing-path-reference regressions", () => {
 
     const findings = missingPathFindings(await scan({ cwd: root }));
     expect(findings).toHaveLength(0);
+  });
+
+  it("does not flag package-local paths that exist beside a nested instruction file", async () => {
+    const root = await tempRepo();
+    await fs.writeFile(path.join(root, "package.json"), "{}\n");
+    await fs.mkdir(path.join(root, "packages/auth-js/src"), { recursive: true });
+    await fs.writeFile(path.join(root, "packages/auth-js/package.json"), "{}\n");
+    await fs.writeFile(path.join(root, "packages/auth-js/src/index.ts"), "export {};\n");
+    await fs.writeFile(
+      path.join(root, "packages/auth-js/AGENTS.md"),
+      "Implement features under `src/` and ship `migrations/`.\n",
+    );
+    await fs.mkdir(path.join(root, "packages/auth-js/migrations"), { recursive: true });
+
+    const findings = missingPathFindings(await scan({ cwd: root }));
+    expect(findings).toHaveLength(0);
+  });
+
+  it("still flags root AGENTS.md refs that only exist under a sibling package", async () => {
+    const root = await tempRepo();
+    await fs.writeFile(path.join(root, "package.json"), "{}\n");
+    await fs.mkdir(path.join(root, "packages/auth-js/migrations"), { recursive: true });
+    await fs.writeFile(path.join(root, "AGENTS.md"), "See `migrations/` for SQL.\n");
+
+    const findings = missingPathFindings(await scan({ cwd: root }));
+    expect(findings.some((f) => f.evidence?.detail === "missing=migrations/")).toBe(true);
   });
 });
