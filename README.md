@@ -1,6 +1,6 @@
 # AgentDoctor
 
-[![npm](https://img.shields.io/npm/v/@praneeth_54/agentdoctor)](https://www.npmjs.com/package/@praneeth_54/agentdoctor)
+[![npm](https://img.shields.io/npm/v/@praneeth_54/agentdoctor?label=npm)](https://www.npmjs.com/package/@praneeth_54/agentdoctor)
 [![npm downloads](https://img.shields.io/npm/dm/@praneeth_54/agentdoctor)](https://www.npmjs.com/package/@praneeth_54/agentdoctor)
 [![CI](https://img.shields.io/github/actions/workflow/status/pranee54/AgentDoctor/ci.yml?branch=main&label=CI)](https://github.com/pranee54/AgentDoctor/actions)
 [![Node](https://img.shields.io/node/v/@praneeth_54/agentdoctor)](https://nodejs.org)
