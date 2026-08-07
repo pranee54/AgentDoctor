@@ -15,14 +15,18 @@ export function renderFixPlanTerminal(
   lines.push("");
 
   if (plan.actions.length === 0) {
-    lines.push("  No applicable fixes.");
+    lines.push("  No automatic fixes available for this scan.");
     if (plan.skipped.length > 0) {
       lines.push("");
-      lines.push(`  Skipped findings: ${plan.skipped.length}`);
+      lines.push(`  ${plan.skipped.length} finding(s) need manual or review action:`);
       const reasons = summarizeSkipReasons(plan.skipped.map((s) => s.reason));
       for (const [reason, count] of reasons) {
         lines.push(`    - ${reason} (${count})`);
       }
+      lines.push("");
+      lines.push("  Next: address remaining findings, then run `agentdoctor verify`.");
+    } else {
+      lines.push("  Scan found nothing that Fix can change.");
     }
     lines.push("");
     return lines.join("\n");

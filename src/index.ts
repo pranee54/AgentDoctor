@@ -1,4 +1,6 @@
 export { scan } from "./core/scanner/scan.js";
+export { verify } from "./core/verify/verify.js";
+export { compareFindings } from "./core/verify/compare.js";
 export { PACKAGE_VERSION } from "./constants.js";
 export type {
   ScanOptions,
@@ -13,6 +15,8 @@ export type {
   CliOptions,
   ExitCode,
 } from "./types/index.js";
+export type { VerifyResult, VerifyOptions } from "./core/verify/verify.js";
+export type { VerifyFindingRef, FindingCompareResult } from "./core/verify/compare.js";
 export { EXIT_CODES } from "./types/index.js";
 export { agentRegistry } from "./agents/registry.js";
 export { detectAgents } from "./agents/detect-agents.js";

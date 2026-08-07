@@ -37,6 +37,7 @@
 | Document                                                     | Description               |
 | ------------------------------------------------------------ | ------------------------- |
 | [../CHANGELOG.md](../CHANGELOG.md)                           | Release history           |
+| [release-notes-v0.3.0-beta.md](release-notes-v0.3.0-beta.md) | v0.3.0-beta release notes |
 | [release-notes-v0.2.0-beta.md](release-notes-v0.2.0-beta.md) | v0.2.0-beta release notes |
 | [release-notes-v0.1.4-beta.md](release-notes-v0.1.4-beta.md) | v0.1.4-beta release notes |
 | [release-notes-v0.1.3-beta.md](release-notes-v0.1.3-beta.md) | v0.1.3-beta release notes |

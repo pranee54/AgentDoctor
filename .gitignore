@@ -29,3 +29,23 @@ tmp/
 
 # Gradle caches (never commit)
 **/.gradle/
+
+# Generated Software Understanding validation reports
+validation/software-understanding/reports/*
+!validation/software-understanding/reports/.gitkeep
+
+# Real-world validation laboratory (generated + checkouts)
+validation/real-world/repositories/checkouts/
+validation/real-world/results/*
+!validation/real-world/results/.gitkeep
+validation/real-world/reports/*
+!validation/real-world/reports/.gitkeep
+validation/real-world/regressions/*
+!validation/real-world/regressions/.gitkeep
+validation/real-world/history/*
+!validation/real-world/history/.gitkeep
+
+
+# Local-only internal docs / notes (never publish)
+.private/
+AgentDoctorOS/

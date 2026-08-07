@@ -132,6 +132,8 @@ jobs:
         with:
           path: fixtures/clean-configured-project
           output-file: ${{ matrix.output-file }}
+          # Pin to last published npm until 0.3.0-beta is released
+          version: 0.2.0-beta
 
       - name: Validate expected outcome
         env:

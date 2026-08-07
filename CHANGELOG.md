@@ -7,10 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0-beta] — 2026-08-07
+
+Minor beta: completes the Scan → Fix → Verify CLI loop and corrects release-facing honesty.
+
+### Added
+
+- `agentdoctor verify` — re-scan and compare against a prior `scan --json` baseline
+  (`fixed` / `remaining` / `new` / `unchanged`). Supports `--json`, `--ci` (fails on new
+  findings), `--baseline`, and `--min-score`. Completes the Scan → Fix → Verify CLI loop.
+- Terminal summary prints overall readiness (`N/100`); category/agent scores remain in JSON.
+
+### Fixed
+
+- `agentdoctor scan --json` (and `--ci` / `--verbose` / `--min-score` on the `scan`
+  subcommand) now honor flags correctly. Overlapping root/subcommand options are read via
+  Commander `optsWithGlobals()`, so CI scripts using `scan … --json` receive JSON instead of
+  a terminal report.
+- `instructions/missing-path-reference` no longer treats Go/npm module imports
+  (`github.com/…`, `@scope/pkg`), Go stdlib paths (`io/ioutil`), glob patterns, code tokens
+  (`try/finally`), or bare build roots (`dist/`) as missing local paths.
+- `agentdoctor fix` now reports skip reasons for review/manual findings instead of an empty
+  “no applicable fixes” message with no explanation.
+- Sample/test/example paths and env templates no longer inflate security/context false positives.
+
+### Compatibility
+
+- Default Action `version` input is `0.3.0-beta` (pin CI smoke to last published until npm ships)
+- Fix remains Cursor `.cursorignore` safe-context only; security findings stay review/manual
+
 ### Planned
 
-- Safe automatic fixes
-- Terminal readiness line and GitHub Action score-gate inputs (deferred; see scoring.md v2+)
+- GitHub Action score-gate inputs (deferred; see scoring.md v2+)
 
 ## [0.2.0-beta] — 2026-08-02
 
@@ -143,7 +171,8 @@ First public beta.
 - Not a complete secret scanner
 - Git “tracked secret” detection deferred
 
-[Unreleased]: https://github.com/pranee54/AgentDoctor/compare/v0.2.0-beta...HEAD
+[Unreleased]: https://github.com/pranee54/AgentDoctor/compare/v0.3.0-beta...HEAD
+[0.3.0-beta]: https://github.com/pranee54/AgentDoctor/releases/tag/v0.3.0-beta
 [0.2.0-beta]: https://github.com/pranee54/AgentDoctor/releases/tag/v0.2.0-beta
 [0.1.4-beta]: https://github.com/pranee54/AgentDoctor/releases/tag/v0.1.4-beta
 [0.1.3-beta]: https://github.com/pranee54/AgentDoctor/releases/tag/v0.1.3-beta
