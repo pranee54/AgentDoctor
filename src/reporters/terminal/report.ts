@@ -128,13 +128,9 @@ export function renderNextSteps(result: ScanResult): string[] {
     );
   }
   lines.push(
-    colors.dim(
-      "  Save a verify baseline: agentdoctor scan --json > agentdoctor-report.json",
-    ),
+    colors.dim("  Save a verify baseline: agentdoctor scan --json > agentdoctor-report.json"),
   );
-  lines.push(
-    colors.dim("  After changes: agentdoctor verify --baseline agentdoctor-report.json"),
-  );
+  lines.push(colors.dim("  After changes: agentdoctor verify --baseline agentdoctor-report.json"));
   lines.push("");
   return lines;
 }
@@ -217,7 +213,9 @@ export function renderTerminalReport(
 
   if (total === 0) {
     if (limited) {
-      lines.push(`  ${symbolWarn()} Nothing to audit yet — no Cursor, Claude Code, or Codex config found`);
+      lines.push(
+        `  ${symbolWarn()} Nothing to audit yet — no Cursor, Claude Code, or Codex config found`,
+      );
       lines.push("");
       lines.push(
         colors.dim(
@@ -275,11 +273,7 @@ export function renderTerminalReport(
   lines.push(`  ${result.summary.info} info`);
   if (total > 0) {
     const { safe, review, manual } = countByFixability(result.findings);
-    lines.push(
-      colors.dim(
-        `  Fixability: ${safe} safe · ${review} review · ${manual} manual`,
-      ),
-    );
+    lines.push(colors.dim(`  Fixability: ${safe} safe · ${review} review · ${manual} manual`));
   }
   lines.push("");
   if (result.scoringAvailable && result.scores) {

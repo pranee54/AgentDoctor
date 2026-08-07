@@ -223,9 +223,7 @@ export function resolveInstructionPathReference(
   const pathsToCheck = [rootRelative];
 
   if (instructionDir !== ".") {
-    const fromInstruction = path.posix.normalize(
-      path.posix.join(instructionDir, rootRelative),
-    );
+    const fromInstruction = path.posix.normalize(path.posix.join(instructionDir, rootRelative));
     if (
       !isEscapingRepoRelative(fromInstruction) &&
       !fromInstruction.startsWith("/") &&
@@ -278,10 +276,7 @@ export const missingPathReferenceRule: RuleDefinition = {
             continue;
           }
 
-          const resolved = resolveInstructionPathReference(
-            file.relativePath,
-            prepared.normalized,
-          );
+          const resolved = resolveInstructionPathReference(file.relativePath, prepared.normalized);
 
           if (resolved.status === "escape") {
             findings.push({

@@ -354,14 +354,14 @@ and deferred v2 items): [docs/scoring.md](docs/scoring.md).
 
 Honest limits of the current public beta:
 
-| Limitation                 | Status                                                              |
-| -------------------------- | ------------------------------------------------------------------- |
+| Limitation                 | Status                                                                                                                   |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | Automatic fixes            | Safe Cursor / Claude Code / Codex context exclusions (Unreleased; published `0.3.0-beta` is Cursor `.cursorignore` only) |
-| Security findings          | Review/manual — Fix does not rewrite secrets or security modes      |
-| GitHub Action policy gates | Unreleased Action inputs + CLI flags; published `@v0.3.0-beta` is report-only |
-| Secret-content scanning    | Filename / config heuristics only                                   |
-| Detection style            | Intentionally conservative; false security findings are avoided     |
-| Agent coverage             | Cursor, Claude Code, Codex project configs                          |
+| Security findings          | Review/manual — Fix does not rewrite secrets or security modes                                                           |
+| GitHub Action policy gates | Unreleased Action inputs + CLI flags; published `@v0.3.0-beta` is report-only                                            |
+| Secret-content scanning    | Filename / config heuristics only                                                                                        |
+| Detection style            | Intentionally conservative; false security findings are avoided                                                          |
+| Agent coverage             | Cursor, Claude Code, Codex project configs                                                                               |
 
 See [CHANGELOG.md](CHANGELOG.md) and [docs/compatibility.md](docs/compatibility.md).
 

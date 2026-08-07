@@ -255,13 +255,7 @@ describe("CLI program", () => {
   });
 
   it("argv: invalid --min-score is a usage error (not internal error)", async () => {
-    const { exitCode } = await parseCli([
-      "scan",
-      cleanProject,
-      "--json",
-      "--min-score",
-      "999",
-    ]);
+    const { exitCode } = await parseCli(["scan", cleanProject, "--json", "--min-score", "999"]);
     expect(exitCode).toBe(EXIT_CODES.USAGE_ERROR);
     expect(exitCode).not.toBe(EXIT_CODES.INTERNAL_ERROR);
   });

@@ -45,7 +45,7 @@ First-user workflow is feature-complete and frozen unless real users report fric
 
 Engineering priority after this milestone: user-reported bugs, corpus-driven precision, performance regressions, and adoption feedback — not more workflow chrome.
 
-**Precision policy:** Prefer small, measurable precision improvements over large architectural rewrites. Ship the largest *safe* corpus-backed slice; leave harder residual noise until new evidence appears.
+**Precision policy:** Prefer small, measurable precision improvements over large architectural rewrites. Ship the largest _safe_ corpus-backed slice; leave harder residual noise until new evidence appears.
 
 ## Near term
 

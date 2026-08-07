@@ -196,7 +196,10 @@ describe("sample/test path suppression across security rules", () => {
       "-----BEGIN PRIVATE KEY-----\nU\n",
     );
     await fs.mkdir(path.join(root, "smoke-test/ssl"), { recursive: true });
-    await fs.writeFile(path.join(root, "smoke-test/ssl/ssl.key"), "-----BEGIN PRIVATE KEY-----\nS\n");
+    await fs.writeFile(
+      path.join(root, "smoke-test/ssl/ssl.key"),
+      "-----BEGIN PRIVATE KEY-----\nS\n",
+    );
 
     const result = await scan({ cwd: root });
     const keys = result.findings.filter((f) => f.ruleId === "security/private-key-file");

@@ -189,9 +189,6 @@ export function isCheckedInGithubActionDist(relativePath: string): boolean {
   if (!relativePath) {
     return false;
   }
-  const normalized = relativePath
-    .replace(/\\/g, "/")
-    .replace(/^\.\//, "")
-    .replace(/\/+$/, "");
+  const normalized = relativePath.replace(/\\/g, "/").replace(/^\.\//, "").replace(/\/+$/, "");
   return /^\.github\/actions\/[^/]+\/dist$/i.test(normalized);
 }
