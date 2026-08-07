@@ -4,6 +4,7 @@ import path from "node:path";
 import { DEFAULT_IGNORE_DIRECTORIES, DEFAULT_MAX_FILE_SIZE_BYTES } from "../constants.js";
 import type { DiscoveredFile, DiscoveryResult } from "../types/index.js";
 import { isPathInsideRoot, toPosixRelative } from "../utils/path.js";
+import { isLogLikePath } from "./log-like.js";
 
 export interface DiscoverFilesOptions {
   root: string;
@@ -89,14 +90,18 @@ export async function discoverFiles(options: DiscoverFilesOptions): Promise<Disc
 
       try {
         const stat = await fs.lstat(absolutePath);
-        if (stat.size > maxFileSizeBytes) {
+        const sizeBytes = Number(stat.size);
+        // Oversized binaries stay skipped (content reads already refuse them).
+        // Log/dump-like paths are kept as metadata so context/large-log-file
+        // can flag the worst offenders instead of silently missing them.
+        if (sizeBytes > maxFileSizeBytes && !isLogLikePath(relativePath)) {
           filesSkippedOversized += 1;
           continue;
         }
         files.push({
           absolutePath,
           relativePath,
-          sizeBytes: Number(stat.size),
+          sizeBytes,
           isSymlink,
         });
       } catch (error) {

@@ -1,4 +1,6 @@
 import type { FixApplyResult, FixPlan } from "./types.js";
+import { previewClaudeSettingsActions } from "./writers/claude-settings.js";
+import { previewCodexConfigActions } from "./writers/codex-config.js";
 import { previewCursorignoreActions } from "./writers/cursorignore.js";
 
 export function renderFixPlanTerminal(
@@ -6,6 +8,8 @@ export function renderFixPlanTerminal(
   options: {
     dryRun: boolean;
     cursorContent: string | null;
+    claudeSettingsContent?: string | null;
+    codexConfigContent?: string | null;
     applyResult?: FixApplyResult;
   },
 ): string {
@@ -24,9 +28,21 @@ export function renderFixPlanTerminal(
         lines.push(`    - ${reason} (${count})`);
       }
       lines.push("");
-      lines.push("  Next: address remaining findings, then run `agentdoctor verify`.");
+      lines.push("Next");
+      lines.push(
+        "  Inspect a finding: agentdoctor explain <rule-id>  (ids in scan --json)",
+      );
+      lines.push(
+        "  Confirm with verify: agentdoctor verify --baseline agentdoctor-report.json",
+      );
+      lines.push(
+        "  No baseline yet? agentdoctor scan --json > agentdoctor-report.json",
+      );
     } else {
       lines.push("  Scan found nothing that Fix can change.");
+      lines.push("");
+      lines.push("Next");
+      lines.push("  Re-scan: agentdoctor scan");
     }
     lines.push("");
     return lines.join("\n");
@@ -39,14 +55,51 @@ export function renderFixPlanTerminal(
     lines.push(`      findings: ${action.findingIds.length}`);
   }
 
-  const preview = previewCursorignoreActions(options.cursorContent, plan.actions);
-  if (preview) {
+  const cursorPreview = previewCursorignoreActions(options.cursorContent, plan.actions);
+  const claudePreview = previewClaudeSettingsActions(
+    options.claudeSettingsContent ?? null,
+    plan.actions,
+  );
+  const codexPreview = previewCodexConfigActions(options.codexConfigContent ?? null, plan.actions);
+
+  if (cursorPreview || claudePreview || codexPreview) {
     lines.push("");
     lines.push("  File changes:");
-    lines.push(`    ${preview.targetRelativePath} (+${preview.patternsToAdd.length} pattern(s))`);
-    lines.push("");
-    for (const previewLine of preview.preview.split("\n")) {
-      lines.push(`  ${previewLine}`);
+    let shown = false;
+    if (cursorPreview) {
+      lines.push(
+        `    ${cursorPreview.targetRelativePath} (+${cursorPreview.patternsToAdd.length} pattern(s))`,
+      );
+      lines.push("");
+      for (const previewLine of cursorPreview.preview.split("\n")) {
+        lines.push(`  ${previewLine}`);
+      }
+      shown = true;
+    }
+    if (claudePreview) {
+      if (shown) {
+        lines.push("");
+      }
+      lines.push(
+        `    ${claudePreview.targetRelativePath} (+${claudePreview.denyRulesToAdd.length} deny rule(s))`,
+      );
+      lines.push("");
+      for (const previewLine of claudePreview.preview.split("\n")) {
+        lines.push(`  ${previewLine}`);
+      }
+      shown = true;
+    }
+    if (codexPreview) {
+      if (shown) {
+        lines.push("");
+      }
+      lines.push(
+        `    ${codexPreview.targetRelativePath} (+${codexPreview.denyKeysToAdd.length} deny key(s))`,
+      );
+      lines.push("");
+      for (const previewLine of codexPreview.preview.split("\n")) {
+        lines.push(`  ${previewLine}`);
+      }
     }
   }
 
@@ -60,14 +113,33 @@ export function renderFixPlanTerminal(
   } else if (options.dryRun) {
     lines.push("");
     lines.push("  No files were modified (dry-run).");
-    lines.push("  Re-run without --dry-run to apply.");
   }
 
   if (plan.skipped.length > 0) {
     lines.push("");
-    lines.push(`  Skipped: ${plan.skipped.length} finding(s) (writers pending or already fixed)`);
+    lines.push(`  Skipped: ${plan.skipped.length} finding(s):`);
+    const reasons = summarizeSkipReasons(plan.skipped.map((s) => s.reason));
+    for (const [reason, count] of reasons) {
+      lines.push(`    - ${reason} (${count})`);
+    }
   }
 
+  lines.push("");
+  lines.push("Next");
+  if (options.dryRun && plan.actions.length > 0) {
+    lines.push("  Apply these changes: agentdoctor fix -y");
+  }
+  if (plan.skipped.length > 0) {
+    lines.push(
+      "  Review/manual findings stay open — inspect with: agentdoctor explain <rule-id>",
+    );
+  }
+  lines.push(
+    "  Confirm with verify: agentdoctor verify --baseline agentdoctor-report.json",
+  );
+  lines.push(
+    "  No baseline yet? agentdoctor scan --json > agentdoctor-report.json",
+  );
   lines.push("");
   return lines.join("\n");
 }

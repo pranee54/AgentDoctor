@@ -7,6 +7,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Claude Code safe-context Fix writer: `agentdoctor fix` appends allowlisted
+  `permissions.deny` Read rules to `.claude/settings.json` for
+  `context/generated-directory` and `context/large-log-file` when Claude Code is
+  configured (alongside existing Cursor `.cursorignore` fixes).
+- Codex safe-context Fix writer: `agentdoctor fix` merges allowlisted filesystem
+  `deny` keys into `.codex/config.toml` permission profiles for the same safe
+  context findings when Codex is detected. Skips when `sandbox_mode` is set or
+  `default_permissions` selects a built-in `:…` profile.
+- GitHub Action / CLI CI policy enforcement: `minimum-score` / `--min-score`,
+  `fail-on-severity` / `--fail-on-severity`, `fail-on-rule` / `--fail-on-rule`,
+  `fail-on-new` / `--fail-on-new`, `verify-baseline`, `json-output`, `summary` /
+  `--summary`, and `annotations` / `--annotations`. Action `version: workspace`
+  runs the checked-out `dist/cli` for local CI.
+- Guided Next steps on failed `scan` / `fix` / `verify` terminal output, and on
+  GitHub Step Summary when a policy gate fails — shortest path back to green
+  (reproduce → fix or explain → verify).
+
+### Fixed
+
+- `context/generated-directory` and `context/large-log-file` honor Claude Code Read
+  deny exclusions when computing `affectedAgents`, so Fix → Verify clears Claude
+  context findings after a deny rule is applied.
+- The same rules honor Codex filesystem deny keys in `.codex/config.toml` when
+  computing `affectedAgents`.
+- Action writes the JSON report even when a policy gate fails (exit `1`), so
+  artifacts remain available for triage.
+- `--min-score` / Action `minimum-score` fail when no supported agents are
+  configured (`agentSecurityAnalysis: limited`) instead of passing on a vacuous 100.
+- Terminal readiness prints `n/a` when analysis is limited (no agents).
+- Agentless first scan no longer shows a green “No agent-configuration findings”
+  success line; it tells the user to add Cursor / Claude Code / Codex config and
+  re-run.
+- Invalid `--min-score` values exit `2` (usage) instead of `3` (internal).
+- Codex Fix refuses invalid `.codex/config.toml` during planning (same as Claude
+  invalid JSON) instead of silently skipping Codex and writing Cursor-only fixes.
+- Codex Fix refuses unrecognizable / invalid `.codex/config.toml` content instead of
+  appending permission profiles into garbage TOML.
+- `agentdoctor fix` exits `2` when confirmation is cancelled (non-TTY without `--yes`)
+  or when Fix refuses invalid settings / cannot write due to permissions.
+- `scan --ci` now fails (exit `1`) when any **critical** finding exists. Omit `--ci` for
+  report-only scans. The GitHub Action stays report-only unless policy inputs are set
+  (it no longer passes a bare `--ci`).
+- Discovery keeps oversized log/dump-like paths as size metadata so
+  `context/large-log-file` flags files above the content-read limit (previously silent
+  false negatives for the largest logs).
+
 ## [0.3.0-beta] — 2026-08-07
 
 Minor beta: completes the Scan → Fix → Verify CLI loop and corrects release-facing honesty.

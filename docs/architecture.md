@@ -24,7 +24,7 @@ Reporters
       terminal (human) · JSON (CI / machines)
 ```
 
-Scoring and automatic fixes are intentionally separate later stages.
+Scoring and automatic fixes are separate pipeline stages after findings.
 
 ## Package layout
 
@@ -36,10 +36,12 @@ src/
     scanner/     public scan() orchestration
     rules/       rule types, runner, security/context/instructions/mcp
     mcp/         project MCP config parsing (no execution)
-    scoring/     reserved for readiness scoring
+    scoring/     readiness scoring
+    fix/         safe fix plan + apply (Cursor / Claude / Codex writers)
+    policy/      CI policy evaluation (CLI + Action)
   detectors/     repository fingerprinting
   discovery/     filesystem walk
-  reporters/     terminal + JSON
+  reporters/     terminal + JSON (+ GitHub summary/annotations)
   security/      redaction / sanitization helpers
   types/         shared contracts
   index.ts       programmatic API
@@ -50,7 +52,7 @@ src/
 1. **Zero config** for first use
 2. **Useful offline** — no API key for core features
 3. **Local-first / privacy-first** — no default upload
-4. **Never modify files** unless explicitly requested (future fix mode)
+4. **Never modify files** unless the user runs `fix` (or calls `applyFixPlan`)
 5. **Every finding explains why** and, when possible, what to do
 6. **Adapters over hardcoding** — new agents register without rewriting the scanner
 7. **Minimal dependencies**
@@ -59,7 +61,7 @@ src/
 ## Public API
 
 ```ts
-import { scan } from "@praneeth_54/agentdoctor";
+import { scan, verify, buildFixPlan, applyFixPlan } from "@praneeth_54/agentdoctor";
 
 const result = await scan({ cwd: process.cwd() });
 ```
@@ -71,11 +73,15 @@ Scanning must not depend on terminal formatting.
 ```text
 agentdoctor [path]
 agentdoctor scan [path]
+agentdoctor fix [path]
+agentdoctor verify [path]
 agentdoctor explain <rule>
 agentdoctor doctor
-agentdoctor fix          # reserved
 agentdoctor --json
 agentdoctor --ci
+agentdoctor --min-score <n>
+agentdoctor --fail-on-severity <level>
+agentdoctor --fail-on-rule <id>
 agentdoctor --verbose
 agentdoctor --version
 agentdoctor --help

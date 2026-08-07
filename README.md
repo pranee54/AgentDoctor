@@ -100,7 +100,7 @@ Manually reviewing all of that across Cursor, Claude Code, and Codex is slow and
 | ESLint          | Source code                      |
 | **AgentDoctor** | **AI coding agent environments** |
 
-AgentDoctor analyzes configuration. It does not run agents or call an LLM. `agentdoctor fix` may append safe Cursor ignore patterns; it does not rewrite security settings or credentials.
+AgentDoctor analyzes configuration. It does not run agents or call an LLM. `agentdoctor fix` may append safe context exclusions (Cursor `.cursorignore`, Claude Code Read deny rules, and Codex filesystem deny keys); it does not rewrite secrets, credentials, or security modes such as `bypassPermissions`.
 
 ---
 
@@ -142,7 +142,7 @@ You get deterministic findings with:
 - conservative recommendations
 - readiness score (`scores.overall` in JSON; overall line in the terminal)
 
-Safe Cursor context exclusions can be applied with `agentdoctor fix`. Security and review findings stay manual — Fix explains why and does not invent unsafe edits.
+Safe context exclusions (Cursor / Claude Code / Codex) can be applied with `agentdoctor fix`. Security and review findings stay manual — Fix explains why and does not invent unsafe edits.
 
 ---
 
@@ -173,7 +173,7 @@ agentdoctor
 # 1. Scan (save a baseline for Verify)
 npx @praneeth_54/agentdoctor scan . --json > agentdoctor-report.json
 
-# 2. Fix safe Cursor context exclusions (preview first with --dry-run)
+# 2. Fix safe context exclusions (preview first with --dry-run)
 npx @praneeth_54/agentdoctor fix . --dry-run
 npx @praneeth_54/agentdoctor fix . -y
 
@@ -181,7 +181,16 @@ npx @praneeth_54/agentdoctor fix . -y
 npx @praneeth_54/agentdoctor verify . --baseline agentdoctor-report.json
 ```
 
-`fix` currently writes `.cursorignore` patterns for safe context findings (for example unignored `build/` or large logs). Review/manual security findings are listed as skipped — address those yourself, then re-run `verify`.
+`fix` writes safe context exclusions for Cursor (`.cursorignore`), Claude Code
+(`permissions.deny` Read rules in `.claude/settings.json`), and Codex (filesystem `deny`
+keys under a permissions profile in `.codex/config.toml`) for findings such as unignored
+`build/` or large logs. Review/manual security findings are listed as skipped — address those
+yourself, then re-run `verify`.
+
+> **Published `0.3.0-beta`:** npm and Action `@v0.3.0-beta` still ship Cursor-only Fix
+> (`.cursorignore`). Claude Code / Codex Fix writers, Action policy inputs, and
+> `scan --ci` failing on criticals are in this repository’s Unreleased tree
+> ([CHANGELOG.md](CHANGELOG.md)).
 
 ### Common commands
 
@@ -270,6 +279,8 @@ This is still software that reads untrusted repository trees. Treat findings as 
 
 Run AgentDoctor directly in a workflow:
 
+Published Action `@v0.3.0-beta` is report-only (`path`, `version`, `output-file`):
+
 ```yaml
 permissions:
   contents: read
@@ -291,10 +302,13 @@ steps:
       path: ${{ steps.agentdoctor.outputs.report-path }}
 ```
 
-The action installs the published `@praneeth_54/agentdoctor@0.3.0-beta` package, runs it with
-`--ci --json`, and writes the report inside the checked-out workspace. It sets up Node.js 20
-for the CLI. The optional `version` input accepts an exact npm version or the `latest` / `beta`
-dist-tag.
+Policy inputs (`minimum-score`, `fail-on-severity`, `fail-on-rule`, `fail-on-new`,
+`verify-baseline`, `summary`, `annotations`) exist in this repository’s Unreleased
+`action.yml` and matching CLI. Do not pass them to `@v0.3.0-beta` — that tag ignores them.
+Use this repo’s Action revision (or a later release tag) with a matching CLI (`version` pin
+or `version: workspace`). The action installs `@praneeth_54/agentdoctor` (pin via `version`),
+runs scan (or `verify` when `verify-baseline` is set) with `--json`, and writes the report
+inside the workspace.
 
 ### CLI
 
@@ -302,15 +316,26 @@ Use JSON directly in other CI systems:
 
 ```bash
 # Report-only (exit 0 even when findings exist; scores still in JSON)
-npx @praneeth_54/agentdoctor --ci --json
+npx @praneeth_54/agentdoctor --json
 
-# Fail CI when overall readiness is below 70
-npx @praneeth_54/agentdoctor --ci --json --min-score 70
+# Published 0.3.0-beta: --ci is report-only; use --min-score to fail CI
+npx @praneeth_54/agentdoctor@0.3.0-beta --ci --json --min-score 70
+
+# Unreleased tree CLI: --ci fails on any critical finding
+agentdoctor --ci --json
+
+# Unreleased: fail when overall readiness is below 70 (with --ci also fails on criticals)
+agentdoctor --ci --json --min-score 70
+
+# Unreleased: fail on warning-or-higher (overrides the default critical gate from --ci)
+agentdoctor --ci --json --fail-on-severity warning
 ```
 
-`--ci` runs non-interactively and does **not** apply an implicit score threshold.
-Use `--min-score N` (with or without `--ci`) to fail with exit code `1` when
-`scores.overall < N`.
+In this repository’s Unreleased CLI, `--ci` fails when any **critical** finding exists.
+Override the severity floor with `--fail-on-severity`, and use `--min-score` /
+`--fail-on-rule` for additional gates. Omit `--ci` for report-only JSON (exit `0` even when
+findings exist). Published `0.3.0-beta` treats `--ci` as report-only and does not accept
+`--fail-on-severity` / `--fail-on-rule`.
 
 Exit codes: [docs/exit-codes.md](docs/exit-codes.md). Compatibility promises: [docs/compatibility.md](docs/compatibility.md).
 
@@ -329,15 +354,14 @@ and deferred v2 items): [docs/scoring.md](docs/scoring.md).
 
 Honest limits of the current public beta:
 
-| Limitation                  | Status                                                              |
-| --------------------------- | ------------------------------------------------------------------- |
-| Automatic fixes             | Safe Cursor `.cursorignore` context exclusions only                 |
-| Claude Code / Codex writers | Not implemented — Fix skips with an explicit reason                 |
-| Security findings           | Review/manual — Fix does not rewrite secrets or permission settings |
-| GitHub Action score gates   | Action remains `--ci --json` report-only (no `min-score` input)     |
-| Secret-content scanning     | Filename / config heuristics only                                   |
-| Detection style             | Intentionally conservative; false security findings are avoided     |
-| Agent coverage              | Cursor, Claude Code, Codex project configs                          |
+| Limitation                 | Status                                                              |
+| -------------------------- | ------------------------------------------------------------------- |
+| Automatic fixes            | Safe Cursor / Claude Code / Codex context exclusions (Unreleased; published `0.3.0-beta` is Cursor `.cursorignore` only) |
+| Security findings          | Review/manual — Fix does not rewrite secrets or security modes      |
+| GitHub Action policy gates | Unreleased Action inputs + CLI flags; published `@v0.3.0-beta` is report-only |
+| Secret-content scanning    | Filename / config heuristics only                                   |
+| Detection style            | Intentionally conservative; false security findings are avoided     |
+| Agent coverage             | Cursor, Claude Code, Codex project configs                          |
 
 See [CHANGELOG.md](CHANGELOG.md) and [docs/compatibility.md](docs/compatibility.md).
 

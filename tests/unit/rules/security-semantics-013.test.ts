@@ -40,8 +40,12 @@ describe("security semantics: agents vs repository risk", () => {
 
     const terminal = renderTerminalReport(result);
     expect(terminal).toContain("agent-specific security exposure checks are limited");
-    expect(terminal).toContain("No agent-configuration findings");
+    expect(terminal).toContain("Nothing to audit yet");
+    expect(terminal).toContain("re-run `agentdoctor`");
+    expect(terminal).not.toContain("No agent-configuration findings");
+    expect(terminal).toContain("Readiness: n/a");
     expect(terminal).not.toContain("No findings");
+    expect(terminal).not.toMatch(/Readiness: \d+\/100/);
 
     const json = JSON.parse(renderJsonReport(result));
     expect(json.agentSecurityAnalysis).toBe("limited");

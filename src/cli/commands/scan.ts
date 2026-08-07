@@ -1,11 +1,13 @@
 import path from "node:path";
 
+import { evaluateScanPolicy, type PolicyOptions } from "../../core/policy/evaluate.js";
 import { scan } from "../../core/scanner/scan.js";
+import { emitGithubReports } from "../../reporters/github/emit.js";
 import { renderJsonReport } from "../../reporters/json/report.js";
 import { renderTerminalReport } from "../../reporters/terminal/report.js";
 import { EXIT_CODES, type ExitCode } from "../../types/index.js";
-import { resolveRepoRoot } from "../../utils/path.js";
 import { isDirectory } from "../../utils/fs.js";
+import { resolveRepoRoot } from "../../utils/path.js";
 
 export interface ScanCommandOptions {
   targetPath?: string;
@@ -13,6 +15,10 @@ export interface ScanCommandOptions {
   ci?: boolean;
   verbose?: boolean;
   minScore?: number;
+  failOnSeverity?: PolicyOptions["failOnSeverity"];
+  failOnRules?: string[];
+  summary?: boolean;
+  annotations?: boolean;
 }
 
 export async function runScanCommand(options: ScanCommandOptions): Promise<ExitCode> {
@@ -39,15 +45,32 @@ export async function runScanCommand(options: ScanCommandOptions): Promise<ExitC
       );
     }
 
-    if (options.minScore !== undefined && result.scores !== null) {
-      if (result.scores.overall < options.minScore) {
-        if (!options.json) {
-          console.error(
-            `\nCI check failed: overall score ${result.scores.overall} is below --min-score ${options.minScore}`,
-          );
+    const failOnSeverity = options.failOnSeverity ?? (options.ci === true ? "critical" : undefined);
+    const policy = {
+      ...(options.minScore !== undefined ? { minimumScore: options.minScore } : {}),
+      ...(failOnSeverity !== undefined ? { failOnSeverity } : {}),
+      ...(options.failOnRules && options.failOnRules.length > 0
+        ? { failOnRules: options.failOnRules }
+        : {}),
+    };
+    const violations = evaluateScanPolicy(result, policy);
+
+    await emitGithubReports({
+      mode: "scan",
+      findings: result.findings,
+      overallScore: result.scores?.overall ?? null,
+      violations,
+      summary: options.summary === true,
+      annotations: options.annotations === true,
+    });
+
+    if (violations.length > 0) {
+      if (!options.json) {
+        for (const violation of violations) {
+          console.error(`\n${violation.message}`);
         }
-        return EXIT_CODES.ISSUES_OR_THRESHOLD;
       }
+      return EXIT_CODES.ISSUES_OR_THRESHOLD;
     }
 
     return EXIT_CODES.SUCCESS;

@@ -1,5 +1,5 @@
 name: AgentDoctor
-description: Audit project-level coding-agent configuration and emit a machine-readable report.
+description: Audit project-level coding-agent configuration and enforce CI policy gates.
 author: AgentDoctor Contributors
 
 branding:
@@ -12,18 +12,62 @@ inputs:
     required: false
     default: .
   version:
-    description: Published AgentDoctor npm version or supported dist-tag.
+    description: >
+      Published AgentDoctor npm version or dist-tag (latest|beta), or `workspace`
+      to run the checked-out repository's built CLI at dist/cli/index.js.
     required: false
     default: 0.3.0-beta
   output-file:
     description: Repository-relative path for the JSON report.
     required: false
     default: agentdoctor-report.json
+  minimum-score:
+    description: Fail when overall readiness score is below this integer (0-100). Empty skips the gate.
+    required: false
+    default: ""
+  fail-on-severity:
+    description: Fail when any finding has this severity or higher (critical|warning|info). Empty skips the gate.
+    required: false
+    default: ""
+  fail-on-rule:
+    description: Comma-separated rule IDs that fail CI when present (e.g. security/env-file-exposure).
+    required: false
+    default: ""
+  fail-on-new:
+    description: >
+      When verify-baseline is set, fail on new findings vs the baseline.
+      Defaults to true whenever verify-baseline is non-empty unless set to false.
+    required: false
+    default: ""
+  verify-baseline:
+    description: >
+      Repository-relative path to a prior scan JSON baseline. When set, runs
+      `agentdoctor verify` instead of scan.
+    required: false
+    default: ""
+  json-output:
+    description: Write a JSON report to output-file (true/false).
+    required: false
+    default: "true"
+  summary:
+    description: Write a GitHub Actions job step summary (requires CLI with --summary support).
+    required: false
+    default: "false"
+  annotations:
+    description: Emit GitHub Actions annotations for findings (requires CLI with --annotations support).
+    required: false
+    default: "false"
 
 outputs:
   report-path:
-    description: Absolute path to the generated JSON report.
+    description: Absolute path to the generated JSON report (empty when json-output is false).
     value: ${{ steps.validate.outputs.report-path }}
+  outcome:
+    description: success | policy-failure | configuration-error | internal-failure
+    value: ${{ steps.run.outputs.outcome }}
+  overall-score:
+    description: Overall readiness score from the scan/verify result when available.
+    value: ${{ steps.run.outputs.overall-score }}
 
 runs:
   using: composite
@@ -39,6 +83,14 @@ runs:
       env:
         AGENTDOCTOR_PATH: ${{ inputs.path }}
         AGENTDOCTOR_OUTPUT_FILE: ${{ inputs.output-file }}
+        AGENTDOCTOR_JSON_OUTPUT: ${{ inputs.json-output }}
+        AGENTDOCTOR_VERIFY_BASELINE: ${{ inputs.verify-baseline }}
+        AGENTDOCTOR_MINIMUM_SCORE: ${{ inputs.minimum-score }}
+        AGENTDOCTOR_FAIL_ON_SEVERITY: ${{ inputs.fail-on-severity }}
+        AGENTDOCTOR_FAIL_ON_RULE: ${{ inputs.fail-on-rule }}
+        AGENTDOCTOR_FAIL_ON_NEW: ${{ inputs.fail-on-new }}
+        AGENTDOCTOR_SUMMARY: ${{ inputs.summary }}
+        AGENTDOCTOR_ANNOTATIONS: ${{ inputs.annotations }}
       run: |
         set -euo pipefail
         node <<'NODE'
@@ -49,13 +101,32 @@ runs:
         const targetInput = process.env.AGENTDOCTOR_PATH;
         const outputInput = process.env.AGENTDOCTOR_OUTPUT_FILE;
         const githubOutput = process.env.GITHUB_OUTPUT;
+        const jsonOutputRaw = (process.env.AGENTDOCTOR_JSON_OUTPUT || "true").trim().toLowerCase();
+        const verifyBaselineInput = (process.env.AGENTDOCTOR_VERIFY_BASELINE || "").trim();
+        const minimumScoreRaw = (process.env.AGENTDOCTOR_MINIMUM_SCORE || "").trim();
+        const failOnSeverityRaw = (process.env.AGENTDOCTOR_FAIL_ON_SEVERITY || "").trim();
+        const failOnRuleRaw = (process.env.AGENTDOCTOR_FAIL_ON_RULE || "").trim();
+        const failOnNewRaw = (process.env.AGENTDOCTOR_FAIL_ON_NEW || "").trim().toLowerCase();
+        const summaryRaw = (process.env.AGENTDOCTOR_SUMMARY || "false").trim().toLowerCase();
+        const annotationsRaw = (process.env.AGENTDOCTOR_ANNOTATIONS || "false").trim().toLowerCase();
 
         if (!workspaceInput || !targetInput || !outputInput || !githubOutput) {
           throw new Error("GitHub Actions did not provide the required environment");
         }
-        if ([workspaceInput, targetInput, outputInput].some((value) => /[\r\n]/.test(value))) {
+        if ([workspaceInput, targetInput, outputInput, verifyBaselineInput].some((value) => /[\r\n]/.test(value))) {
           throw new Error("Action paths must not contain newlines");
         }
+
+        const parseBool = (value, fallback) => {
+          if (value === "") return fallback;
+          if (value === "true" || value === "1" || value === "yes") return true;
+          if (value === "false" || value === "0" || value === "no") return false;
+          throw new Error(`Invalid boolean action input: ${value}`);
+        };
+
+        const jsonOutput = parseBool(jsonOutputRaw, true);
+        const summary = parseBool(summaryRaw, false);
+        const annotations = parseBool(annotationsRaw, false);
 
         const workspace = fs.realpathSync(workspaceInput);
         const isInsideWorkspace = (candidate) => {
@@ -68,71 +139,128 @@ runs:
           throw new Error("path must resolve to a directory inside GITHUB_WORKSPACE");
         }
 
-        const requestedReportPath = path.resolve(workspace, outputInput);
-        if (requestedReportPath === workspace || !isInsideWorkspace(requestedReportPath)) {
-          throw new Error("output-file must resolve to a file inside GITHUB_WORKSPACE");
-        }
+        let reportPath = "";
+        if (jsonOutput) {
+          const requestedReportPath = path.resolve(workspace, outputInput);
+          if (requestedReportPath === workspace || !isInsideWorkspace(requestedReportPath)) {
+            throw new Error("output-file must resolve to a file inside GITHUB_WORKSPACE");
+          }
 
-        const reportRelativePath = path.relative(workspace, requestedReportPath);
-        const reportParts = reportRelativePath.split(path.sep);
-        const reportName = reportParts.pop();
-        let reportParent = workspace;
+          const reportRelativePath = path.relative(workspace, requestedReportPath);
+          const reportParts = reportRelativePath.split(path.sep);
+          const reportName = reportParts.pop();
+          let reportParent = workspace;
 
-        for (const part of reportParts) {
-          const candidate = path.join(reportParent, part);
-          let state;
+          for (const part of reportParts) {
+            const candidate = path.join(reportParent, part);
+            let state;
 
+            try {
+              state = fs.lstatSync(candidate);
+            } catch (error) {
+              if (error.code !== "ENOENT") {
+                throw error;
+              }
+
+              try {
+                fs.mkdirSync(candidate);
+              } catch (mkdirError) {
+                if (mkdirError.code !== "EEXIST") {
+                  throw mkdirError;
+                }
+              }
+              state = fs.lstatSync(candidate);
+            }
+
+            if (state.isSymbolicLink() || !state.isDirectory()) {
+              throw new Error("output-file parent must not contain symbolic links or non-directories");
+            }
+
+            reportParent = fs.realpathSync(candidate);
+            if (!isInsideWorkspace(reportParent)) {
+              throw new Error("output-file parent must remain inside GITHUB_WORKSPACE");
+            }
+          }
+
+          reportPath = path.join(reportParent, reportName);
           try {
-            state = fs.lstatSync(candidate);
+            const reportState = fs.lstatSync(reportPath);
+            if (reportState.isSymbolicLink()) {
+              throw new Error("output-file must not be a symbolic link");
+            }
+            if (!reportState.isFile()) {
+              throw new Error("output-file must be a regular file");
+            }
           } catch (error) {
             if (error.code !== "ENOENT") {
               throw error;
             }
-
-            try {
-              fs.mkdirSync(candidate);
-            } catch (mkdirError) {
-              if (mkdirError.code !== "EEXIST") {
-                throw mkdirError;
-              }
-            }
-            state = fs.lstatSync(candidate);
-          }
-
-          if (state.isSymbolicLink() || !state.isDirectory()) {
-            throw new Error("output-file parent must not contain symbolic links or non-directories");
-          }
-
-          reportParent = fs.realpathSync(candidate);
-          if (!isInsideWorkspace(reportParent)) {
-            throw new Error("output-file parent must remain inside GITHUB_WORKSPACE");
           }
         }
 
-        const reportPath = path.join(reportParent, reportName);
-        try {
-          const reportState = fs.lstatSync(reportPath);
-          if (reportState.isSymbolicLink()) {
-            throw new Error("output-file must not be a symbolic link");
+        let verifyBaselinePath = "";
+        if (verifyBaselineInput) {
+          const baselineResolved = path.resolve(workspace, verifyBaselineInput);
+          if (!isInsideWorkspace(baselineResolved)) {
+            throw new Error("verify-baseline must resolve inside GITHUB_WORKSPACE");
           }
-          if (!reportState.isFile()) {
-            throw new Error("output-file must be a regular file");
+          if (!fs.existsSync(baselineResolved) || !fs.statSync(baselineResolved).isFile()) {
+            throw new Error("verify-baseline must be an existing file inside GITHUB_WORKSPACE");
           }
-        } catch (error) {
-          if (error.code !== "ENOENT") {
-            throw error;
+          verifyBaselinePath = fs.realpathSync(baselineResolved);
+        }
+
+        if (minimumScoreRaw !== "") {
+          const score = Number(minimumScoreRaw);
+          if (!Number.isInteger(score) || score < 0 || score > 100) {
+            throw new Error("minimum-score must be an integer between 0 and 100");
           }
         }
 
-        fs.appendFileSync(githubOutput, `target-path=${target}\nreport-path=${reportPath}\n`);
+        if (failOnSeverityRaw !== "") {
+          const allowed = new Set(["critical", "warning", "info"]);
+          if (!allowed.has(failOnSeverityRaw.toLowerCase())) {
+            throw new Error("fail-on-severity must be critical, warning, or info");
+          }
+        }
+
+        const failOnNewDefault = verifyBaselinePath !== "";
+        const failOnNew = parseBool(failOnNewRaw, failOnNewDefault);
+        if (failOnNew && !verifyBaselinePath) {
+          throw new Error("fail-on-new requires verify-baseline");
+        }
+
+        const append = (key, value) => {
+          fs.appendFileSync(githubOutput, `${key}=${value}\n`);
+        };
+
+        append("target-path", target);
+        append("report-path", reportPath);
+        append("json-output", jsonOutput ? "true" : "false");
+        append("verify-baseline-path", verifyBaselinePath);
+        append("minimum-score", minimumScoreRaw);
+        append("fail-on-severity", failOnSeverityRaw.toLowerCase());
+        append("fail-on-rule", failOnRuleRaw);
+        append("fail-on-new", failOnNew ? "true" : "false");
+        append("summary", summary ? "true" : "false");
+        append("annotations", annotations ? "true" : "false");
         NODE
 
     - name: Run AgentDoctor
+      id: run
       shell: bash
       env:
         AGENTDOCTOR_TARGET_PATH: ${{ steps.validate.outputs.target-path }}
         AGENTDOCTOR_REPORT_PATH: ${{ steps.validate.outputs.report-path }}
         AGENTDOCTOR_VERSION: ${{ inputs.version }}
+        AGENTDOCTOR_JSON_OUTPUT: ${{ steps.validate.outputs.json-output }}
+        AGENTDOCTOR_VERIFY_BASELINE_PATH: ${{ steps.validate.outputs.verify-baseline-path }}
+        AGENTDOCTOR_MINIMUM_SCORE: ${{ steps.validate.outputs.minimum-score }}
+        AGENTDOCTOR_FAIL_ON_SEVERITY: ${{ steps.validate.outputs.fail-on-severity }}
+        AGENTDOCTOR_FAIL_ON_RULE: ${{ steps.validate.outputs.fail-on-rule }}
+        AGENTDOCTOR_FAIL_ON_NEW: ${{ steps.validate.outputs.fail-on-new }}
+        AGENTDOCTOR_SUMMARY: ${{ steps.validate.outputs.summary }}
+        AGENTDOCTOR_ANNOTATIONS: ${{ steps.validate.outputs.annotations }}
       run: |
         set -euo pipefail
         node <<'NODE'
@@ -142,80 +270,184 @@ runs:
 
         const version = process.env.AGENTDOCTOR_VERSION;
         const targetPath = process.env.AGENTDOCTOR_TARGET_PATH;
-        const reportPath = process.env.AGENTDOCTOR_REPORT_PATH;
+        const reportPath = process.env.AGENTDOCTOR_REPORT_PATH || "";
         const runnerTemp = process.env.RUNNER_TEMP;
+        const workspace = process.env.GITHUB_WORKSPACE;
+        const githubOutput = process.env.GITHUB_OUTPUT;
+        const jsonOutput = process.env.AGENTDOCTOR_JSON_OUTPUT === "true";
+        const verifyBaselinePath = process.env.AGENTDOCTOR_VERIFY_BASELINE_PATH || "";
+        const minimumScore = (process.env.AGENTDOCTOR_MINIMUM_SCORE || "").trim();
+        const failOnSeverity = (process.env.AGENTDOCTOR_FAIL_ON_SEVERITY || "").trim();
+        const failOnRule = (process.env.AGENTDOCTOR_FAIL_ON_RULE || "").trim();
+        const failOnNew = process.env.AGENTDOCTOR_FAIL_ON_NEW === "true";
+        const summary = process.env.AGENTDOCTOR_SUMMARY === "true";
+        const annotations = process.env.AGENTDOCTOR_ANNOTATIONS === "true";
 
-        if (!version || !targetPath || !reportPath || !runnerTemp) {
+        function setOutput(key, value) {
+          fs.appendFileSync(githubOutput, `${key}=${value}\n`);
+        }
+
+        if (!version || !targetPath || !runnerTemp || !workspace || !githubOutput) {
+          setOutput("outcome", "configuration-error");
           throw new Error("GitHub Actions did not provide the validated action environment");
         }
-        if (!/^(latest|beta|[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?)$/.test(version)) {
-          throw new Error("version must be an exact npm version or the latest/beta dist-tag");
+
+        const isWorkspace = version === "workspace";
+        if (
+          !isWorkspace &&
+          !/^(latest|beta|[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?)$/.test(version)
+        ) {
+          setOutput("outcome", "configuration-error");
+          throw new Error("version must be an exact npm version, latest/beta, or workspace");
         }
 
-        const packageSpec = `@praneeth_54/agentdoctor@${version}`;
-        const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
-        const result = spawnSync(
-          npmCommand,
-          [
+        const args = [];
+        if (verifyBaselinePath) {
+          args.push("verify", targetPath, "--baseline", verifyBaselinePath);
+          if (failOnNew) {
+            args.push("--fail-on-new");
+          }
+        } else {
+          // Report-only by default. Policy inputs (minimum-score / fail-on-severity / …)
+          // enforce gates without implying --ci, so Action stays non-failing until configured.
+          args.push(targetPath);
+        }
+
+        if (jsonOutput) {
+          args.push("--json");
+        }
+        if (minimumScore !== "") {
+          args.push("--min-score", minimumScore);
+        }
+        if (failOnSeverity !== "") {
+          args.push("--fail-on-severity", failOnSeverity);
+        }
+        if (failOnRule !== "") {
+          args.push("--fail-on-rule", failOnRule);
+        }
+        if (summary) {
+          args.push("--summary");
+        }
+        if (annotations) {
+          args.push("--annotations");
+        }
+
+        let command;
+        let commandArgs;
+        if (isWorkspace) {
+          const localCli = path.join(workspace, "dist", "cli", "index.js");
+          if (!fs.existsSync(localCli)) {
+            setOutput("outcome", "configuration-error");
+            throw new Error(
+              "version=workspace requires dist/cli/index.js (run npm run build in this repository first)",
+            );
+          }
+          command = process.execPath;
+          commandArgs = [localCli, ...args];
+        } else {
+          const packageSpec = `@praneeth_54/agentdoctor@${version}`;
+          const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
+          command = npmCommand;
+          commandArgs = [
             "exec",
             "--yes",
             `--package=${packageSpec}`,
             "--",
             "agentdoctor",
-            targetPath,
-            "--ci",
-            "--json",
-          ],
-          {
-            cwd: runnerTemp,
-            encoding: "utf8",
-            maxBuffer: 64 * 1024 * 1024,
-            stdio: ["ignore", "pipe", "inherit"],
-          },
-        );
+            ...args,
+          ];
+        }
+
+        const result = spawnSync(command, commandArgs, {
+          cwd: isWorkspace ? workspace : runnerTemp,
+          encoding: "utf8",
+          maxBuffer: 64 * 1024 * 1024,
+          stdio: ["ignore", "pipe", "inherit"],
+          env: process.env,
+        });
 
         if (result.error) {
+          setOutput("outcome", "internal-failure");
           throw result.error;
         }
-        if (result.status !== 0) {
-          process.exit(result.status ?? 3);
-        }
 
-        JSON.parse(result.stdout);
-        const reportParent = path.dirname(reportPath);
-        const temporaryReportPath = path.join(
-          reportParent,
-          `.agentdoctor-report-${process.pid}-${Date.now()}.tmp`,
-        );
-        let temporaryReportCreated = false;
+        const status = result.status ?? 3;
+        let overallScore = "";
 
-        try {
-          fs.writeFileSync(temporaryReportPath, result.stdout, {
-            encoding: "utf8",
-            flag: "wx",
-            mode: 0o600,
-          });
-          temporaryReportCreated = true;
-
+        if (jsonOutput && typeof result.stdout === "string" && result.stdout.trim().length > 0) {
+          let parsed;
           try {
-            const reportState = fs.lstatSync(reportPath);
-            if (reportState.isSymbolicLink()) {
-              throw new Error("output-file became a symbolic link before the report was written");
-            }
-            if (!reportState.isFile()) {
-              throw new Error("output-file became a non-regular file before the report was written");
-            }
+            parsed = JSON.parse(result.stdout);
           } catch (error) {
-            if (error.code !== "ENOENT") {
-              throw error;
-            }
+            setOutput("outcome", "internal-failure");
+            throw new Error(`AgentDoctor did not emit valid JSON: ${error.message}`);
           }
 
-          fs.renameSync(temporaryReportPath, reportPath);
-          temporaryReportCreated = false;
-        } finally {
-          if (temporaryReportCreated) {
-            fs.rmSync(temporaryReportPath, { force: true });
+          if (parsed && parsed.scores && typeof parsed.scores.overall === "number") {
+            overallScore = String(parsed.scores.overall);
+          } else if (
+            parsed &&
+            parsed.after &&
+            parsed.after.scores &&
+            typeof parsed.after.scores.overall === "number"
+          ) {
+            overallScore = String(parsed.after.scores.overall);
+          }
+
+          if (reportPath) {
+            const reportParent = path.dirname(reportPath);
+            const temporaryReportPath = path.join(
+              reportParent,
+              `.agentdoctor-report-${process.pid}-${Date.now()}.tmp`,
+            );
+            let temporaryReportCreated = false;
+
+            try {
+              fs.writeFileSync(temporaryReportPath, result.stdout, {
+                encoding: "utf8",
+                flag: "wx",
+                mode: 0o600,
+              });
+              temporaryReportCreated = true;
+
+              try {
+                const reportState = fs.lstatSync(reportPath);
+                if (reportState.isSymbolicLink()) {
+                  throw new Error("output-file became a symbolic link before the report was written");
+                }
+                if (!reportState.isFile()) {
+                  throw new Error("output-file became a non-regular file before the report was written");
+                }
+              } catch (error) {
+                if (error.code !== "ENOENT") {
+                  throw error;
+                }
+              }
+
+              fs.renameSync(temporaryReportPath, reportPath);
+              temporaryReportCreated = false;
+            } finally {
+              if (temporaryReportCreated) {
+                fs.rmSync(temporaryReportPath, { force: true });
+              }
+            }
           }
         }
+
+        setOutput("overall-score", overallScore);
+
+        if (status === 0) {
+          setOutput("outcome", "success");
+          process.exit(0);
+        }
+        if (status === 1) {
+          setOutput("outcome", "policy-failure");
+          process.exit(1);
+        }
+        if (status === 2) {
+          setOutput("outcome", "configuration-error");
+          process.exit(2);
+        }
+        setOutput("outcome", "internal-failure");
+        process.exit(status);
         NODE

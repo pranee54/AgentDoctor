@@ -1,4 +1,6 @@
 import type { AgentId } from "../../../types/index.js";
+import { claudeDeniesPath } from "../claude-deny.js";
+import { codexDeniesPath } from "../codex-deny.js";
 import { isSampleOrTestPath } from "../path-kind.js";
 import type { FindingDraft, RuleContext, RuleDefinition } from "../types.js";
 
@@ -78,32 +80,6 @@ function agentsWithoutClearExclusion(context: RuleContext, relativePath: string)
   return affected;
 }
 
-async function claudeDeniesRead(context: RuleContext, relativePath: string): Promise<boolean> {
-  const settingsFiles =
-    context.agents
-      .find((a) => a.id === "claude-code")
-      ?.configFiles.filter(
-        (f) => f.kind === "claude-settings" || f.kind === "claude-settings-local",
-      ) ?? [];
-
-  for (const file of settingsFiles) {
-    const cached = await context.textCache.read(file.relativePath);
-    if (!cached.text) continue;
-    const patterns = [
-      `Read(./${relativePath})`,
-      `Read(${relativePath})`,
-      `Read(/**/${relativePath.split("/").pop()})`,
-    ];
-    if (patterns.some((p) => cached.text!.includes(p))) {
-      return true;
-    }
-    if (/"deny"\s*:\s*\[[^\]]*"Read"\s*[,\]]/.test(cached.text)) {
-      return true;
-    }
-  }
-  return false;
-}
-
 export const envFileExposureRule: RuleDefinition = {
   id: "security/env-file-exposure",
   title: "Sensitive environment file may enter agent context",
@@ -157,8 +133,14 @@ export const envFileExposureRule: RuleDefinition = {
       let affected = agentsWithoutClearExclusion(context, file.relativePath);
 
       if (affected.includes("claude-code")) {
-        if (await claudeDeniesRead(context, file.relativePath)) {
+        if (await claudeDeniesPath(context, file.relativePath)) {
           affected = affected.filter((a) => a !== "claude-code");
+        }
+      }
+
+      if (affected.includes("codex")) {
+        if (await codexDeniesPath(context, file.relativePath)) {
+          affected = affected.filter((a) => a !== "codex");
         }
       }
 
@@ -175,7 +157,7 @@ export const envFileExposureRule: RuleDefinition = {
         whyItMatters:
           "Environment files frequently hold API keys and credentials. If readable by an AI coding agent, those values may be included in prompts or logs.",
         recommendation:
-          "Add an agent-specific exclusion (for example .cursorignore or a Claude Code Read deny rule), keep the file out of version control, and rotate any credentials that may have been exposed.",
+          "Add an agent-specific exclusion (for example .cursorignore, a Claude Code Read deny rule, or a Codex filesystem deny), keep the file out of version control, and rotate any credentials that may have been exposed.",
         affectedAgents: affected,
         evidence: {
           path: file.relativePath,

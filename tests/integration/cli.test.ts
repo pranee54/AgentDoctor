@@ -13,6 +13,7 @@ import { EXIT_CODES } from "../../src/types/index.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const cleanProject = path.resolve(here, "../../fixtures/clean-project");
+const cleanConfigured = path.resolve(here, "../../fixtures/clean-configured-project");
 const multiAgent = path.resolve(here, "../../fixtures/multi-agent-project");
 const insecureProject = path.resolve(here, "../../fixtures/insecure-agent-project");
 
@@ -39,8 +40,8 @@ async function parseCli(argv: string[]): Promise<{ output: string; exitCode: num
   process.exitCode = undefined;
   try {
     const output = await captureStdout(async () => {
-      const program = createProgram();
-      await program.parseAsync(["node", "agentdoctor", ...argv]);
+      const { runCli } = await import("../../src/cli/program.js");
+      await runCli(["node", "agentdoctor", ...argv]);
     });
     return { output, exitCode: typeof process.exitCode === "number" ? process.exitCode : 0 };
   } finally {
@@ -74,14 +75,25 @@ describe("CLI program", () => {
     });
   });
 
-  it("clean repo with --min-score 99 succeeds", async () => {
+  it("clean configured repo with --min-score 99 succeeds", async () => {
     await silenceStdout(async () => {
       const code = await runScanCommand({
-        targetPath: cleanProject,
+        targetPath: cleanConfigured,
         json: true,
         minScore: 99,
       });
       expect(code).toBe(EXIT_CODES.SUCCESS);
+    });
+  });
+
+  it("agentless repo with --min-score fails instead of vacuous 100", async () => {
+    await silenceStdout(async () => {
+      const code = await runScanCommand({
+        targetPath: cleanProject,
+        json: true,
+        minScore: 70,
+      });
+      expect(code).toBe(EXIT_CODES.ISSUES_OR_THRESHOLD);
     });
   });
 
@@ -96,10 +108,21 @@ describe("CLI program", () => {
     });
   });
 
-  it("--ci alone remains report-only (exit 0)", async () => {
+  it("--ci alone fails on critical findings", async () => {
     await silenceStdout(async () => {
       const code = await runScanCommand({
         targetPath: insecureProject,
+        json: true,
+        ci: true,
+      });
+      expect(code).toBe(EXIT_CODES.ISSUES_OR_THRESHOLD);
+    });
+  });
+
+  it("--ci alone succeeds when no critical findings", async () => {
+    await silenceStdout(async () => {
+      const code = await runScanCommand({
+        targetPath: cleanConfigured,
         json: true,
         ci: true,
       });
@@ -107,7 +130,7 @@ describe("CLI program", () => {
     });
   });
 
-  it("no threshold exits 0 even when findings exist", async () => {
+  it("scan without --ci stays report-only even with critical findings", async () => {
     await silenceStdout(async () => {
       const code = await runScanCommand({
         targetPath: insecureProject,
@@ -183,6 +206,66 @@ describe("CLI program", () => {
     expectJsonScanReport(output);
   });
 
+  it("argv: --fail-on-severity critical fails on insecure fixture", async () => {
+    const { output, exitCode } = await parseCli([
+      "scan",
+      insecureProject,
+      "--json",
+      "--fail-on-severity",
+      "critical",
+    ]);
+    expect(exitCode).toBe(EXIT_CODES.ISSUES_OR_THRESHOLD);
+    const parsed = expectJsonScanReport(output);
+    expect(
+      (parsed.findings as Array<{ severity: string }>).some((f) => f.severity === "critical"),
+    ).toBe(true);
+  });
+
+  it("argv: --fail-on-severity critical passes on clean fixture", async () => {
+    const { exitCode } = await parseCli([
+      "scan",
+      cleanProject,
+      "--json",
+      "--fail-on-severity",
+      "critical",
+    ]);
+    expect(exitCode).toBe(EXIT_CODES.SUCCESS);
+  });
+
+  it("argv: --fail-on-rule matches specific rule id", async () => {
+    const { exitCode } = await parseCli([
+      "scan",
+      insecureProject,
+      "--json",
+      "--fail-on-rule",
+      "security/env-file-exposure",
+    ]);
+    expect(exitCode).toBe(EXIT_CODES.ISSUES_OR_THRESHOLD);
+  });
+
+  it("argv: invalid --fail-on-severity is a usage error", async () => {
+    const { exitCode } = await parseCli([
+      "scan",
+      cleanProject,
+      "--json",
+      "--fail-on-severity",
+      "high",
+    ]);
+    expect(exitCode).toBe(EXIT_CODES.USAGE_ERROR);
+  });
+
+  it("argv: invalid --min-score is a usage error (not internal error)", async () => {
+    const { exitCode } = await parseCli([
+      "scan",
+      cleanProject,
+      "--json",
+      "--min-score",
+      "999",
+    ]);
+    expect(exitCode).toBe(EXIT_CODES.USAGE_ERROR);
+    expect(exitCode).not.toBe(EXIT_CODES.INTERNAL_ERROR);
+  });
+
   it("argv: scan without --json emits terminal report", async () => {
     const { output, exitCode } = await parseCli(["scan", cleanProject]);
     expect(exitCode).toBe(EXIT_CODES.SUCCESS);
@@ -244,6 +327,19 @@ describe("CLI verify", () => {
     expect(exitCode).toBe(EXIT_CODES.ISSUES_OR_THRESHOLD);
     const parsed = JSON.parse(output) as { summary: { new: number } };
     expect(parsed.summary.new).toBeGreaterThan(0);
+  });
+
+  it("argv: verify --fail-on-new exits 1 when new findings appear", async () => {
+    const baselinePath = await writeBaseline(cleanProject);
+    const { exitCode } = await parseCli([
+      "verify",
+      insecureProject,
+      "--json",
+      "--fail-on-new",
+      "--baseline",
+      baselinePath,
+    ]);
+    expect(exitCode).toBe(EXIT_CODES.ISSUES_OR_THRESHOLD);
   });
 
   it("argv: verify without baseline exits usage error", async () => {

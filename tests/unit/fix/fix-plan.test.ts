@@ -28,7 +28,8 @@ async function makeCursorFixSandbox(options?: {
     JSON.stringify({ name: "fix-sandbox", private: true }),
     "utf8",
   );
-  await fs.writeFile(path.join(root, "AGENTS.md"), "# Agents\n\nUse AgentDoctor.\n", "utf8");
+  // Prefer legacy .cursorrules over AGENTS.md so Codex is not also detected.
+  await fs.writeFile(path.join(root, ".cursorrules"), "# Cursor\n\nUse AgentDoctor.\n", "utf8");
 
   if (options?.withBuild !== false) {
     await fs.mkdir(path.join(root, "build"), { recursive: true });
@@ -121,7 +122,10 @@ describe("fix plan + cursorignore writer", () => {
       const after = await scan({ cwd: root });
       expect(
         after.findings.some(
-          (f) => f.ruleId === "context/generated-directory" && f.evidence?.path === "build",
+          (f) =>
+            f.ruleId === "context/generated-directory" &&
+            f.evidence?.path === "build" &&
+            f.affectedAgents.includes("cursor"),
         ),
       ).toBe(false);
     } finally {
@@ -193,4 +197,163 @@ describe("fix plan + cursorignore writer", () => {
       ),
     ).toBe(true);
   });
+
+  it("proposes Claude Read deny for safe context findings when Claude Code is configured", async () => {
+    const root = await makeClaudeFixSandbox();
+    try {
+      const result = await scan({ cwd: root });
+      expect(
+        result.findings.some(
+          (f) =>
+            f.ruleId === "context/generated-directory" &&
+            f.evidence?.path === "build" &&
+            f.affectedAgents.includes("claude-code"),
+        ),
+      ).toBe(true);
+
+      const plan = await buildFixPlan(result);
+      expect(
+        plan.actions.some(
+          (a) =>
+            a.agent === "claude-code" &&
+            a.targetRelativePath === ".claude/settings.json" &&
+            a.pattern === "build/",
+        ),
+      ).toBe(true);
+      expect(plan.actions.every((a) => a.agent !== "cursor")).toBe(true);
+    } finally {
+      await fs.rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it("apply writes Claude settings deny and clears generated-directory for Claude", async () => {
+    const root = await makeClaudeFixSandbox();
+    try {
+      const before = await scan({ cwd: root });
+      const plan = await buildFixPlan(before);
+      const applyResult = await applyFixPlan(plan, { dryRun: false });
+      expect(applyResult.writtenFiles).toEqual([".claude/settings.json"]);
+
+      const written = JSON.parse(
+        await fs.readFile(path.join(root, ".claude/settings.json"), "utf8"),
+      );
+      expect(written.permissions.deny).toContain("Read(./build/**)");
+
+      const after = await scan({ cwd: root });
+      expect(
+        after.findings.some(
+          (f) =>
+            f.ruleId === "context/generated-directory" &&
+            f.evidence?.path === "build" &&
+            f.affectedAgents.includes("claude-code"),
+        ),
+      ).toBe(false);
+    } finally {
+      await fs.rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it("proposes Codex filesystem deny for safe context findings when Codex is detected", async () => {
+    const root = await makeCodexFixSandbox();
+    try {
+      const result = await scan({ cwd: root });
+      expect(
+        result.findings.some(
+          (f) =>
+            f.ruleId === "context/generated-directory" &&
+            f.evidence?.path === "build" &&
+            f.affectedAgents.includes("codex"),
+        ),
+      ).toBe(true);
+
+      const plan = await buildFixPlan(result);
+      expect(
+        plan.actions.some(
+          (a) =>
+            a.agent === "codex" &&
+            a.targetRelativePath === ".codex/config.toml" &&
+            a.pattern === "build/",
+        ),
+      ).toBe(true);
+      expect(plan.actions.every((a) => a.agent === "codex")).toBe(true);
+    } finally {
+      await fs.rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it("apply writes Codex config deny and clears generated-directory for Codex", async () => {
+    const root = await makeCodexFixSandbox();
+    try {
+      const before = await scan({ cwd: root });
+      const plan = await buildFixPlan(before);
+      const applyResult = await applyFixPlan(plan, { dryRun: false });
+      expect(applyResult.writtenFiles).toEqual([".codex/config.toml"]);
+
+      const written = await fs.readFile(path.join(root, ".codex", "config.toml"), "utf8");
+      expect(written).toContain('default_permissions = "agentdoctor_context"');
+      expect(written).toContain('"build" = "deny"');
+
+      const after = await scan({ cwd: root });
+      expect(
+        after.findings.some(
+          (f) =>
+            f.ruleId === "context/generated-directory" &&
+            f.evidence?.path === "build" &&
+            f.affectedAgents.includes("codex"),
+        ),
+      ).toBe(false);
+    } finally {
+      await fs.rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it("refuses Codex Fix when sandbox_mode is present", async () => {
+    const root = await makeCodexFixSandbox({
+      existingConfig: 'sandbox_mode = "workspace-write"\n',
+    });
+    try {
+      const result = await scan({ cwd: root });
+      await expect(buildFixPlan(result)).rejects.toThrow(/sandbox_mode/);
+    } finally {
+      await fs.rm(root, { recursive: true, force: true });
+    }
+  });
 });
+
+async function makeClaudeFixSandbox(): Promise<string> {
+  await fs.mkdir(scratchRoot, { recursive: true });
+  const root = await fs.mkdtemp(path.join(scratchRoot, "fix-claude-"));
+  await fs.writeFile(
+    path.join(root, "package.json"),
+    JSON.stringify({ name: "fix-claude-sandbox", private: true }),
+    "utf8",
+  );
+  await fs.writeFile(path.join(root, "CLAUDE.md"), "# Claude\n\nProject guidance.\n", "utf8");
+  await fs.mkdir(path.join(root, ".claude"), { recursive: true });
+  await fs.writeFile(
+    path.join(root, ".claude", "settings.json"),
+    JSON.stringify({ permissions: { deny: [] } }, null, 2),
+    "utf8",
+  );
+  await fs.mkdir(path.join(root, "build"), { recursive: true });
+  await fs.writeFile(path.join(root, "build", "out.txt"), "generated\n", "utf8");
+  return root;
+}
+
+/** Codex-only: `.codex/` without AGENTS.md (AGENTS.md would also configure Cursor). */
+async function makeCodexFixSandbox(options?: { existingConfig?: string }): Promise<string> {
+  await fs.mkdir(scratchRoot, { recursive: true });
+  const root = await fs.mkdtemp(path.join(scratchRoot, "fix-codex-"));
+  await fs.writeFile(
+    path.join(root, "package.json"),
+    JSON.stringify({ name: "fix-codex-sandbox", private: true }),
+    "utf8",
+  );
+  await fs.mkdir(path.join(root, ".codex"), { recursive: true });
+  if (options?.existingConfig !== undefined) {
+    await fs.writeFile(path.join(root, ".codex", "config.toml"), options.existingConfig, "utf8");
+  }
+  await fs.mkdir(path.join(root, "build"), { recursive: true });
+  await fs.writeFile(path.join(root, "build", "out.txt"), "generated\n", "utf8");
+  return root;
+}

@@ -57,7 +57,14 @@ function renderFindingBlock(finding: Finding, verbose: boolean): string[] {
         ? symbolWarn()
         : symbolInfo();
 
-  lines.push(`  ${icon} ${sanitizeTerminalText(finding.title)}`);
+  const fixTag =
+    finding.fixability === "safe"
+      ? colors.green("[safe]")
+      : finding.fixability === "review"
+        ? colors.yellow("[review]")
+        : colors.dim("[manual]");
+
+  lines.push(`  ${icon} ${fixTag} ${sanitizeTerminalText(finding.title)}`);
   if (finding.evidence?.path) {
     lines.push(colors.dim(`    ${sanitizeTerminalText(finding.evidence.path)}`));
   }
@@ -71,6 +78,63 @@ function renderFindingBlock(finding: Finding, verbose: boolean): string[] {
   if (finding.recommendation) {
     lines.push(`    Fix: ${sanitizeTerminalText(finding.recommendation)}`);
   }
+  lines.push("");
+  return lines;
+}
+
+function countByFixability(findings: Finding[]): { safe: number; review: number; manual: number } {
+  let safe = 0;
+  let review = 0;
+  let manual = 0;
+  for (const finding of findings) {
+    if (finding.fixability === "safe") {
+      safe += 1;
+    } else if (finding.fixability === "review") {
+      review += 1;
+    } else {
+      manual += 1;
+    }
+  }
+  return { safe, review, manual };
+}
+
+/**
+ * Close the Scan → Fix → Verify loop on first run.
+ * Empty / agentless scans already print a Next line; findings used to dead-end.
+ */
+export function renderNextSteps(result: ScanResult): string[] {
+  const lines: string[] = [];
+  const total = result.summary.total;
+  if (total === 0) {
+    return lines;
+  }
+
+  const { safe, review, manual } = countByFixability(result.findings);
+  const reviewLike = review + manual;
+
+  lines.push(colors.bold("Next"));
+  lines.push("");
+  if (safe > 0) {
+    lines.push(
+      `  ${safe} finding(s) are auto-fixable. Preview: ${colors.bold("agentdoctor fix --dry-run")}`,
+    );
+    lines.push(`  Apply: ${colors.bold("agentdoctor fix -y")}`);
+  } else if (reviewLike > 0) {
+    lines.push(
+      `  ${reviewLike} finding(s) need review or manual action — ${colors.bold("agentdoctor fix")} will not change them automatically.`,
+    );
+    lines.push(
+      colors.dim("  Inspect a rule: agentdoctor explain <rule-id>  (ids are in --json output)"),
+    );
+  }
+  lines.push(
+    colors.dim(
+      "  Save a verify baseline: agentdoctor scan --json > agentdoctor-report.json",
+    ),
+  );
+  lines.push(
+    colors.dim("  After changes: agentdoctor verify --baseline agentdoctor-report.json"),
+  );
   lines.push("");
   return lines;
 }
@@ -153,7 +217,14 @@ export function renderTerminalReport(
 
   if (total === 0) {
     if (limited) {
-      lines.push(`  ${symbolOk()} No agent-configuration findings`);
+      lines.push(`  ${symbolWarn()} Nothing to audit yet — no Cursor, Claude Code, or Codex config found`);
+      lines.push("");
+      lines.push(
+        colors.dim(
+          "  Next: add project agent config (for example `.cursor/`, `CLAUDE.md` / `.claude/`, or `AGENTS.md`),",
+        ),
+      );
+      lines.push(colors.dim("  then re-run `agentdoctor` in this repository."));
     } else {
       lines.push(`  ${symbolOk()} No findings`);
     }
@@ -190,7 +261,7 @@ export function renderTerminalReport(
     if (total > shown) {
       lines.push(
         colors.dim(
-          `  … and ${total - shown} more. Re-run with --verbose to see additional detail.`,
+          `  … and ${total - shown} more. Re-run with --verbose for detail, or --json for the full list.`,
         ),
       );
       lines.push("");
@@ -202,14 +273,35 @@ export function renderTerminalReport(
   lines.push(`  ${result.summary.critical} critical`);
   lines.push(`  ${result.summary.warning} warning`);
   lines.push(`  ${result.summary.info} info`);
+  if (total > 0) {
+    const { safe, review, manual } = countByFixability(result.findings);
+    lines.push(
+      colors.dim(
+        `  Fixability: ${safe} safe · ${review} review · ${manual} manual`,
+      ),
+    );
+  }
   lines.push("");
   if (result.scoringAvailable && result.scores) {
-    lines.push(`  Readiness: ${result.scores.overall}/100`);
-    lines.push(colors.dim("  Category and agent scores: agentdoctor scan --json"));
+    if (limited) {
+      lines.push(
+        `  Readiness: n/a — configure Cursor, Claude Code, or Codex before treating scores as agent readiness`,
+      );
+      lines.push(
+        colors.dim(
+          `  Numeric scores remain in JSON (overall ${result.scores.overall}/100) for repository-risk findings only`,
+        ),
+      );
+    } else {
+      lines.push(`  Readiness: ${result.scores.overall}/100`);
+      lines.push(colors.dim("  Category and agent scores: agentdoctor scan --json"));
+    }
   } else {
     lines.push(colors.dim("  Readiness scoring unavailable for this scan"));
   }
   lines.push("");
+
+  lines.push(...renderNextSteps(result));
 
   if (verbose) {
     lines.push(colors.dim("Timing"));
