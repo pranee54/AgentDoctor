@@ -1,12 +1,13 @@
+import { toRepoRelativePosix } from "../../utils/path.js";
 import type { RuleContext } from "./types.js";
 
 export function codexDenyKey(relativePath: string): string {
-  return relativePath.replace(/\\/g, "/").replace(/^\/+/, "").replace(/\/+$/, "");
+  return toRepoRelativePosix(relativePath);
 }
 
 /** True when config.toml already denies this path (or path/**) under a filesystem table. */
 export function configTextDeniesPath(configText: string, relativePath: string): boolean {
-  const normalized = relativePath.replace(/\\/g, "/").replace(/^\/+/, "").replace(/\/+$/, "");
+  const normalized = toRepoRelativePosix(relativePath);
   if (!normalized) {
     return false;
   }

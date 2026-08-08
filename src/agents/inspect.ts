@@ -70,62 +70,67 @@ export async function inspectRepoFile(
       }
     }
 
-    const stat = await fs.stat(absolutePath);
-    if (!stat.isFile()) {
-      return {
-        relativePath: normalizedRelative,
-        absolutePath,
-        exists: true,
-        readable: false,
-        sizeBytes: 0,
-        empty: true,
-        isSymlink,
-        text: null,
-        error: "Not a regular file",
-      };
-    }
+    const handle = await fs.open(absolutePath, "r");
+    try {
+      const stat = await handle.stat();
+      if (!stat.isFile()) {
+        return {
+          relativePath: normalizedRelative,
+          absolutePath,
+          exists: true,
+          readable: false,
+          sizeBytes: 0,
+          empty: true,
+          isSymlink,
+          text: null,
+          error: "Not a regular file",
+        };
+      }
 
-    const sizeBytes = Number(stat.size);
-    if (sizeBytes === 0) {
+      const sizeBytes = Number(stat.size);
+      if (sizeBytes === 0) {
+        return {
+          relativePath: normalizedRelative,
+          absolutePath,
+          exists: true,
+          readable: true,
+          sizeBytes: 0,
+          empty: true,
+          isSymlink,
+          text: "",
+        };
+      }
+
+      if (sizeBytes > maxFileSizeBytes) {
+        return {
+          relativePath: normalizedRelative,
+          absolutePath,
+          exists: true,
+          readable: false,
+          sizeBytes,
+          empty: false,
+          isSymlink,
+          text: null,
+          error: "File exceeds max size limit",
+        };
+      }
+
+      const text = await handle.readFile("utf8");
+      const trimmedEmpty = text.trim().length === 0;
+
       return {
         relativePath: normalizedRelative,
         absolutePath,
         exists: true,
         readable: true,
-        sizeBytes: 0,
-        empty: true,
-        isSymlink,
-        text: "",
-      };
-    }
-
-    if (sizeBytes > maxFileSizeBytes) {
-      return {
-        relativePath: normalizedRelative,
-        absolutePath,
-        exists: true,
-        readable: false,
         sizeBytes,
-        empty: false,
+        empty: trimmedEmpty,
         isSymlink,
-        text: null,
-        error: "File exceeds max size limit",
+        text,
       };
+    } finally {
+      await handle.close();
     }
-
-    const text = await fs.readFile(absolutePath, "utf8");
-    const trimmedEmpty = text.trim().length === 0;
-
-    return {
-      relativePath: normalizedRelative,
-      absolutePath,
-      exists: true,
-      readable: true,
-      sizeBytes,
-      empty: trimmedEmpty,
-      isSymlink,
-      text,
-    };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to read file";
     const code =

@@ -20,6 +20,23 @@ export function toPosixRelative(from: string, to: string): string {
 }
 
 /**
+ * Normalize a repository-relative path to POSIX form without regex backtracking.
+ * Converts `\` to `/` and strips leading/trailing `/`.
+ */
+export function toRepoRelativePosix(relativePath: string): string {
+  const value = relativePath.includes("\\") ? relativePath.split("\\").join("/") : relativePath;
+  let start = 0;
+  let end = value.length;
+  while (start < end && value.charCodeAt(start) === 47) {
+    start += 1;
+  }
+  while (end > start && value.charCodeAt(end - 1) === 47) {
+    end -= 1;
+  }
+  return start === 0 && end === value.length ? value : value.slice(start, end);
+}
+
+/**
  * Ensure a candidate path stays within a root (defense against traversal).
  */
 export function isPathInsideRoot(root: string, candidate: string): boolean {

@@ -45,58 +45,63 @@ export class TextCache {
     }
 
     try {
-      const stat = await fs.stat(absolute);
-      if (!stat.isFile()) {
-        const result: CachedText = {
-          relativePath: toPosixRelative(this.root, absolute),
-          text: null,
-          sizeBytes: 0,
-          empty: true,
-          binary: false,
-          error: "Not a regular file",
-        };
-        this.cache.set(relativePath, result);
-        return result;
-      }
+      const handle = await fs.open(absolute, "r");
+      try {
+        const stat = await handle.stat();
+        if (!stat.isFile()) {
+          const result: CachedText = {
+            relativePath: toPosixRelative(this.root, absolute),
+            text: null,
+            sizeBytes: 0,
+            empty: true,
+            binary: false,
+            error: "Not a regular file",
+          };
+          this.cache.set(relativePath, result);
+          return result;
+        }
 
-      const sizeBytes = Number(stat.size);
-      if (sizeBytes > this.maxBytes) {
+        const sizeBytes = Number(stat.size);
+        if (sizeBytes > this.maxBytes) {
+          const result: CachedText = {
+            relativePath,
+            text: null,
+            sizeBytes,
+            empty: false,
+            binary: false,
+            error: "File exceeds max read size",
+          };
+          this.cache.set(relativePath, result);
+          return result;
+        }
+
+        const buffer = await handle.readFile();
+        if (looksBinary(buffer)) {
+          const result: CachedText = {
+            relativePath,
+            text: null,
+            sizeBytes,
+            empty: sizeBytes === 0,
+            binary: true,
+            error: "Binary file skipped",
+          };
+          this.cache.set(relativePath, result);
+          return result;
+        }
+
+        const text = buffer.toString("utf8");
         const result: CachedText = {
           relativePath,
-          text: null,
+          text,
           sizeBytes,
-          empty: false,
+          empty: text.trim().length === 0,
           binary: false,
-          error: "File exceeds max read size",
         };
         this.cache.set(relativePath, result);
         return result;
+      } finally {
+        await handle.close();
       }
-
-      const buffer = await fs.readFile(absolute);
-      if (looksBinary(buffer)) {
-        const result: CachedText = {
-          relativePath,
-          text: null,
-          sizeBytes,
-          empty: sizeBytes === 0,
-          binary: true,
-          error: "Binary file skipped",
-        };
-        this.cache.set(relativePath, result);
-        return result;
-      }
-
-      const text = buffer.toString("utf8");
-      const result: CachedText = {
-        relativePath,
-        text,
-        sizeBytes,
-        empty: text.trim().length === 0,
-        binary: false,
-      };
-      this.cache.set(relativePath, result);
-      return result;
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unable to read file";
       const result: CachedText = {

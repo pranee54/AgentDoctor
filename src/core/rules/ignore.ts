@@ -1,3 +1,5 @@
+import { toRepoRelativePosix } from "../../utils/path.js";
+
 /**
  * Minimal gitignore-style pattern matching for .gitignore / .cursorignore.
  * Supports common patterns used in agent ignore files — not a full gitignore clone.
@@ -60,7 +62,7 @@ export function matchIgnorePattern(relativePath: string, pattern: string): boole
     pat = pat.slice(1);
   }
 
-  const pathNorm = relativePath.replace(/^\/+/, "").replace(/\/+$/, "");
+  const pathNorm = toRepoRelativePosix(relativePath);
   let matched = false;
 
   if (pat.endsWith("/")) {

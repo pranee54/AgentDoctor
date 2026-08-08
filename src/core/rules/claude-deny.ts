@@ -1,3 +1,4 @@
+import { toRepoRelativePosix } from "../../utils/path.js";
 import type { RuleContext } from "./types.js";
 
 /**
@@ -8,7 +9,7 @@ export function claudeReadDenyRule(
   relativePath: string,
   kind: "file" | "directory" = "file",
 ): string {
-  const normalized = relativePath.replace(/\\/g, "/").replace(/^\/+/, "").replace(/\/+$/, "");
+  const normalized = toRepoRelativePosix(relativePath);
   if (kind === "directory") {
     return `Read(./${normalized}/**)`;
   }
@@ -16,7 +17,7 @@ export function claudeReadDenyRule(
 }
 
 export function settingsTextDeniesPath(settingsText: string, relativePath: string): boolean {
-  const normalized = relativePath.replace(/\\/g, "/").replace(/^\/+/, "").replace(/\/+$/, "");
+  const normalized = toRepoRelativePosix(relativePath);
   const base = normalized.split("/").pop() ?? normalized;
   const patterns = [
     `Read(./${normalized})`,
