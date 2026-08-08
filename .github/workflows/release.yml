@@ -72,7 +72,7 @@ jobs:
 
       - name: Create draft release (with notes file)
         if: steps.notes.outputs.path != ''
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
           tag_name: ${{ steps.tag.outputs.name }}
           name: AgentDoctor ${{ steps.tag.outputs.name }}
@@ -88,7 +88,7 @@ jobs:
 
       - name: Create draft release (generated notes only)
         if: steps.notes.outputs.path == ''
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
           tag_name: ${{ steps.tag.outputs.name }}
           name: AgentDoctor ${{ steps.tag.outputs.name }}

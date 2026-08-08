@@ -50,28 +50,28 @@ export async function inspectRepoFile(
   }
 
   try {
-    const lstat = await fs.lstat(absolutePath);
-    const isSymlink = lstat.isSymbolicLink();
-
-    if (isSymlink) {
-      const real = await fs.realpath(absolutePath);
-      if (!isPathInsideRoot(root, real)) {
-        return {
-          relativePath: normalizedRelative,
-          absolutePath,
-          exists: true,
-          readable: false,
-          sizeBytes: 0,
-          empty: true,
-          isSymlink: true,
-          text: null,
-          error: "Symlink target is outside repository root",
-        };
-      }
-    }
-
+    // Open first, then inspect via the same handle (avoids TOCTOU with prior lstat/stat).
     const handle = await fs.open(absolutePath, "r");
     try {
+      const lstat = await fs.lstat(absolutePath);
+      const isSymlink = lstat.isSymbolicLink();
+      if (isSymlink) {
+        const real = await fs.realpath(absolutePath);
+        if (!isPathInsideRoot(root, real)) {
+          return {
+            relativePath: normalizedRelative,
+            absolutePath,
+            exists: true,
+            readable: false,
+            sizeBytes: 0,
+            empty: true,
+            isSymlink: true,
+            text: null,
+            error: "Symlink target is outside repository root",
+          };
+        }
+      }
+
       const stat = await handle.stat();
       if (!stat.isFile()) {
         return {
