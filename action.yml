@@ -16,7 +16,7 @@ inputs:
       Published AgentDoctor npm version or dist-tag (latest|beta), or `workspace`
       to run the checked-out repository's built CLI at dist/cli/index.js.
     required: false
-    default: 0.3.0-beta
+    default: 1.0.0
   output-file:
     description: Repository-relative path for the JSON report.
     required: false

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- GitHub Action default `version` input is now `1.0.0` after the
+  `@praneeth_54/agentdoctor@1.0.0` npm release.
+
 ### Added
 
 - Claude Code safe-context Fix writer: `agentdoctor fix` appends allowlisted

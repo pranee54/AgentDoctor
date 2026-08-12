@@ -87,7 +87,7 @@ jobs:
             output-file: test-results/action-report.json
             expected: success
             path: fixtures/clean-configured-project
-            version: 0.3.0-beta
+            version: 1.0.0
             minimum-score: ""
             fail-on-severity: ""
             expected-outcome: success
@@ -98,7 +98,7 @@ jobs:
             output-file: test-results/nested/action-report.json
             expected: success
             path: fixtures/clean-configured-project
-            version: 0.3.0-beta
+            version: 1.0.0
             minimum-score: ""
             fail-on-severity: ""
             expected-outcome: success
@@ -109,7 +109,7 @@ jobs:
             output-file: ../report.json
             expected: failure
             path: fixtures/clean-configured-project
-            version: 0.3.0-beta
+            version: 1.0.0
             minimum-score: ""
             fail-on-severity: ""
             expected-outcome: ""
@@ -120,7 +120,7 @@ jobs:
             output-file: test-results/escape-parent/report.json
             expected: failure
             path: fixtures/clean-configured-project
-            version: 0.3.0-beta
+            version: 1.0.0
             minimum-score: ""
             fail-on-severity: ""
             expected-outcome: ""
@@ -131,7 +131,7 @@ jobs:
             output-file: test-results/output-symlink.json
             expected: failure
             path: fixtures/clean-configured-project
-            version: 0.3.0-beta
+            version: 1.0.0
             minimum-score: ""
             fail-on-severity: ""
             expected-outcome: ""
@@ -142,7 +142,7 @@ jobs:
             output-file: test-results/output-directory
             expected: failure
             path: fixtures/clean-configured-project
-            version: 0.3.0-beta
+            version: 1.0.0
             minimum-score: ""
             fail-on-severity: ""
             expected-outcome: ""
@@ -274,7 +274,7 @@ jobs:
           const fs = require("node:fs");
 
           const report = JSON.parse(fs.readFileSync(process.env.REPORT_PATH, "utf8"));
-          if (process.env.VERSION_MODE !== "workspace" && report.version !== "0.3.0-beta") {
+          if (process.env.VERSION_MODE !== "workspace" && report.version !== "1.0.0") {
             throw new Error(`unexpected AgentDoctor version: ${report.version}`);
           }
           if (
