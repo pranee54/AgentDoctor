@@ -16,7 +16,7 @@ It is a local Node CLI: no API key, no default code upload, deterministic rule I
 
 Today it detects things like env-file exposure (agent vs repository-risk semantics), credential-like filenames, broad MCP filesystem args, empty/duplicate instructions, missing path references, and large context sources.
 
-Not a secret-content scanner, not an LLM product, and not auto-fix yet. Scoring is intentionally deferred.
+Not a secret-content scanner and not an LLM product. Safe context Fix (Cursor / Claude Code / Codex) and CI policy gates ship in v1; security findings stay review/manual.
 
 ```bash
 npx @praneeth_54/agentdoctor

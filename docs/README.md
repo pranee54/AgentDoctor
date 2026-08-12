@@ -10,7 +10,7 @@
 | [exit-codes.md](exit-codes.md)       | CLI process exit codes                 |
 | [scoring.md](scoring.md)             | Readiness scoring specification (v1)   |
 | [scan-examples.md](scan-examples.md) | Reproducible fixture scan walkthroughs |
-| [compatibility.md](compatibility.md) | Beta compatibility promises            |
+| [compatibility.md](compatibility.md) | v1 compatibility promises              |
 | [../SECURITY.md](../SECURITY.md)     | Vulnerability reporting                |
 
 ## Development

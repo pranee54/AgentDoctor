@@ -24,4 +24,4 @@ npx @praneeth_54/agentdoctor
 GitHub: https://github.com/pranee54/AgentDoctor  
 npm: https://www.npmjs.com/package/@praneeth_54/agentdoctor
 
-It is a public beta — readiness scores ship in JSON and the terminal (`--min-score` is enforced). Published `0.3.0-beta`: `--ci` alone stays report-only; `agentdoctor fix` applies safe Cursor `.cursorignore` context exclusions. I would appreciate feedback, especially false positives and misses from real agent setups.
+v1 ships readiness scores, Scan → Fix → Verify, and CI policy gates. Fix applies safe Cursor / Claude Code / Codex context exclusions only; security findings stay review/manual. Feedback welcome — especially false positives and misses from real agent setups.

@@ -72,12 +72,13 @@ Add files under `docs/images/` only after capturing real output. Update README i
 
 ## Release hygiene
 
-- [ ] Latest published npm version matches intended public beta
-- [ ] GitHub Release for the current beta is published (not draft-only)
+- [ ] Latest published npm version matches intended release (`1.0.0`)
+- [ ] GitHub Release for the current version is published (not draft-only)
 - [ ] CHANGELOG and release notes match published behavior
+- [ ] Action default `version` input bumped to the published npm version
 
 ## Do not
 
-- Claim scoring or auto-fix are available
 - Claim AgentDoctor is a complete secret scanner
+- Claim Fix rewrites secrets or security modes
 - Post launch content until demo assets and About metadata are ready (or clearly pending)

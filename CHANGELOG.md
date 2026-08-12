@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GitHub Action default `version` input is now `1.0.0` after the
   `@praneeth_54/agentdoctor@1.0.0` npm release.
 
+## [1.0.0] — 2026-08-12
+
+First production release: Scan → Fix → Verify → CI contract frozen for v1.
+
 ### Added
 
 - Claude Code safe-context Fix writer: `agentdoctor fix` appends allowlisted
@@ -30,6 +34,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Guided Next steps on failed `scan` / `fix` / `verify` terminal output, and on
   GitHub Step Summary when a policy gate fails — shortest path back to green
   (reproduce → fix or explain → verify).
+- Windows CI quality job (Node 20) and Windows-safe Fix/Action overwrite writes.
+- Action smoke coverage for `fail-on-rule`, `verify-baseline`, and baseline
+  symlink escape rejection.
 
 ### Fixed
 
@@ -63,6 +70,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Discovery keeps oversized log/dump-like paths as size metadata so
   `context/large-log-file` flags files above the content-read limit (previously silent
   false negatives for the largest logs).
+- Action `verify-baseline` re-checks workspace containment after `realpath` so a
+  workspace-relative symlink cannot escape to an outside file.
+- Fix writers and Action report overwrite use Windows-safe replace (rename cannot
+  overwrite an existing destination on Windows).
+
+### Compatibility
+
+- CLI + JSON + rule ID contracts frozen for v1 (see [docs/compatibility.md](docs/compatibility.md))
+- Action `version` input default is `1.0.0` (bumped after npm published `@praneeth_54/agentdoctor@1.0.0`)
 
 ## [0.3.0-beta] — 2026-08-07
 
@@ -228,7 +244,8 @@ First public beta.
 - Not a complete secret scanner
 - Git “tracked secret” detection deferred
 
-[Unreleased]: https://github.com/pranee54/AgentDoctor/compare/v0.3.0-beta...HEAD
+[Unreleased]: https://github.com/pranee54/AgentDoctor/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/pranee54/AgentDoctor/releases/tag/v1.0.0
 [0.3.0-beta]: https://github.com/pranee54/AgentDoctor/releases/tag/v0.3.0-beta
 [0.2.0-beta]: https://github.com/pranee54/AgentDoctor/releases/tag/v0.2.0-beta
 [0.1.4-beta]: https://github.com/pranee54/AgentDoctor/releases/tag/v0.1.4-beta

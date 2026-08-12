@@ -42,7 +42,3 @@ echo $?
 ```
 
 Related: [scoring.md](scoring.md) · [architecture.md](architecture.md) · [rules.md](rules.md) · [compatibility.md](compatibility.md)
-
-> **Published `0.3.0-beta`:** `--ci` on scan is report-only (no critical gate).
-> `--fail-on-severity` / `--fail-on-rule` are not accepted. Use `--min-score` to fail CI.
-> Behaviors above match this repository’s Unreleased CLI.

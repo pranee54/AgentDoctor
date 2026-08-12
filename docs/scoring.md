@@ -30,17 +30,16 @@ revision explicitly supersedes it.
 
 ## Shipped v1 behavior
 
-| Surface                         | Behavior                                                                                            |
-| ------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `scoringAvailable`              | `true`                                                                                              |
-| `scores`                        | Populated `{ overall, categories, agents }`                                                         |
-| `--min-score N`                 | Exit `1` if `scores.overall < N`, or if analysis is `limited` (no supported agents)                 |
-| `--ci` (this repository)        | Exit `1` on any **critical** finding (override with `--fail-on-severity`)                           |
-| `--ci` (published `0.3.0-beta`) | Report-only; exit `0` on successful scan unless `--min-score` fails                                 |
-| Successful scan with findings   | Exit code `0` unless a policy / threshold gate fails                                                |
-| Exit code `1`                   | Policy / threshold / CI gate failure                                                                |
-| Terminal                        | Prints overall readiness (`N/100`, or `n/a` when analysis is limited); category/agent via JSON      |
-| GitHub Action                   | Published `@v0.3.0-beta` report-only; Unreleased Action adds policy inputs (see README / CHANGELOG) |
+| Surface                       | Behavior                                                                                       |
+| ----------------------------- | ---------------------------------------------------------------------------------------------- |
+| `scoringAvailable`            | `true`                                                                                         |
+| `scores`                      | Populated `{ overall, categories, agents }`                                                    |
+| `--min-score N`               | Exit `1` if `scores.overall < N`, or if analysis is `limited` (no supported agents)            |
+| `--ci`                        | Exit `1` on any **critical** finding (override with `--fail-on-severity`)                      |
+| Successful scan with findings | Exit code `0` unless a policy / threshold gate fails                                           |
+| Exit code `1`                 | Policy / threshold / CI gate failure                                                           |
+| Terminal                      | Prints overall readiness (`N/100`, or `n/a` when analysis is limited); category/agent via JSON |
+| GitHub Action                 | Report-only until policy inputs are set (`minimum-score`, `fail-on-severity`, …)               |
 
 Production scoring uses `computeReadinessScores` (pure function of post-dedupe findings).
 An internal `filesScanned`-based placeholder exists for historical unit tests only and

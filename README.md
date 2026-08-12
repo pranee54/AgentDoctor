@@ -16,7 +16,7 @@ AgentDoctor is a local CLI that inspects project-level AI coding agent setup —
 npx @praneeth_54/agentdoctor
 ```
 
-Public beta (`0.3.0-beta`). Scan → Fix → Verify. Deterministic scores in the terminal and JSON.
+Public release (`1.0.0`). Scan → Fix → Verify → CI. Deterministic scores in the terminal and JSON.
 
 ---
 
@@ -24,12 +24,12 @@ Public beta (`0.3.0-beta`). Scan → Fix → Verify. Deterministic scores in the
 
 ![AgentDoctor scanning a repository and reporting coding-agent security findings](docs/images/cli-scan.png)
 
-_Real scan of the included `insecure-agent-project` fixture using AgentDoctor v0.3.0-beta._
+_Real scan of the included `insecure-agent-project` fixture using AgentDoctor v1.0.0._
 
 ```text
 $ npx @praneeth_54/agentdoctor
 
-🩺 AgentDoctor v0.3.0-beta
+🩺 AgentDoctor v1.0.0
 
 Scanning repository...
 
@@ -154,10 +154,10 @@ Safe context exclusions (Cursor / Claude Code / Codex) can be applied with `agen
 npx @praneeth_54/agentdoctor
 ```
 
-Pin a beta version when you need a fixed install:
+Pin a version when you need a fixed install:
 
 ```bash
-npx @praneeth_54/agentdoctor@0.3.0-beta
+npx @praneeth_54/agentdoctor@1.0.0
 ```
 
 ### Global (optional)
@@ -186,11 +186,6 @@ npx @praneeth_54/agentdoctor verify . --baseline agentdoctor-report.json
 keys under a permissions profile in `.codex/config.toml`) for findings such as unignored
 `build/` or large logs. Review/manual security findings are listed as skipped — address those
 yourself, then re-run `verify`.
-
-> **Published `0.3.0-beta`:** npm and Action `@v0.3.0-beta` still ship Cursor-only Fix
-> (`.cursorignore`). Claude Code / Codex Fix writers, Action policy inputs, and
-> `scan --ci` failing on criticals are in this repository’s Unreleased tree
-> ([CHANGELOG.md](CHANGELOG.md)).
 
 ### Common commands
 
@@ -279,8 +274,6 @@ This is still software that reads untrusted repository trees. Treat findings as 
 
 Run AgentDoctor directly in a workflow:
 
-Published Action `@v0.3.0-beta` is report-only (`path`, `version`, `output-file`):
-
 ```yaml
 permissions:
   contents: read
@@ -290,10 +283,14 @@ steps:
 
   - name: Audit coding-agent configuration
     id: agentdoctor
-    uses: pranee54/AgentDoctor@v0.3.0-beta
+    uses: pranee54/AgentDoctor@v1.0.0
     with:
       path: .
+      version: "1.0.0"
       output-file: agentdoctor-report.json
+      minimum-score: "70"
+      fail-on-severity: critical
+      summary: "true"
 
   - name: Upload AgentDoctor report
     uses: actions/upload-artifact@v4
@@ -302,11 +299,10 @@ steps:
       path: ${{ steps.agentdoctor.outputs.report-path }}
 ```
 
-Policy inputs (`minimum-score`, `fail-on-severity`, `fail-on-rule`, `fail-on-new`,
-`verify-baseline`, `summary`, `annotations`) exist in this repository’s Unreleased
-`action.yml` and matching CLI. Do not pass them to `@v0.3.0-beta` — that tag ignores them.
-Use this repo’s Action revision (or a later release tag) with a matching CLI (`version` pin
-or `version: workspace`). The action installs `@praneeth_54/agentdoctor` (pin via `version`),
+Policy inputs: `minimum-score`, `fail-on-severity`, `fail-on-rule`, `fail-on-new`,
+`verify-baseline`, `summary`, `annotations`. The Action stays report-only until you set a
+policy input. The Action default `version` is `1.0.0`. For local CI against this repo, use
+`version: workspace` after `npm run build`. The action installs `@praneeth_54/agentdoctor`,
 runs scan (or `verify` when `verify-baseline` is set) with `--json`, and writes the report
 inside the workspace.
 
@@ -318,24 +314,19 @@ Use JSON directly in other CI systems:
 # Report-only (exit 0 even when findings exist; scores still in JSON)
 npx @praneeth_54/agentdoctor --json
 
-# Published 0.3.0-beta: --ci is report-only; use --min-score to fail CI
-npx @praneeth_54/agentdoctor@0.3.0-beta --ci --json --min-score 70
+# Fail when any critical finding exists
+npx @praneeth_54/agentdoctor --ci --json
 
-# Unreleased tree CLI: --ci fails on any critical finding
-agentdoctor --ci --json
+# Fail when overall readiness is below 70 (with --ci also fails on criticals)
+npx @praneeth_54/agentdoctor --ci --json --min-score 70
 
-# Unreleased: fail when overall readiness is below 70 (with --ci also fails on criticals)
-agentdoctor --ci --json --min-score 70
-
-# Unreleased: fail on warning-or-higher (overrides the default critical gate from --ci)
-agentdoctor --ci --json --fail-on-severity warning
+# Fail on warning-or-higher (overrides the default critical gate from --ci)
+npx @praneeth_54/agentdoctor --ci --json --fail-on-severity warning
 ```
 
-In this repository’s Unreleased CLI, `--ci` fails when any **critical** finding exists.
-Override the severity floor with `--fail-on-severity`, and use `--min-score` /
-`--fail-on-rule` for additional gates. Omit `--ci` for report-only JSON (exit `0` even when
-findings exist). Published `0.3.0-beta` treats `--ci` as report-only and does not accept
-`--fail-on-severity` / `--fail-on-rule`.
+`--ci` fails when any **critical** finding exists. Override the severity floor with
+`--fail-on-severity`, and use `--min-score` / `--fail-on-rule` for additional gates.
+Omit `--ci` for report-only JSON (exit `0` even when findings exist).
 
 Exit codes: [docs/exit-codes.md](docs/exit-codes.md). Compatibility promises: [docs/compatibility.md](docs/compatibility.md).
 
@@ -350,18 +341,18 @@ and deferred v2 items): [docs/scoring.md](docs/scoring.md).
 
 ---
 
-## Beta limitations
+## Known limitations
 
-Honest limits of the current public beta:
+Honest limits of v1:
 
-| Limitation                 | Status                                                                                                                   |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| Automatic fixes            | Safe Cursor / Claude Code / Codex context exclusions (Unreleased; published `0.3.0-beta` is Cursor `.cursorignore` only) |
-| Security findings          | Review/manual — Fix does not rewrite secrets or security modes                                                           |
-| GitHub Action policy gates | Unreleased Action inputs + CLI flags; published `@v0.3.0-beta` is report-only                                            |
-| Secret-content scanning    | Filename / config heuristics only                                                                                        |
-| Detection style            | Intentionally conservative; false security findings are avoided                                                          |
-| Agent coverage             | Cursor, Claude Code, Codex project configs                                                                               |
+| Limitation                  | Status                                                                          |
+| --------------------------- | ------------------------------------------------------------------------------- |
+| Automatic fixes             | Safe Cursor / Claude Code / Codex context exclusions only                       |
+| Security findings           | Review/manual — Fix does not rewrite secrets or security modes                  |
+| Secret-content scanning     | Filename / config heuristics only                                               |
+| Detection style             | Intentionally conservative; false security findings are avoided                 |
+| Agent coverage              | Cursor, Claude Code, Codex project configs                                      |
+| Missing-path residual noise | Broad path-lattice expansion deferred; instruction-directory resolution shipped |
 
 See [CHANGELOG.md](CHANGELOG.md) and [docs/compatibility.md](docs/compatibility.md).
 
@@ -386,7 +377,7 @@ Details: [docs/architecture.md](docs/architecture.md)
 | [docs/rules.md](docs/rules.md)                                     | Stable rule IDs                 |
 | [docs/exit-codes.md](docs/exit-codes.md)                           | Process exit codes              |
 | [docs/scoring.md](docs/scoring.md)                                 | Readiness scoring specification |
-| [docs/compatibility.md](docs/compatibility.md)                     | Beta compatibility promises     |
+| [docs/compatibility.md](docs/compatibility.md)                     | v1 compatibility promises       |
 | [docs/development.md](docs/development.md)                         | Local development               |
 | [docs/github-launch-checklist.md](docs/github-launch-checklist.md) | GitHub About / topics / launch  |
 | [ROADMAP.md](ROADMAP.md)                                           | Near- and medium-term plans     |
