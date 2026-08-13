@@ -77,8 +77,17 @@ function isPosixShellBinShim(filePath: string): boolean {
   }
 }
 
-function quoteForCmd(value: string): string {
-  return `"${value.replace(/"/g, '\\"')}"`;
+/**
+ * Build the single /c argument for `cmd.exe /d /s /c`.
+ * Required form (paths may contain spaces):
+ *   ""C:\path\to\agentdoctor.cmd" "--version"
+ * With /s, cmd strips the outer quotes and runs the remainder.
+ */
+export function buildWindowsCmdCArgument(executable: string, args: string[]): string {
+  const exe = `"${executable.replace(/"/g, "")}"`;
+  const quotedArgs = args.map((arg) => `"${arg.replace(/"/g, '\\"')}"`);
+  const inner = [exe, ...quotedArgs].join(" ");
+  return `"${inner}"`;
 }
 
 /**
@@ -100,8 +109,7 @@ function runPackageBin(
     const cmdShim = `${binPath}.cmd`;
     if (fs.existsSync(cmdShim)) {
       const comspec = process.env.ComSpec ?? "cmd.exe";
-      const command = [quoteForCmd(cmdShim), ...args.map(quoteForCmd)].join(" ");
-      return spawnSync(comspec, ["/d", "/s", "/c", command], {
+      return spawnSync(comspec, ["/d", "/s", "/c", buildWindowsCmdCArgument(cmdShim, args)], {
         ...opts,
         windowsVerbatimArguments: true,
       }) as SpawnSyncReturns<string>;
@@ -122,6 +130,13 @@ afterEach(async () => {
 });
 
 describe("local CLI bin reliability", () => {
+  it("builds cmd.exe /c argument with nested quoting for spaced Windows paths", () => {
+    const exe = String.raw`C:\Program Files\app\node_modules\.bin\agentdoctor.cmd`;
+    expect(buildWindowsCmdCArgument(exe, ["--version"])).toBe(
+      String.raw`""C:\Program Files\app\node_modules\.bin\agentdoctor.cmd" "--version""`,
+    );
+  });
+
   beforeAll(() => {
     const build = runNpm(["run", "build"], { cwd: repoRoot });
     expect(build.status, spawnMessage(build)).toBe(0);
