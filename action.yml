@@ -1,4 +1,4 @@
-name: AgentDoctor
+name: AgentDoctor Safety
 description: Audit project-level coding-agent configuration and enforce CI policy gates.
 author: AgentDoctor Contributors
 
