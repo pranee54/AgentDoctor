@@ -1,433 +1,387 @@
 # AgentDoctor
 
+Evidence-backed Project Brain for AI Coding Agents
+
+![AgentDoctor hero](docs/assets/agentdoctor-hero.svg)
+
+AI coding agents can read files. They still lack reliable **repository-level** understanding — what is in a project, what evidence supports a claim, what is dangerous to change, and what must stay **UNKNOWN**.
+
+AgentDoctor analyzes a repository, builds a structured **Project Brain** (claims, evidence, confidence, ownership, risks, snapshots, deltas), and exposes it to agents through local **STDIO MCP**.
+
 [![npm](https://img.shields.io/npm/v/@praneeth_54/agentdoctor?label=npm)](https://www.npmjs.com/package/@praneeth_54/agentdoctor)
-[![npm downloads](https://img.shields.io/npm/dm/@praneeth_54/agentdoctor)](https://www.npmjs.com/package/@praneeth_54/agentdoctor)
-[![CI](https://img.shields.io/github/actions/workflow/status/pranee54/AgentDoctor/ci.yml?branch=main&label=CI)](https://github.com/pranee54/AgentDoctor/actions)
+[![CI](https://img.shields.io/github/actions/workflow/status/pranee54/AgentDoctor/ci.yml?branch=main&label=CI)](https://github.com/pranee54/AgentDoctor/actions/workflows/ci.yml)
 [![Node](https://img.shields.io/node/v/@praneeth_54/agentdoctor)](https://nodejs.org)
 [![License](https://img.shields.io/github/license/pranee54/AgentDoctor)](LICENSE)
 
-**Lighthouse for AI coding agents.**
-
-Audit coding-agent configuration before it becomes a repository problem.
-
-AgentDoctor is a local CLI that inspects project-level AI coding agent setup — Cursor, Claude Code, and Codex — for security, instructions, context, and MCP configuration. Deterministic static analysis. No API key. No code upload by default.
-
-```bash
-npx @praneeth_54/agentdoctor
-```
-
-Public release track: Safety V1 (`1.0.0`) plus Project Brain MCP for agents (`1.1.0`).
-Scan → Fix → Verify → CI remains the Safety contract. Brain MCP helps agents understand
-what is in a repository, what can be trusted, and why — not a generic coding assistant.
-
----
-
-## What you get
-
-![AgentDoctor scanning a repository and reporting coding-agent security findings](docs/images/cli-scan.png)
-
-_Real scan of the included `insecure-agent-project` fixture using AgentDoctor v1.0.0._
+[Documentation](docs/README.md) · [Project Brain](docs/project-brain.md) · [MCP](docs/mcp/brain-mcp.md) · [Demo](docs/demo/brain-mcp-demo.md) · [Security](SECURITY.md) · [Roadmap](ROADMAP.md)
 
 ```text
-$ npx @praneeth_54/agentdoctor
-
-🩺 AgentDoctor v1.0.0
-
-Scanning repository...
-
 Repository
-  Framework: Node.js
-  Language: JavaScript
-  Package manager: npm
-  Files scanned: 7
-
-AI Coding Agents
-
-✓ Cursor       configured
-✓ Claude Code  configured
-✓ Codex        configured
-
-Findings
-
-CRITICAL
-
-  ✗ Sensitive environment file may enter agent context
-    .env
-    Affected: Claude Code, Codex
-    Fix: Add an agent-specific exclusion (for example .cursorignore or a
-         Claude Code Read deny rule), keep the file out of version control,
-         and rotate any credentials that may have been exposed.
-
-  ✗ Private key or credential file present in repository
-    test-private-key.pem
-    Affected: Claude Code, Codex, Cursor
-
-WARNING
-
-  ! Claude Code bypassPermissions mode enabled
-    .claude/settings.json
-
-Summary
-
-  3 critical
-  1 warning
-  0 info
-
-  Readiness: 13/100
-  Category and agent scores: agentdoctor scan --json
+   ↓
+Project Understanding
+   ↓
+Project Brain
+   ↓
+Evidence / Claims / Confidence
+   ↓
+MCP
+   ↓
+AI Coding Agent
 ```
 
-Abbreviated text example from the same fixture for accessibility and search. Secret values are never printed. Re-run the scan if counts change.
+Also ships **Safety V1**: Scan → Fix → Verify → Policy → CI for Cursor, Claude Code, and Codex configuration. Brain risk is **change-danger analysis**, not vulnerability scanning.
 
 ---
 
-## Why AgentDoctor?
+## What is AgentDoctor?
 
-Repositories accumulate agent configuration quickly:
+Local developer infrastructure for AI coding agents (`@praneeth_54/agentdoctor`, CLI `agentdoctor`, **1.1.0**, Node.js **20+**).
 
-- Multiple instruction formats (`.cursor/rules`, `CLAUDE.md`, `AGENTS.md`)
-- Stale path references in always-on instructions
-- Ignore differences between `.gitignore`, `.cursorignore`, and agent defaults
-- MCP filesystem scopes that are broader than intended
-- Generated directories and large logs that waste context
-- Credential-like files that may be readable by agents
-- Conflicting assumptions about what each agent can see
+It:
 
-Manually reviewing all of that across Cursor, Claude Code, and Codex is slow and inconsistent. AgentDoctor provides one deterministic local audit with stable rule IDs, evidence paths, and affected-agent information.
+- analyzes repositories with deterministic discovery passes
+- builds a structured Project Brain
+- represents claims with typed evidence and confidence
+- preserves **UNKNOWN** when evidence is missing
+- persists snapshots and computes deltas
+- exposes Brain capabilities through MCP (`agentdoctor brain-mcp --root <path>`)
 
-| Analogy         | Domain                           |
-| --------------- | -------------------------------- |
-| Lighthouse      | Web pages                        |
-| `npm audit`     | Dependencies                     |
-| ESLint          | Source code                      |
-| **AgentDoctor** | **AI coding agent environments** |
-
-AgentDoctor analyzes configuration. It does not run agents or call an LLM. `agentdoctor fix` may append safe context exclusions (Cursor `.cursorignore`, Claude Code Read deny rules, and Codex filesystem deny keys); it does not rewrite secrets, credentials, or security modes such as `bypassPermissions`.
+It is **not** an autonomous coding agent, chatbot, RAG memory product, AGI claim, or vulnerability scanner. It does not claim universal or perfect repository understanding.
 
 ---
 
-## Before / after
+## Why Project Brain?
 
-**Before**
+Agents edit with fragmented context. Ownership gets invented. Blast radius stays implicit. “Why should I trust that?” rarely has an answer with a snapshot id.
 
-A repository may contain:
+Project Brain structures understanding that exists in this codebase:
 
-```text
-.cursor/rules/
-AGENTS.md
-CLAUDE.md
-.claude/settings.json
-.mcp.json
-.env
-```
+architecture · domains · components · entrypoints · dependencies · relationships · ownership · change-danger risks · claims · evidence · confidence · snapshots · deltas
 
-Potential problems stay invisible until something leaks into model context, CI, or a teammate’s agent session:
-
-- environment or credential-like files reachable by agents
-- stale instruction path references
-- broad MCP filesystem access
-- oversized always-on context
-
-**Run**
-
-```bash
-npx @praneeth_54/agentdoctor
-```
-
-**After**
-
-You get deterministic findings with:
-
-- stable rule IDs (for example `security/env-file-exposure`)
-- evidence paths
-- affected agents when exposure claims are supported
-- conservative recommendations
-- readiness score (`scores.overall` in JSON; overall line in the terminal)
-
-Safe context exclusions (Cursor / Claude Code / Codex) can be applied with `agentdoctor fix`. Security and review findings stay manual — Fix explains why and does not invent unsafe edits.
-
----
-
-## Quick start
-
-### One-shot (recommended)
-
-```bash
-npx @praneeth_54/agentdoctor
-```
-
-Pin a version when you need a fixed install:
-
-```bash
-npx @praneeth_54/agentdoctor@1.0.0
-```
-
-### Global (optional)
-
-```bash
-npm install -g @praneeth_54/agentdoctor
-agentdoctor
-```
-
-### Scan → Fix → Verify
-
-```bash
-# 1. Scan (save a baseline for Verify)
-npx @praneeth_54/agentdoctor scan . --json > agentdoctor-report.json
-
-# 2. Fix safe context exclusions (preview first with --dry-run)
-npx @praneeth_54/agentdoctor fix . --dry-run
-npx @praneeth_54/agentdoctor fix . -y
-
-# 3. Verify against the baseline
-npx @praneeth_54/agentdoctor verify . --baseline agentdoctor-report.json
-```
-
-`fix` writes safe context exclusions for Cursor (`.cursorignore`), Claude Code
-(`permissions.deny` Read rules in `.claude/settings.json`), and Codex (filesystem `deny`
-keys under a permissions profile in `.codex/config.toml`) for findings such as unignored
-`build/` or large logs. Review/manual security findings are listed as skipped — address those
-yourself, then re-run `verify`.
-
-### Common commands
-
-```bash
-agentdoctor .
-agentdoctor scan . --json
-agentdoctor fix . --dry-run
-agentdoctor verify . --ci --baseline agentdoctor-report.json
-agentdoctor explain security/env-file-exposure
-agentdoctor doctor
-```
-
-Package name: `@praneeth_54/agentdoctor` (npm blocks the unscoped name). CLI binary: `agentdoctor`. Requires **Node.js 20+**.
-
-### Programmatic API
-
-```bash
-npm install @praneeth_54/agentdoctor
-```
-
-```ts
-import { scan, verify, buildFixPlan, applyFixPlan } from "@praneeth_54/agentdoctor";
-
-const result = await scan({ cwd: process.cwd() });
-console.log(result.summary);
-console.log(result.scores?.overall);
-console.log(result.agentSecurityAnalysis); // "full" | "limited"
-```
-
----
-
-## Supported agents
-
-Project-level configuration only (repository files). Global user settings are not scanned.
-
-| Agent           | What AgentDoctor inspects                                              |
-| --------------- | ---------------------------------------------------------------------- |
-| **Cursor**      | `.cursor/rules/*.mdc`, `.cursorignore`, Cursor MCP config, `AGENTS.md` |
-| **Claude Code** | `CLAUDE.md`, `.claude/settings*.json`, `.claude/rules`, MCP config     |
-| **Codex**       | `AGENTS.md` / overrides, project `.codex/` configuration               |
-
-Additional adapters are planned — see [ROADMAP.md](ROADMAP.md).
-
----
-
-## Finding categories
-
-| Category         | Examples                                                              |
-| ---------------- | --------------------------------------------------------------------- |
-| **Security**     | Env-file exposure, private-key filenames, broad MCP filesystem scopes |
-| **Context**      | Large instruction files, large logs, unignored generated directories  |
-| **Instructions** | Empty instructions, duplicate content, missing path references        |
-| **MCP**          | Malformed MCP config, high-risk filesystem path arguments             |
-
-Full catalog with severities and fixability: [docs/rules.md](docs/rules.md).
-
-Explain any rule:
-
-```bash
-npx @praneeth_54/agentdoctor explain security/env-file-exposure
-```
-
----
-
-## Privacy and trust
-
-**Scans run locally on your machine.**
-
-AgentDoctor:
-
-- does not require an API key
-- does not upload repository contents by default
-- does not call an LLM for core scanning
-- does not execute MCP servers
-- does not execute project code
-- never prints secret values from files it flags by name
-- enforces repository boundary checks for path references and symlink escape
-
-This is still software that reads untrusted repository trees. Treat findings as guidance, not a security certification. AgentDoctor is **not** a complete secret-content scanner.
-
----
-
-## CI usage
-
-### GitHub Action
-
-Run AgentDoctor directly in a workflow:
-
-```yaml
-permissions:
-  contents: read
-
-steps:
-  - uses: actions/checkout@v4
-
-  - name: Audit coding-agent configuration
-    id: agentdoctor
-    uses: pranee54/AgentDoctor@v1.0.0
-    with:
-      path: .
-      version: "1.0.0"
-      output-file: agentdoctor-report.json
-      minimum-score: "70"
-      fail-on-severity: critical
-      summary: "true"
-
-  - name: Upload AgentDoctor report
-    uses: actions/upload-artifact@v4
-    with:
-      name: agentdoctor-report
-      path: ${{ steps.agentdoctor.outputs.report-path }}
-```
-
-Policy inputs: `minimum-score`, `fail-on-severity`, `fail-on-rule`, `fail-on-new`,
-`verify-baseline`, `summary`, `annotations`. The Action stays report-only until you set a
-policy input. The Action default `version` is `1.0.0`. For local CI against this repo, use
-`version: workspace` after `npm run build`. The action installs `@praneeth_54/agentdoctor`,
-runs scan (or `verify` when `verify-baseline` is set) with `--json`, and writes the report
-inside the workspace.
-
-### CLI
-
-Use JSON directly in other CI systems:
-
-```bash
-# Report-only (exit 0 even when findings exist; scores still in JSON)
-npx @praneeth_54/agentdoctor --json
-
-# Fail when any critical finding exists
-npx @praneeth_54/agentdoctor --ci --json
-
-# Fail when overall readiness is below 70 (with --ci also fails on criticals)
-npx @praneeth_54/agentdoctor --ci --json --min-score 70
-
-# Fail on warning-or-higher (overrides the default critical gate from --ci)
-npx @praneeth_54/agentdoctor --ci --json --fail-on-severity warning
-```
-
-`--ci` fails when any **critical** finding exists. Override the severity floor with
-`--fail-on-severity`, and use `--min-score` / `--fail-on-rule` for additional gates.
-Omit `--ci` for report-only JSON (exit `0` even when findings exist).
-
-Exit codes: [docs/exit-codes.md](docs/exit-codes.md). Compatibility promises: [docs/compatibility.md](docs/compatibility.md).
-
-### Readiness scoring
-
-Scans populate `scoringAvailable: true` and a deterministic `scores` object
-(overall, categories, agents). The terminal prints overall readiness; category and agent
-scores are in JSON (`--json`).
-
-`--min-score N` is enforced by the CLI. Details (weights, security caps, threshold rules,
-and deferred v2 items): [docs/scoring.md](docs/scoring.md).
-
----
-
-## Known limitations
-
-Honest limits of v1:
-
-| Limitation                  | Status                                                                          |
-| --------------------------- | ------------------------------------------------------------------------------- |
-| Automatic fixes             | Safe Cursor / Claude Code / Codex context exclusions only                       |
-| Security findings           | Review/manual — Fix does not rewrite secrets or security modes                  |
-| Secret-content scanning     | Filename / config heuristics only                                               |
-| Detection style             | Intentionally conservative; false security findings are avoided                 |
-| Agent coverage              | Cursor, Claude Code, Codex project configs                                      |
-| Missing-path residual noise | Broad path-lattice expansion deferred; instruction-directory resolution shipped |
-
-See [CHANGELOG.md](CHANGELOG.md) and [docs/compatibility.md](docs/compatibility.md).
+Details: [docs/project-brain.md](docs/project-brain.md)
 
 ---
 
 ## Architecture
 
+![Architecture](docs/assets/architecture.svg)
+
+| Layer                     | Location                                                    |
+| ------------------------- | ----------------------------------------------------------- |
+| Understanding / discovery | `src/core/understanding/`                                   |
+| Project Brain             | `src/core/understanding/brain/`                             |
+| MCP bridge                | `src/mcp/brain/`                                            |
+| CLI                       | `src/cli/commands/brain-mcp.ts`                             |
+| Safety (separate path)    | `src/core/{scanner,rules,fix,verify,policy}/`, `action.yml` |
+
+MCP depends on Brain. Brain does not depend on MCP.
+
+---
+
+## Project Brain
+
+![Provenance](docs/assets/provenance.svg)
+
+### Evidence & provenance
+
 ```text
-Discovery → Project detect → Agent adapters → Rule engine → Findings → Scores → Terminal / JSON
+Claim
+  ↓
+Evidence
+  ↓
+Snapshot
 ```
 
-Details: [docs/architecture.md](docs/architecture.md)
+Successful MCP tools return a provenance envelope: `result`, `evidenceIds`, `confidence` (`[0,1]`, rule-derived / uncalibrated), `snapshot` (`id` + `contentHash`), and `claimStatus` when applicable.
+
+Claim lifecycle: `ACTIVE` · `INVALIDATED` · `SUPERSEDED` · `CONTRADICTED`
+
+Epistemics on evidence: `observed` | `inferred`. ACTIVE claims must reference evidence. Serialization redacts secret-like values.
+
+### UNKNOWN semantics
+
+```text
+Ownership evidence unavailable
+        ↓
+     UNKNOWN
+```
+
+No invented owners. Contract: `preserve-unknown-never-invent`.
+
+Local runtime store (not committed product source): `<repo>/.agentdoctor/project-brain/`.
+
+---
+
+## MCP
+
+![MCP tools](docs/assets/mcp-tools.svg)
+
+```text
+AI Coding Agent → MCP client → agentdoctor brain-mcp --root <abs> → Project Brain
+```
+
+STDIO only. No API key. No upload. `--root` is required. Diagnostics on **stderr**; protocol on **stdout**.
+
+### Tools (from `src/mcp/brain/tools/registry.ts`)
+
+| Tool              | Purpose                                                |
+| ----------------- | ------------------------------------------------------ |
+| `brain_overview`  | Compact summary + confidence envelope                  |
+| `brain_query`     | Typed `BrainQueryEngine` queries                       |
+| `brain_explain`   | Evidence-backed `explainClaim`                         |
+| `brain_trace`     | Capped deterministic `traceBrain`                      |
+| `brain_claims`    | Claim lifecycle (default ACTIVE + CONTRADICTED)        |
+| `brain_evidence`  | Typed redacted evidence                                |
+| `brain_ownership` | Explicit CODEOWNERS / MAINTAINERS / package only       |
+| `brain_risk`      | Change-danger risk (not SAST / CVE)                    |
+| `brain_delta`     | Read-only snapshot comparison                          |
+| `brain_snapshot`  | `current` · `history` · `compare` · `load` · `rebuild` |
+
+Only controlled write: `brain_snapshot` `rebuild` under `<root>/.agentdoctor/project-brain/`.
+
+Contract: [docs/mcp/brain-mcp.md](docs/mcp/brain-mcp.md)
+
+---
+
+## Real Cursor Agent Validation
+
+![Agent validation](docs/assets/agent-validation.svg)
+
+```text
+Cursor Agent
+    ↓
+MCP discovery (agentdoctor-brain)
+    ↓
+brain_* tool call
+    ↓
+Project Brain
+    ↓
+Evidence-backed result (+ provenance)
+```
+
+Harness: `validation/mcp-agent` on `fixtures/understanding-dependencies-project`.
+
+| Q   | Focus          | Expected tools                                    |
+| --- | -------------- | ------------------------------------------------- |
+| Q1  | Overview       | `brain_overview`                                  |
+| Q2  | Entrypoints    | `brain_query`                                     |
+| Q3  | Change risk    | `brain_risk`                                      |
+| Q4  | Ownership      | `brain_ownership`                                 |
+| Q5  | Impact / trace | `brain_trace`                                     |
+| Q6  | Provenance     | `brain_explain`, `brain_claims`, `brain_evidence` |
+| Q7  | Delta          | `brain_delta`, `brain_snapshot`                   |
+
+Documented harness results ([validation/mcp-agent/README.md](validation/mcp-agent/README.md), 2026-08-13, AgentDoctor 1.1.0):
+
+- Deterministic Brain tool exercise: **10/10** succeeded (actual tool calls, not prose inference)
+- Cursor MCP tools discovered: **PASS** (all 10 listed)
+- Security checks: **10/10**
+- Provenance (tool-level): **PASS**
+- Authenticated LLM Q1–Q7 grading: **BLOCKED** without agent login — kept separate from MCP contract PASS
+
+Checks include grounding, UNKNOWN ownership guard, risk semantics, provenance, snapshot/delta semantics — not “zero hallucinations.”
+
+Demo: [docs/demo/brain-mcp-demo.md](docs/demo/brain-mcp-demo.md)
+
+---
+
+## Built Through Real Validation
+
+1.1.0 was hardened under real MCP, CI, and Windows pressure — not README theater.
+
+| Problem                      | What we learned                                                                                                                                                                                                              |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| MCP cold start               | Session loads latest snapshot or, by default, **compiles on first connect** (`buildIfMissing`). Large roots make host MCP timeouts more likely — prefer an existing snapshot / explicit `rebuild` before attaching an agent. |
+| Large Brain init             | First compile writes under `.agentdoctor/project-brain/`; local Brain state ≠ committed source.                                                                                                                              |
+| STDIO discipline             | Protocol on stdout only; logs on stderr (`src/mcp/brain/server.ts`, `tests/unit/mcp/`).                                                                                                                                      |
+| Cross-process MCP tests      | Unit STDIO client + protocol tests matter more than assuming tool use from answer quality.                                                                                                                                   |
+| Windows CLI                  | `.cmd` / POSIX shim pitfalls → invoke via `node` + `npm-cli.js`; native `cmd` quoting.                                                                                                                                       |
+| Argument escaping            | CodeQL-driven hardening of Windows command argument escaping in test helpers.                                                                                                                                                |
+| CI matrix                    | Ubuntu + Windows quality job; Project Brain laboratory requires `npm run build` before spawn (`f3cd550`).                                                                                                                    |
+| Snapshots                    | Atomic writes, checksum fail-closed, refuse divergent overwrite of the same snapshot id.                                                                                                                                     |
+| Terminal / injection surface | Findings must not become escape channels; Security policy calls out terminal escape injection.                                                                                                                               |
+| UNKNOWN                      | Inventing ownership is a product failure mode.                                                                                                                                                                               |
+
+---
+
+## Repository Structure
+
+![Repository layout](docs/assets/repository-architecture.svg)
+
+```text
+src/
+├── core/
+│   └── understanding/          # discovery + Project Brain
+├── mcp/
+│   └── brain/                  # STDIO MCP bridge
+└── cli/
+    └── commands/
+        └── brain-mcp.ts
+
+tests/
+└── unit/
+    ├── understanding/
+    └── mcp/
+
+validation/
+├── project-brain/
+├── software-understanding/
+├── real-world/
+└── mcp-agent/
+
+docs/
+├── assets/                     # README diagrams (this landing page)
+├── mcp/
+├── demo/
+└── project-brain.md
+
+examples/mcp/                   # Cursor / Claude Code / Codex config samples
+```
+
+Do not treat `.agentdoctor/` or project-local agent config dirs as committed AgentDoctor source.
+
+---
+
+## Validation
+
+![Validation pipeline](docs/assets/validation-pipeline.svg)
+
+```bash
+npm run verify                 # typecheck · lint · format · unit · build
+npm run verify:understanding
+npm run verify:mcp
+npm run verify:project-brain   # understanding + validate:project-brain + benchmark
+npm run validate:mcp-agent
+```
+
+| Layer            | How verified                                            | Current note                                                                      |
+| ---------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Core / Safety    | `npm run verify` + CI quality (Ubuntu/Windows)          | Live [CI badge](https://github.com/pranee54/AgentDoctor/actions/workflows/ci.yml) |
+| Understanding    | `npm run verify:understanding`                          | Unit surface under `tests/unit/understanding/`                                    |
+| Project Brain    | `npm run verify:project-brain` + CI `project-brain` job | Requires built CLI                                                                |
+| MCP              | `npm run verify:mcp`                                    | Protocol + STDIO client tests                                                     |
+| Agent validation | `npm run validate:mcp-agent`                            | MCP discovery **PASS**; LLM Q1–Q7 **BLOCKED** (see report)                        |
+| Benchmark        | `benchmark:project-brain`                               | Part of `verify:project-brain`                                                    |
+| Package          | npm `@praneeth_54/agentdoctor`                          | Published **1.1.0**                                                               |
+| Security         | mcp-agent security suite + [SECURITY.md](SECURITY.md)   | Tool-level **10/10** in report                                                    |
+
+Re-run the commands above for live status; do not treat this table as a substitute for CI.
+
+---
+
+## Installation
+
+```bash
+npx @praneeth_54/agentdoctor@1.1.0
+# or
+npm install -g @praneeth_54/agentdoctor
+agentdoctor --help
+```
+
+```bash
+agentdoctor brain-mcp --root /ABSOLUTE/PATH/TO/YOUR/PROJECT
+
+agentdoctor .
+agentdoctor scan . --json
+agentdoctor fix . --dry-run
+agentdoctor verify . --baseline agentdoctor-report.json
+agentdoctor explain security/env-file-exposure
+agentdoctor doctor
+```
+
+---
+
+## MCP Quick Start
+
+Configs: [examples/mcp/](examples/mcp/). Use placeholders — never commit machine paths.
+
+**Cursor** ([examples/mcp/cursor.mcp.json](examples/mcp/cursor.mcp.json)):
+
+```json
+{
+  "mcpServers": {
+    "agentdoctor-brain": {
+      "command": "node",
+      "args": [
+        "/ABSOLUTE/PATH/TO/AgentDoctor/dist/cli/index.js",
+        "brain-mcp",
+        "--root",
+        "/ABSOLUTE/PATH/TO/YOUR/PROJECT"
+      ]
+    }
+  }
+}
+```
+
+Also: [examples/mcp/claude-code.mcp.json](examples/mcp/claude-code.mcp.json), [examples/mcp/codex.config.toml](examples/mcp/codex.config.toml).
+
+Tip: rebuild or ensure a snapshot exists before attaching an agent if the repository is large.
+
+---
+
+## Design Boundaries
+
+| AgentDoctor IS           | AgentDoctor IS NOT                 |
+| ------------------------ | ---------------------------------- |
+| Repository understanding | Chatbot                            |
+| Structured Project Brain | Generic RAG / AI memory            |
+| Evidence-backed claims   | Autonomous coding agent            |
+| MCP interface            | Vulnerability scanner              |
+| Change-danger analysis   | “Understands every repo perfectly” |
+| Snapshots / deltas       | Zero-hallucination guarantee       |
+
+---
+
+## Release 1.1.0
+
+Version verified in `package.json` / `PACKAGE_VERSION`: **1.1.0** (also on npm).
+
+Shipped: Project Brain packaging, `brain-mcp`, ten provenance tools, snapshots/delta, agent validation harness + docs. Safety V1 unchanged.
+
+[docs/release-notes-v1.1.0.md](docs/release-notes-v1.1.0.md) · [CHANGELOG.md](CHANGELOG.md)
+
+GitHub Action default `version` input remains `1.0.0` unless you pin `1.1.0`.
 
 ---
 
 ## Documentation
 
-| Doc                                                                | Contents                        |
-| ------------------------------------------------------------------ | ------------------------------- |
-| [docs/README.md](docs/README.md)                                   | Documentation index             |
-| [docs/architecture.md](docs/architecture.md)                       | Scan pipeline                   |
-| [docs/rules.md](docs/rules.md)                                     | Stable rule IDs                 |
-| [docs/exit-codes.md](docs/exit-codes.md)                           | Process exit codes              |
-| [docs/scoring.md](docs/scoring.md)                                 | Readiness scoring specification |
-| [docs/compatibility.md](docs/compatibility.md)                     | v1 compatibility promises       |
-| [docs/project-brain.md](docs/project-brain.md)                     | Project Brain understanding     |
-| [docs/mcp/brain-mcp.md](docs/mcp/brain-mcp.md)                     | Brain → MCP → Agent bridge      |
-| [docs/development.md](docs/development.md)                         | Local development               |
-| [docs/github-launch-checklist.md](docs/github-launch-checklist.md) | GitHub About / topics / launch  |
-| [ROADMAP.md](ROADMAP.md)                                           | Near- and medium-term plans     |
-| [CHANGELOG.md](CHANGELOG.md)                                       | Release history                 |
+| Doc                                                          | Contents                    |
+| ------------------------------------------------------------ | --------------------------- |
+| [docs/project-brain.md](docs/project-brain.md)               | Project Brain model         |
+| [docs/mcp/brain-mcp.md](docs/mcp/brain-mcp.md)               | MCP contract                |
+| [docs/demo/brain-mcp-demo.md](docs/demo/brain-mcp-demo.md)   | Demo narrative              |
+| [docs/release-notes-v1.1.0.md](docs/release-notes-v1.1.0.md) | 1.1.0 notes                 |
+| [SECURITY.md](SECURITY.md)                                   | Vulnerability reporting     |
+| [ROADMAP.md](ROADMAP.md)                                     | Near / medium / longer term |
+| [docs/README.md](docs/README.md)                             | Full index                  |
+
+---
+
+## Roadmap
+
+From [ROADMAP.md](ROADMAP.md): scoring follow-ups; additional agent adapters; richer MCP config analysis without executing servers; optional opt-in telemetry and clearly separated key-gated AI-assisted analysis longer term. Non-goals: replacing coding agents, LLM gateway, complete security certification.
 
 ---
 
 ## Contributing
 
-Issues and pull requests are welcome.
-
-1. Read [CONTRIBUTING.md](CONTRIBUTING.md) and the [Code of Conduct](CODE_OF_CONDUCT.md)
-2. Prefer [good first issues](docs/good-first-issues.md) ideas
-3. Report security issues via [SECURITY.md](SECURITY.md) — never paste real secrets into issues
+[CONTRIBUTING.md](CONTRIBUTING.md) · [Code of Conduct](CODE_OF_CONDUCT.md) · [good first issues](docs/good-first-issues.md)
 
 ```bash
 git clone https://github.com/pranee54/AgentDoctor.git
 cd AgentDoctor
 npm install
 npm run verify
-node dist/cli/index.js ./fixtures/clean-configured-project
 ```
 
 ---
 
-## Project Brain MCP (agent context)
+## Security
 
-Evidence-backed repository understanding for agents (not a search MCP):
+Local analysis. No API key for core Brain/Safety. No default upload. Redacted Brain serialization.
 
-```bash
-agentdoctor brain-mcp --root /absolute/path/to/project
-```
-
-Tools: overview, query, explain, trace, claims, evidence, ownership, risk, delta, snapshot.
-Local STDIO only — no API key, no upload. Docs: [docs/mcp/brain-mcp.md](docs/mcp/brain-mcp.md).
-Examples: [examples/mcp/](examples/mcp/).
-
----
-
-## Next steps
-
-- **Try it:** `npx @praneeth_54/agentdoctor`
-- **Report a false positive / false negative:** use the issue templates (include version, rule ID, anonymized evidence — no secrets)
-- **Propose a rule or adapter:** [feature request](.github/ISSUE_TEMPLATE/feature_request.md) / [rule proposal](.github/ISSUE_TEMPLATE/rule_proposal.md)
-- **Contribute:** [CONTRIBUTING.md](CONTRIBUTING.md)
-- **Useful?** Star or watch the repository so you see updates
+Report privately via [SECURITY.md](SECURITY.md).
 
 ---
 

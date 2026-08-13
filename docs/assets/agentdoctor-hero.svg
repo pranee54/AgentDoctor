@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">AgentDoctor  Evidence-backed Project Brain for AI Coding Agents</title>
+  <desc id="desc">Flow from Repository through Project Understanding, Project Brain, and MCP to AI coding agents</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#07111F"/>
+      <stop offset="100%" stop-color="#0B1A33"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#7C3AED"/>
+      <stop offset="50%" stop-color="#2563EB"/>
+      <stop offset="100%" stop-color="#06B6D4"/>
+    </linearGradient>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#06B6D4"/>
+    </marker>
+  </defs>
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <rect x="48" y="48" width="1184" height="624" rx="16" fill="none" stroke="#1E293B" stroke-width="1.5"/>
+  <rect x="48" y="48" width="1184" height="4" fill="url(#accent)"/>
+
+  <text x="80" y="120" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="42" font-weight="700" fill="#F8FAFC">AgentDoctor</text>
+  <text x="80" y="168" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="22" fill="#94A3B8">Evidence-backed Project Brain for AI Coding Agents</text>
+  <text x="80" y="208" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14" fill="#7C3AED">v1.1.0 | local | deterministic | STDIO MCP</text>
+
+  <!-- Pipeline boxes -->
+  <g font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="15" font-weight="600">
+    <rect x="80" y="280" width="180" height="64" rx="10" fill="#0F1B2D" stroke="#2563EB" stroke-width="1.5"/>
+    <text x="170" y="318" text-anchor="middle" fill="#F8FAFC">Repository</text>
+
+    <line x1="260" y1="312" x2="300" y2="312" stroke="#06B6D4" stroke-width="2" marker-end="url(#arrow)"/>
+
+    <rect x="308" y="280" width="200" height="64" rx="10" fill="#0F1B2D" stroke="#7C3AED" stroke-width="1.5"/>
+    <text x="408" y="310" text-anchor="middle" fill="#F8FAFC">Project</text>
+    <text x="408" y="330" text-anchor="middle" fill="#94A3B8" font-size="13" font-weight="500">Understanding</text>
+
+    <line x1="508" y1="312" x2="548" y2="312" stroke="#06B6D4" stroke-width="2" marker-end="url(#arrow)"/>
+
+    <rect x="556" y="280" width="180" height="64" rx="10" fill="#0F1B2D" stroke="#7C3AED" stroke-width="1.5"/>
+    <text x="646" y="318" text-anchor="middle" fill="#F8FAFC">Project Brain</text>
+
+    <line x1="736" y1="312" x2="776" y2="312" stroke="#06B6D4" stroke-width="2" marker-end="url(#arrow)"/>
+
+    <rect x="784" y="280" width="160" height="64" rx="10" fill="#0F1B2D" stroke="#06B6D4" stroke-width="1.5"/>
+    <text x="864" y="318" text-anchor="middle" fill="#F8FAFC">MCP Server</text>
+
+    <line x1="944" y1="312" x2="984" y2="312" stroke="#06B6D4" stroke-width="2" marker-end="url(#arrow)"/>
+
+    <rect x="992" y="280" width="200" height="64" rx="10" fill="#0F1B2D" stroke="#10B981" stroke-width="1.5"/>
+    <text x="1092" y="310" text-anchor="middle" fill="#F8FAFC">AI Coding</text>
+    <text x="1092" y="330" text-anchor="middle" fill="#94A3B8" font-size="13" font-weight="500">Agents</text>
+  </g>
+
+  <!-- Agent chips -->
+  <g font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="13">
+    <text x="80" y="420" fill="#94A3B8">Agent configuration examples</text>
+    <rect x="80" y="440" width="100" height="36" rx="8" fill="#122033" stroke="#334155"/>
+    <text x="130" y="463" text-anchor="middle" fill="#F8FAFC">Cursor</text>
+    <rect x="196" y="440" width="120" height="36" rx="8" fill="#122033" stroke="#334155"/>
+    <text x="256" y="463" text-anchor="middle" fill="#F8FAFC">Claude Code</text>
+    <rect x="332" y="440" width="90" height="36" rx="8" fill="#122033" stroke="#334155"/>
+    <text x="377" y="463" text-anchor="middle" fill="#F8FAFC">Codex</text>
+  </g>
+
+  <g font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="13">
+    <text x="80" y="540" fill="#94A3B8">Also ships Safety V1</text>
+    <text x="80" y="568" fill="#CBD5E1">Scan  Fix  Verify  Policy  CI</text>
+    <text x="80" y="610" fill="#64748B">Not a chatbot | Not RAG | Not vulnerability scanning as Brain risk</text>
+  </g>
+</svg>

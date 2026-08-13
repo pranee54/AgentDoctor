@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="900" viewBox="0 0 1280 900" role="img" aria-labelledby="title desc">
+  <title id="title">AgentDoctor architecture</title>
+  <desc id="desc">Discovery passes feed Project Brain; query engine exposes Brain via MCP to AI agents</desc>
+  <defs>
+    <marker id="a" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="#06B6D4"/>
+    </marker>
+  </defs>
+  <rect width="1280" height="900" fill="#07111F"/>
+  <rect x="32" y="32" width="1216" height="836" rx="14" fill="none" stroke="#1E293B"/>
+  <text x="56" y="78" font-family="ui-sans-serif, system-ui, sans-serif" font-size="26" font-weight="700" fill="#F8FAFC">Architecture</text>
+  <text x="56" y="108" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" fill="#94A3B8">src/core/understanding | src/mcp/brain | src/cli/commands/brain-mcp.ts</text>
+
+  <!-- Repository -->
+  <rect x="520" y="140" width="240" height="48" rx="8" fill="#0F1B2D" stroke="#2563EB"/>
+  <text x="640" y="170" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="15" font-weight="600" fill="#F8FAFC">Repository</text>
+  <line x1="640" y1="188" x2="640" y2="220" stroke="#06B6D4" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- Discovery chain -->
+  <g font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" fill="#F8FAFC">
+    <rect x="56" y="228" width="110" height="40" rx="6" fill="#122033" stroke="#334155"/><text x="111" y="253" text-anchor="middle">Discovery</text>
+    <rect x="186" y="228" width="100" height="40" rx="6" fill="#122033" stroke="#334155"/><text x="236" y="253" text-anchor="middle">Structure</text>
+    <rect x="306" y="228" width="120" height="40" rx="6" fill="#122033" stroke="#334155"/><text x="366" y="253" text-anchor="middle">Dependencies</text>
+    <rect x="446" y="228" width="130" height="40" rx="6" fill="#122033" stroke="#334155"/><text x="511" y="253" text-anchor="middle">Relationships</text>
+    <rect x="596" y="228" width="110" height="40" rx="6" fill="#122033" stroke="#334155"/><text x="651" y="253" text-anchor="middle">Entrypoints</text>
+    <rect x="726" y="228" width="90" height="40" rx="6" fill="#122033" stroke="#334155"/><text x="771" y="253" text-anchor="middle">Domains</text>
+    <rect x="836" y="228" width="120" height="40" rx="6" fill="#122033" stroke="#334155"/><text x="896" y="253" text-anchor="middle">Architecture</text>
+    <rect x="976" y="228" width="140" height="40" rx="6" fill="#122033" stroke="#7C3AED"/><text x="1046" y="253" text-anchor="middle">Project Model</text>
+  </g>
+  <line x1="640" y1="268" x2="640" y2="310" stroke="#06B6D4" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- Project Brain panel -->
+  <rect x="160" y="318" width="960" height="280" rx="12" fill="#0B1628" stroke="#7C3AED" stroke-width="1.5"/>
+  <text x="640" y="358" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="18" font-weight="700" fill="#F8FAFC">Project Brain</text>
+  <text x="640" y="382" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="12" fill="#94A3B8">buildProjectBrain  LocalBrainStore (.agentdoctor/project-brain/)</text>
+
+  <g font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" fill="#F8FAFC">
+    <rect x="200" y="410" width="160" height="56" rx="8" fill="#122033" stroke="#334155"/><text x="280" y="444" text-anchor="middle">Project Model</text>
+    <rect x="380" y="410" width="120" height="56" rx="8" fill="#122033" stroke="#334155"/><text x="440" y="444" text-anchor="middle">Claims</text>
+    <rect x="520" y="410" width="120" height="56" rx="8" fill="#122033" stroke="#334155"/><text x="580" y="444" text-anchor="middle">Evidence</text>
+    <rect x="660" y="410" width="130" height="56" rx="8" fill="#122033" stroke="#334155"/><text x="725" y="444" text-anchor="middle">Confidence</text>
+    <rect x="810" y="410" width="130" height="56" rx="8" fill="#122033" stroke="#334155"/><text x="875" y="444" text-anchor="middle">Ownership</text>
+    <rect x="960" y="410" width="120" height="56" rx="8" fill="#122033" stroke="#334155"/><text x="1020" y="444" text-anchor="middle">Risks</text>
+
+    <rect x="320" y="490" width="140" height="56" rx="8" fill="#122033" stroke="#06B6D4"/><text x="390" y="524" text-anchor="middle">Snapshots</text>
+    <rect x="480" y="490" width="120" height="56" rx="8" fill="#122033" stroke="#06B6D4"/><text x="540" y="524" text-anchor="middle">Delta</text>
+    <rect x="620" y="490" width="160" height="56" rx="8" fill="#122033" stroke="#F59E0B"/><text x="700" y="524" text-anchor="middle">Unknowns</text>
+    <rect x="800" y="490" width="160" height="56" rx="8" fill="#122033" stroke="#334155"/><text x="880" y="524" text-anchor="middle">Contradictions</text>
+  </g>
+
+  <line x1="640" y1="598" x2="640" y2="640" stroke="#06B6D4" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- Lower pipeline -->
+  <g font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" font-weight="600" fill="#F8FAFC">
+    <rect x="200" y="648" width="180" height="52" rx="8" fill="#0F1B2D" stroke="#2563EB"/><text x="290" y="680" text-anchor="middle">Query Engine</text>
+    <line x1="380" y1="674" x2="430" y2="674" stroke="#06B6D4" stroke-width="2" marker-end="url(#a)"/>
+    <rect x="438" y="648" width="200" height="52" rx="8" fill="#0F1B2D" stroke="#06B6D4"/><text x="538" y="680" text-anchor="middle">MCP Server (STDIO)</text>
+    <line x1="638" y1="674" x2="690" y2="674" stroke="#06B6D4" stroke-width="2" marker-end="url(#a)"/>
+    <rect x="698" y="648" width="220" height="52" rx="8" fill="#0F1B2D" stroke="#10B981"/><text x="808" y="680" text-anchor="middle">AI Coding Agent</text>
+  </g>
+
+  <text x="640" y="750" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="12" fill="#64748B">agentdoctor brain-mcp --root &lt;absolute-path&gt;</text>
+  <text x="640" y="780" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" fill="#64748B">Safety Scan  Fix  Verify remains a separate product path</text>
+</svg>

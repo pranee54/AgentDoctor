@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="720" viewBox="0 0 1100 720" role="img" aria-labelledby="title desc">
+  <title id="title">Provenance model</title>
+  <desc id="desc">Agent answers trace to claims, evidence, and snapshots; UNKNOWN is a valid outcome</desc>
+  <defs>
+    <marker id="p" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="#06B6D4"/>
+    </marker>
+  </defs>
+  <rect width="1100" height="720" fill="#07111F"/>
+  <rect x="28" y="28" width="1044" height="664" rx="14" fill="none" stroke="#1E293B"/>
+  <text x="52" y="72" font-family="ui-sans-serif, system-ui, sans-serif" font-size="24" font-weight="700" fill="#F8FAFC">Provenance</text>
+  <text x="52" y="100" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" fill="#94A3B8">Every Brain-backed result is traceable to observed repository evidence</text>
+
+  <!-- Main chain -->
+  <g font-family="ui-sans-serif, system-ui, sans-serif" font-weight="600">
+    <rect x="420" y="140" width="260" height="56" rx="10" fill="#0F1B2D" stroke="#10B981"/>
+    <text x="550" y="174" text-anchor="middle" font-size="16" fill="#F8FAFC">Agent Answer</text>
+    <line x1="550" y1="196" x2="550" y2="230" stroke="#06B6D4" stroke-width="2" marker-end="url(#p)"/>
+
+    <rect x="420" y="238" width="260" height="56" rx="10" fill="#0F1B2D" stroke="#7C3AED"/>
+    <text x="550" y="272" text-anchor="middle" font-size="16" fill="#F8FAFC">Claim</text>
+    <line x1="550" y1="294" x2="550" y2="328" stroke="#06B6D4" stroke-width="2" marker-end="url(#p)"/>
+
+    <rect x="420" y="336" width="260" height="56" rx="10" fill="#0F1B2D" stroke="#2563EB"/>
+    <text x="550" y="370" text-anchor="middle" font-size="16" fill="#F8FAFC">Evidence</text>
+    <line x1="550" y1="392" x2="550" y2="426" stroke="#06B6D4" stroke-width="2" marker-end="url(#p)"/>
+
+    <rect x="420" y="434" width="260" height="56" rx="10" fill="#0F1B2D" stroke="#06B6D4"/>
+    <text x="550" y="468" text-anchor="middle" font-size="16" fill="#F8FAFC">Snapshot</text>
+  </g>
+
+  <!-- Side labels -->
+  <g font-family="ui-monospace, Menlo, monospace" font-size="12" fill="#94A3B8">
+    <rect x="720" y="246" width="280" height="40" rx="6" fill="#122033" stroke="#334155"/>
+    <text x="860" y="271" text-anchor="middle" fill="#F8FAFC">claimStatus: ACTIVE</text>
+    <rect x="720" y="296" width="280" height="40" rx="6" fill="#122033" stroke="#334155"/>
+    <text x="860" y="321" text-anchor="middle" fill="#F8FAFC">confidence: [0, 1]</text>
+    <rect x="720" y="344" width="280" height="40" rx="6" fill="#122033" stroke="#334155"/>
+    <text x="860" y="369" text-anchor="middle" fill="#F8FAFC">evidenceIds: [&]</text>
+    <rect x="720" y="442" width="280" height="40" rx="6" fill="#122033" stroke="#334155"/>
+    <text x="860" y="467" text-anchor="middle" fill="#F8FAFC">snapshot.id + contentHash</text>
+  </g>
+
+  <!-- Epistemics -->
+  <g font-family="ui-sans-serif, system-ui, sans-serif" font-size="13">
+    <text x="52" y="200" fill="#94A3B8">Epistemics</text>
+    <rect x="52" y="220" width="140" height="40" rx="6" fill="#122033" stroke="#10B981"/>
+    <text x="122" y="245" text-anchor="middle" fill="#F8FAFC">observed</text>
+    <rect x="52" y="274" width="140" height="40" rx="6" fill="#122033" stroke="#F59E0B"/>
+    <text x="122" y="299" text-anchor="middle" fill="#F8FAFC">inferred</text>
+  </g>
+
+  <!-- UNKNOWN callout -->
+  <rect x="52" y="540" width="996" height="120" rx="12" fill="#0B1628" stroke="#F59E0B" stroke-width="1.5"/>
+  <text x="80" y="580" font-family="ui-sans-serif, system-ui, sans-serif" font-size="16" font-weight="700" fill="#F59E0B">UNKNOWN is a valid outcome</text>
+  <text x="80" y="610" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" fill="#CBD5E1">Ownership evidence unavailable → UNKNOWN → no invented owner</text>
+  <text x="80" y="638" font-family="ui-monospace, Menlo, monospace" font-size="12" fill="#94A3B8">unknownPolicy: preserve-unknown-never-invent</text>
+</svg>

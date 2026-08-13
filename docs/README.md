@@ -1,10 +1,13 @@
 # Documentation
 
+Product landing page (GitHub repository README): [../README.md](../README.md).
+Visual assets used by that landing page live in [assets/](assets/).
+
 ## Product
 
 | Document                                                               | Description                                   |
 | ---------------------------------------------------------------------- | --------------------------------------------- |
-| [../README.md](../README.md)                                           | Product overview and quick start              |
+| [../README.md](../README.md)                                           | Product landing page (Project Brain + Safety) |
 | [architecture.md](architecture.md)                                     | Scan pipeline and package layout              |
 | [rules.md](rules.md)                                                   | Stable rule IDs and severity policy           |
 | [exit-codes.md](exit-codes.md)                                         | CLI process exit codes                        |
