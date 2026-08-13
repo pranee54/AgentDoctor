@@ -1,0 +1,163 @@
+{
+  "domains": {
+    "domains": [
+      {
+        "name": "Payments",
+        "confidence": 0.72,
+        "evidence": ["packages/payments/src/payment.service.ts", "packages/checkout/src/checkout.controller.ts"]
+      }
+    ],
+    "timingMs": 1,
+    "filesConsidered": 20
+  },
+  "entrypoints": {
+    "entrypoints": [
+      {
+        "framework": "NestJS",
+        "file": "apps/api/src/main.ts",
+        "confidence": 0.9,
+        "evidence": ["path:apps/api/src/main.ts", "NestFactory", "bootstrap()"]
+      },
+      {
+        "framework": "Flutter",
+        "file": "mobile/lib/main.dart",
+        "confidence": 0.95,
+        "evidence": ["path:mobile/lib/main.dart", "runApp()", "MaterialApp"]
+      }
+    ],
+    "timingMs": 1,
+    "filesConsidered": 20,
+    "filesInspected": 5
+  },
+  "dependencies": {
+    "dependencies": [
+      {
+        "from": "Checkout",
+        "to": "Payments",
+        "type": "package",
+        "confidence": 0.9,
+        "evidence": ["packages/checkout/package.json declares dependency on @acme/payments"]
+      },
+      {
+        "from": "Api",
+        "to": "Checkout",
+        "type": "package",
+        "confidence": 0.9,
+        "evidence": ["apps/api/package.json declares dependency on @acme/checkout"]
+      },
+      {
+        "from": "Payments",
+        "to": "Checkout",
+        "type": "dynamic-import",
+        "confidence": 0.75,
+        "evidence": ["packages/payments/src/service.ts dynamically imports packages/checkout/src/index.ts"]
+      }
+    ],
+    "timingMs": 1,
+    "filesConsidered": 20,
+    "filesInspected": 15
+  },
+  "relationships": {
+    "relationships": [
+      {
+        "source": "CheckoutController",
+        "target": "PaymentService",
+        "relationship": "USES",
+        "confidence": 0.98,
+        "evidence": ["imports payment.service.ts", "constructor injection", "Controller → Service"],
+        "strength": "strong"
+      },
+      {
+        "source": "PaymentService",
+        "target": "PaymentRepository",
+        "relationship": "USES",
+        "confidence": 0.96,
+        "evidence": ["imports payment.repository.ts", "constructor injection", "Service → Repository"],
+        "strength": "strong"
+      },
+      {
+        "source": "PaymentRepository",
+        "target": "PaymentEntity",
+        "relationship": "USES",
+        "confidence": 0.94,
+        "evidence": ["imports payment.entity.ts", "Repository → Database"],
+        "strength": "medium"
+      },
+      {
+        "source": "PaymentEntity",
+        "target": "PaymentStore",
+        "relationship": "IMPLEMENTS",
+        "confidence": 0.97,
+        "evidence": ["implements PaymentStore", "in packages/payments/src/payment.entity.ts"],
+        "strength": "strong"
+      },
+      {
+        "source": "OrdersRoute",
+        "target": "CheckoutController",
+        "relationship": "EXPOSES",
+        "confidence": 0.93,
+        "evidence": ["imports checkout.controller.ts", "Route → Controller"],
+        "strength": "medium"
+      },
+      {
+        "source": "AppModule",
+        "target": "AppConfig",
+        "relationship": "CONFIGURES",
+        "confidence": 0.92,
+        "evidence": ["imports app.config.ts", "module configuration wiring"],
+        "strength": "strong"
+      },
+      {
+        "source": "AppModule",
+        "target": "CheckoutController",
+        "relationship": "PROVIDES",
+        "confidence": 0.88,
+        "evidence": ["imports checkout.controller.ts", "Module → Controller"],
+        "strength": "medium"
+      },
+      {
+        "source": "Checkout",
+        "target": "Payments",
+        "relationship": "CONSUMES",
+        "confidence": 0.85,
+        "evidence": ["CheckoutController uses PaymentService"],
+        "strength": "medium"
+      },
+      {
+        "source": "Checkout",
+        "target": "CheckoutController",
+        "relationship": "CONTAINS",
+        "confidence": 0.86,
+        "evidence": ["packages/checkout/src/checkout.controller.ts lives under feature Checkout"],
+        "strength": "strong"
+      },
+      {
+        "source": "Checkout",
+        "target": "Payments",
+        "relationship": "PROVIDES",
+        "confidence": 0.8,
+        "evidence": ["packages/checkout/src/checkout.controller.ts token \"checkout\" maps to domain Payments"],
+        "strength": "medium"
+      },
+      {
+        "source": "CheckoutWidget",
+        "target": "CheckoutBloc",
+        "relationship": "USES",
+        "confidence": 0.92,
+        "evidence": ["imports checkout_bloc.dart", "Widget → Bloc"],
+        "strength": "medium"
+      },
+      {
+        "source": "CheckoutBloc",
+        "target": "CheckoutRepository",
+        "relationship": "USES",
+        "confidence": 0.91,
+        "evidence": ["imports checkout_repository.dart", "Bloc → Repository"],
+        "strength": "medium"
+      }
+    ],
+    "timingMs": 1,
+    "filesConsidered": 20,
+    "filesInspected": 15
+  }
+}

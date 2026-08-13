@@ -1,0 +1,59 @@
+{
+  "id": "laravel-laravel",
+  "expectationVersion": "1.0.0",
+  "domains": {
+    "required": [],
+    "forbidden": []
+  },
+  "entrypoints": {
+    "required": [
+      {
+        "framework": "Laravel",
+        "fileSuffix": "routes/web.php"
+      },
+      {
+        "framework": "Laravel",
+        "fileSuffix": "artisan"
+      }
+    ],
+    "forbiddenFrameworks": [
+      "Flutter",
+      "Django"
+    ]
+  },
+  "dependencies": {
+    "required": [],
+    "minCount": 5,
+    "characteristic": "moderate"
+  },
+  "relationships": {
+    "required": [],
+    "minCount": 1
+  },
+  "architectures": {
+    "requiredPatterns": [
+      "MVC"
+    ],
+    "forbiddenPatterns": [
+      "BLoC",
+      "Microservice"
+    ]
+  },
+  "projectModel": {
+    "minDomains": 0,
+    "minEntrypoints": 2,
+    "minDependencies": 1,
+    "minRelationships": 0,
+    "minArchitectures": 0
+  },
+  "query": {
+    "minListDomains": 0,
+    "minListEntrypoints": 2
+  },
+  "understand": {
+    "mustContain": [
+      "Entrypoints"
+    ]
+  },
+  "expectationLock": "3abfb555f57440cf8d8571039de05508f6461b53c32d5a5ba79b3209a44a9455"
+}

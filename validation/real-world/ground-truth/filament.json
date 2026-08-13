@@ -1,0 +1,50 @@
+{
+  "id": "filament",
+  "expectationVersion": "1.0.0",
+  "domains": {
+    "required": [
+      "Admin"
+    ],
+    "forbidden": []
+  },
+  "entrypoints": {
+    "required": [],
+    "forbiddenFrameworks": [
+      "Flutter"
+    ]
+  },
+  "dependencies": {
+    "required": [],
+    "minCount": 30,
+    "characteristic": "dense"
+  },
+  "relationships": {
+    "required": [],
+    "minCount": 10
+  },
+  "architectures": {
+    "requiredPatterns": [
+      "Plugin Architecture",
+      "Monorepo Workspace"
+    ],
+    "forbiddenPatterns": []
+  },
+  "projectModel": {
+    "minDomains": 1,
+    "minEntrypoints": 0,
+    "minDependencies": 10,
+    "minRelationships": 5,
+    "minArchitectures": 0
+  },
+  "query": {
+    "mustFindDomain": "Admin",
+    "minListDomains": 1,
+    "minListEntrypoints": 0
+  },
+  "understand": {
+    "mustContain": [
+      "Domains"
+    ]
+  },
+  "expectationLock": "ca95ce7de3679d84544f90c14ff4300edbc563c3fe4885f55661bb717c94ab66"
+}

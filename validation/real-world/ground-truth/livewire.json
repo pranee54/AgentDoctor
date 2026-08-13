@@ -1,0 +1,47 @@
+{
+  "id": "livewire",
+  "expectationVersion": "1.0.0",
+  "domains": {
+    "required": [],
+    "forbidden": []
+  },
+  "entrypoints": {
+    "required": [],
+    "forbiddenFrameworks": [
+      "Flutter",
+      "Go"
+    ]
+  },
+  "dependencies": {
+    "required": [],
+    "minCount": 20,
+    "characteristic": "dense"
+  },
+  "relationships": {
+    "required": [],
+    "minCount": 5
+  },
+  "architectures": {
+    "requiredPatterns": [],
+    "forbiddenPatterns": [
+      "Microservice"
+    ]
+  },
+  "projectModel": {
+    "minDomains": 0,
+    "minEntrypoints": 0,
+    "minDependencies": 5,
+    "minRelationships": 1,
+    "minArchitectures": 0
+  },
+  "query": {
+    "minListDomains": 0,
+    "minListEntrypoints": 0
+  },
+  "understand": {
+    "mustContain": [
+      "Repository"
+    ]
+  },
+  "expectationLock": "a988cd917e7c4a6a2a571410ec34e35f87c05ca0b1cf7ef959764a55f979b67d"
+}

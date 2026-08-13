@@ -1,0 +1,57 @@
+{
+  "id": "gh-cli",
+  "expectationVersion": "1.0.0",
+  "domains": {
+    "required": [
+      "Auth",
+      "Users",
+      "Admin"
+    ],
+    "forbidden": []
+  },
+  "entrypoints": {
+    "required": [
+      {
+        "framework": "Go",
+        "fileSuffix": "main.go"
+      }
+    ],
+    "forbiddenFrameworks": [
+      "Flutter",
+      "Laravel"
+    ]
+  },
+  "dependencies": {
+    "required": [],
+    "minCount": 40,
+    "characteristic": "dense"
+  },
+  "relationships": {
+    "required": [],
+    "minCount": 10
+  },
+  "architectures": {
+    "requiredPatterns": [
+      "Feature-first"
+    ],
+    "forbiddenPatterns": []
+  },
+  "projectModel": {
+    "minDomains": 1,
+    "minEntrypoints": 1,
+    "minDependencies": 10,
+    "minRelationships": 5,
+    "minArchitectures": 0
+  },
+  "query": {
+    "mustFindDomain": "Auth",
+    "minListDomains": 1,
+    "minListEntrypoints": 1
+  },
+  "understand": {
+    "mustContain": [
+      "Entrypoints"
+    ]
+  },
+  "expectationLock": "a853937b27e16a3f4744604840935cdc2ee3fe6e703558d619fa1842179f1ad6"
+}

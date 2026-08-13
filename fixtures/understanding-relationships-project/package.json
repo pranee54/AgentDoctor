@@ -1,0 +1,5 @@
+{
+  "name": "understanding-relationships-fixture",
+  "private": true,
+  "workspaces": ["packages/*", "apps/*"]
+}

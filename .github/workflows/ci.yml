@@ -18,12 +18,16 @@ concurrency:
 jobs:
   quality:
     name: Typecheck · Lint · Test · Build
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-latest]
         node-version: ["20", "22"]
+        include:
+          - os: windows-latest
+            node-version: "20"
 
     steps:
       - name: Checkout
@@ -51,6 +55,7 @@ jobs:
         run: npm run build
 
       - name: Test
+        shell: bash
         run: |
           mkdir -p test-results
           npm test -- --reporter=default --reporter=json --outputFile=test-results/results.json
@@ -62,12 +67,12 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-node-${{ matrix.node-version }}
+          name: test-results-${{ matrix.os }}-node-${{ matrix.node-version }}
           path: test-results/
           if-no-files-found: ignore
 
       - name: Upload build artifact
-        if: success() && matrix.node-version == '20'
+        if: success() && matrix.os == 'ubuntu-latest' && matrix.node-version == '20'
         uses: actions/upload-artifact@v4
         with:
           name: dist
@@ -178,9 +183,54 @@ jobs:
             version: workspace
             minimum-score: "90"
             fail-on-severity: critical
+            fail-on-rule: ""
+            verify-baseline: ""
+            fail-on-new: ""
             expected-outcome: success
             summary: "true"
             annotations: "true"
+          - name: policy fail-on-rule fails
+            case: policy-fail-on-rule
+            output-file: test-results/policy-fail-on-rule.json
+            expected: failure
+            path: fixtures/insecure-agent-project
+            version: workspace
+            minimum-score: ""
+            fail-on-severity: ""
+            fail-on-rule: security/env-file-exposure
+            verify-baseline: ""
+            fail-on-new: ""
+            expected-outcome: policy-failure
+            summary: "true"
+            annotations: "false"
+          - name: verify-baseline clean
+            case: verify-baseline-clean
+            output-file: test-results/verify-baseline-clean.json
+            expected: success
+            path: fixtures/clean-configured-project
+            version: workspace
+            minimum-score: ""
+            fail-on-severity: ""
+            fail-on-rule: ""
+            verify-baseline: test-results/verify-baseline-source.json
+            fail-on-new: "true"
+            expected-outcome: success
+            summary: "false"
+            annotations: "false"
+          - name: verify-baseline symlink escape rejected
+            case: verify-baseline-symlink
+            output-file: test-results/verify-baseline-symlink.json
+            expected: failure
+            path: fixtures/clean-configured-project
+            version: workspace
+            minimum-score: ""
+            fail-on-severity: ""
+            fail-on-rule: ""
+            verify-baseline: test-results/verify-baseline-escape.json
+            fail-on-new: ""
+            expected-outcome: ""
+            summary: "false"
+            annotations: "false"
 
     steps:
       - name: Checkout
@@ -213,6 +263,13 @@ jobs:
             directory)
               mkdir -p test-results/output-directory
               ;;
+            verify-baseline-clean)
+              node dist/cli/index.js fixtures/clean-configured-project --json > test-results/verify-baseline-source.json
+              ;;
+            verify-baseline-symlink)
+              echo '{"outside":true}' > "$RUNNER_TEMP/outside-baseline.json"
+              ln -s "$RUNNER_TEMP/outside-baseline.json" test-results/verify-baseline-escape.json
+              ;;
           esac
 
       - name: Run AgentDoctor action
@@ -225,6 +282,9 @@ jobs:
           version: ${{ matrix.version }}
           minimum-score: ${{ matrix.minimum-score }}
           fail-on-severity: ${{ matrix.fail-on-severity }}
+          fail-on-rule: ${{ matrix.fail-on-rule }}
+          verify-baseline: ${{ matrix.verify-baseline }}
+          fail-on-new: ${{ matrix.fail-on-new }}
           summary: ${{ matrix.summary }}
           annotations: ${{ matrix.annotations }}
 
@@ -250,7 +310,7 @@ jobs:
           fi
 
       - name: Validate containment
-        if: matrix.expected == 'failure' && matrix.version != 'workspace'
+        if: matrix.expected == 'failure' && (matrix.version != 'workspace' || matrix.case == 'verify-baseline-symlink')
         env:
           CASE: ${{ matrix.case }}
         run: |
@@ -262,13 +322,17 @@ jobs:
             output-symlink)
               test ! -e "$RUNNER_TEMP/outside-report.json"
               ;;
+            verify-baseline-symlink)
+              test ! -e test-results/verify-baseline-symlink.json
+              ;;
           esac
 
       - name: Validate JSON report
-        if: matrix.expected == 'success' || startsWith(matrix.case, 'policy-')
+        if: matrix.expected == 'success' || startsWith(matrix.case, 'policy-') || matrix.case == 'verify-baseline-clean'
         env:
           REPORT_PATH: ${{ steps.agentdoctor.outputs.report-path }}
           VERSION_MODE: ${{ matrix.version }}
+          CASE: ${{ matrix.case }}
         run: |
           node <<'NODE'
           const fs = require("node:fs");
@@ -277,7 +341,14 @@ jobs:
           if (process.env.VERSION_MODE !== "workspace" && report.version !== "1.0.0") {
             throw new Error(`unexpected AgentDoctor version: ${report.version}`);
           }
-          if (
+          if (process.env.CASE === "verify-baseline-clean") {
+            if (!report.summary || typeof report.summary.new !== "number") {
+              throw new Error("verify report missing summary.new");
+            }
+            if (report.summary.new !== 0) {
+              throw new Error(`expected 0 new findings, got ${report.summary.new}`);
+            }
+          } else if (
             !Array.isArray(report.findings) ||
             report.scoringAvailable !== true ||
             report.scores == null ||
@@ -288,9 +359,39 @@ jobs:
           NODE
 
       - name: Upload AgentDoctor report
-        if: matrix.expected == 'success' || startsWith(matrix.case, 'policy-')
+        if: matrix.expected == 'success' || startsWith(matrix.case, 'policy-') || matrix.case == 'verify-baseline-clean'
         uses: actions/upload-artifact@v4
         with:
           name: agentdoctor-report-${{ matrix.case }}
           path: ${{ matrix.output-file }}
           if-no-files-found: error
+
+  project-brain:
+    name: Project Brain laboratory
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: quality
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Understanding unit tests
+        run: npm run test:understanding
+
+      - name: Understanding validation
+        run: npm run validate:understanding
+
+      - name: Project Brain validation
+        run: npm run validate:project-brain
+
+      - name: Project Brain benchmark
+        run: npm run benchmark:project-brain

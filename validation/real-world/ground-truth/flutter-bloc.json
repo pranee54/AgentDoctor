@@ -1,0 +1,55 @@
+{
+  "id": "flutter-bloc",
+  "expectationVersion": "1.0.0",
+  "domains": {
+    "required": [],
+    "forbidden": [
+      "Payments"
+    ]
+  },
+  "entrypoints": {
+    "required": [
+      {
+        "framework": "Flutter",
+        "fileSuffix": "main.dart"
+      }
+    ],
+    "forbiddenFrameworks": [
+      "Laravel"
+    ]
+  },
+  "dependencies": {
+    "required": [],
+    "minCount": 10,
+    "characteristic": "moderate"
+  },
+  "relationships": {
+    "required": [],
+    "minCount": 3
+  },
+  "architectures": {
+    "requiredPatterns": [
+      "BLoC"
+    ],
+    "forbiddenPatterns": [
+      "MVC"
+    ]
+  },
+  "projectModel": {
+    "minDomains": 0,
+    "minEntrypoints": 1,
+    "minDependencies": 5,
+    "minRelationships": 1,
+    "minArchitectures": 0
+  },
+  "query": {
+    "minListDomains": 0,
+    "minListEntrypoints": 1
+  },
+  "understand": {
+    "mustContain": [
+      "Entrypoints"
+    ]
+  },
+  "expectationLock": "3f57395d641642cd010cecdf6c5ed2c9e812b16ebdb05fd3aefac3283503f786"
+}

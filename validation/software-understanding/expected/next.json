@@ -1,0 +1,19 @@
+{
+  "id": "next",
+  "framework": "Next.js",
+  "version": "1.0.0",
+  "domains": { "required": [], "forbidden": [] },
+  "entrypoints": {
+    "required": [
+      { "framework": "Next.js", "fileSuffix": "app/layout.tsx" },
+      { "framework": "Next.js", "fileSuffix": "app/page.tsx" }
+    ],
+    "forbiddenFrameworks": []
+  },
+  "dependencies": { "required": [], "minCount": 0 },
+  "relationships": { "required": [], "minCount": 0 },
+  "architectures": { "requiredPatterns": [], "forbiddenPatterns": [] },
+  "projectModel": { "minDomains": 0, "minEntrypoints": 2, "minDependencies": 0, "minRelationships": 0, "minArchitectures": 0 },
+  "query": { "minListDomains": 0, "minListEntrypoints": 2 },
+  "understand": { "mustContain": ["Repository Overview", "Next.js", "Limitations"] }
+}

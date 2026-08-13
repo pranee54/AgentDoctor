@@ -1,0 +1,19 @@
+{
+  "id": "flutter",
+  "framework": "Flutter",
+  "version": "1.0.0",
+  "domains": { "required": ["Payments"], "forbidden": [] },
+  "entrypoints": { "required": [{ "framework": "Flutter", "fileSuffix": "lib/main.dart" }], "forbiddenFrameworks": [] },
+  "dependencies": { "required": [{ "from": "Checkout", "to": "Payments", "type": "import" }], "minCount": 1 },
+  "relationships": {
+    "required": [
+      { "source": "CheckoutWidget", "target": "PaymentBloc", "relationship": "USES" },
+      { "source": "PaymentBloc", "target": "PaymentRepository", "relationship": "USES" }
+    ],
+    "minCount": 2
+  },
+  "architectures": { "requiredPatterns": ["BLoC"], "forbiddenPatterns": [] },
+  "projectModel": { "minDomains": 1, "minEntrypoints": 1, "minDependencies": 1, "minRelationships": 2, "minArchitectures": 1 },
+  "query": { "mustFindDomain": "Payments", "minListDomains": 1, "minListEntrypoints": 1 },
+  "understand": { "mustContain": ["Repository Overview", "Payments", "Flutter", "BLoC", "Limitations"] }
+}

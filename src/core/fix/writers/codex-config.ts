@@ -1,7 +1,6 @@
-import fs from "node:fs/promises";
 import path from "node:path";
 
-import { readTextFile } from "../../../utils/fs.js";
+import { atomicWriteTextFile, readTextFile } from "../../../utils/fs.js";
 import { codexDenyKey, configTextDeniesPath } from "../../rules/codex-deny.js";
 import type { FixAction } from "../types.js";
 
@@ -140,12 +139,7 @@ export async function readCodexConfig(root: string): Promise<string | null> {
 }
 
 export async function writeCodexConfig(root: string, content: string): Promise<void> {
-  const target = path.join(root, CONFIG_RELATIVE);
-  const dir = path.dirname(target);
-  await fs.mkdir(dir, { recursive: true });
-  const tmp = path.join(dir, `.config.toml.agentdoctor.${process.pid}.tmp`);
-  await fs.writeFile(tmp, content, "utf8");
-  await fs.rename(tmp, target);
+  await atomicWriteTextFile(path.join(root, CONFIG_RELATIVE), content);
 }
 
 export function assertWritableCodexConfig(content: string): void {

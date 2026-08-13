@@ -1,0 +1,56 @@
+{
+  "id": "flutter-gallery",
+  "expectationVersion": "1.0.0",
+  "domains": {
+    "required": [
+      "Analytics"
+    ],
+    "forbidden": []
+  },
+  "entrypoints": {
+    "required": [
+      {
+        "framework": "Flutter",
+        "fileSuffix": "lib/main.dart"
+      }
+    ],
+    "forbiddenFrameworks": [
+      "Laravel",
+      "Django"
+    ]
+  },
+  "dependencies": {
+    "required": [],
+    "minCount": 20,
+    "characteristic": "dense"
+  },
+  "relationships": {
+    "required": [],
+    "minCount": 5
+  },
+  "architectures": {
+    "requiredPatterns": [
+      "Feature-first"
+    ],
+    "forbiddenPatterns": [
+      "Microservice"
+    ]
+  },
+  "projectModel": {
+    "minDomains": 0,
+    "minEntrypoints": 1,
+    "minDependencies": 10,
+    "minRelationships": 1,
+    "minArchitectures": 0
+  },
+  "query": {
+    "minListDomains": 0,
+    "minListEntrypoints": 1
+  },
+  "understand": {
+    "mustContain": [
+      "Entrypoints"
+    ]
+  },
+  "expectationLock": "b959b5805f803738987015e449ee16afe83c6943640514ee7bf9833f3c48b514"
+}

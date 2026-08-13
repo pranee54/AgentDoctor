@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "agentdoctor-brain": {
+      "command": "node",
+      "args": [
+        "/ABSOLUTE/PATH/TO/AgentDoctor/dist/cli/index.js",
+        "brain-mcp",
+        "--root",
+        "/ABSOLUTE/PATH/TO/YOUR/PROJECT"
+      ]
+    }
+  }
+}

@@ -1,0 +1,440 @@
+{
+  "projectName": "understanding-architecture-fixture",
+  "generatedAt": "2026-08-06T00:00:00.000Z",
+  "domains": {
+    "domains": [
+      {
+        "name": "Payments",
+        "confidence": 0.72,
+        "evidence": [
+          "packages/payments/src/payment.service.ts",
+          "packages/checkout/src/checkout.controller.ts"
+        ]
+      }
+    ],
+    "timingMs": 1,
+    "filesConsidered": 20
+  },
+  "entrypoints": {
+    "entrypoints": [
+      {
+        "framework": "NestJS",
+        "file": "apps/api/src/main.ts",
+        "confidence": 0.9,
+        "evidence": [
+          "path:apps/api/src/main.ts",
+          "NestFactory",
+          "bootstrap()"
+        ]
+      },
+      {
+        "framework": "Flutter",
+        "file": "mobile/lib/main.dart",
+        "confidence": 0.95,
+        "evidence": [
+          "path:mobile/lib/main.dart",
+          "runApp()",
+          "MaterialApp"
+        ]
+      }
+    ],
+    "timingMs": 1,
+    "filesConsidered": 20,
+    "filesInspected": 5
+  },
+  "dependencies": {
+    "dependencies": [
+      {
+        "from": "Checkout",
+        "to": "Payments",
+        "type": "package",
+        "confidence": 0.9,
+        "evidence": [
+          "packages/checkout/package.json declares dependency on @acme/payments"
+        ]
+      },
+      {
+        "from": "Api",
+        "to": "Checkout",
+        "type": "package",
+        "confidence": 0.9,
+        "evidence": [
+          "apps/api/package.json declares dependency on @acme/checkout"
+        ]
+      },
+      {
+        "from": "Payments",
+        "to": "Checkout",
+        "type": "dynamic-import",
+        "confidence": 0.75,
+        "evidence": [
+          "packages/payments/src/service.ts dynamically imports packages/checkout/src/index.ts"
+        ]
+      }
+    ],
+    "timingMs": 1,
+    "filesConsidered": 20,
+    "filesInspected": 15
+  },
+  "relationships": {
+    "relationships": [
+      {
+        "source": "CheckoutController",
+        "target": "PaymentService",
+        "relationship": "USES",
+        "confidence": 0.98,
+        "evidence": [
+          "imports payment.service.ts",
+          "constructor injection",
+          "Controller → Service"
+        ],
+        "strength": "strong"
+      },
+      {
+        "source": "PaymentService",
+        "target": "PaymentRepository",
+        "relationship": "USES",
+        "confidence": 0.96,
+        "evidence": [
+          "imports payment.repository.ts",
+          "constructor injection",
+          "Service → Repository"
+        ],
+        "strength": "strong"
+      },
+      {
+        "source": "PaymentRepository",
+        "target": "PaymentEntity",
+        "relationship": "USES",
+        "confidence": 0.94,
+        "evidence": [
+          "imports payment.entity.ts",
+          "Repository → Database"
+        ],
+        "strength": "medium"
+      },
+      {
+        "source": "PaymentEntity",
+        "target": "PaymentStore",
+        "relationship": "IMPLEMENTS",
+        "confidence": 0.97,
+        "evidence": [
+          "implements PaymentStore",
+          "in packages/payments/src/payment.entity.ts"
+        ],
+        "strength": "strong"
+      },
+      {
+        "source": "OrdersRoute",
+        "target": "CheckoutController",
+        "relationship": "EXPOSES",
+        "confidence": 0.93,
+        "evidence": [
+          "imports checkout.controller.ts",
+          "Route → Controller"
+        ],
+        "strength": "medium"
+      },
+      {
+        "source": "AppModule",
+        "target": "AppConfig",
+        "relationship": "CONFIGURES",
+        "confidence": 0.92,
+        "evidence": [
+          "imports app.config.ts",
+          "module configuration wiring"
+        ],
+        "strength": "strong"
+      },
+      {
+        "source": "AppModule",
+        "target": "CheckoutController",
+        "relationship": "PROVIDES",
+        "confidence": 0.88,
+        "evidence": [
+          "imports checkout.controller.ts",
+          "Module → Controller"
+        ],
+        "strength": "medium"
+      },
+      {
+        "source": "Checkout",
+        "target": "Payments",
+        "relationship": "CONSUMES",
+        "confidence": 0.85,
+        "evidence": [
+          "CheckoutController uses PaymentService"
+        ],
+        "strength": "medium"
+      },
+      {
+        "source": "Checkout",
+        "target": "CheckoutController",
+        "relationship": "CONTAINS",
+        "confidence": 0.86,
+        "evidence": [
+          "packages/checkout/src/checkout.controller.ts lives under feature Checkout"
+        ],
+        "strength": "strong"
+      },
+      {
+        "source": "Checkout",
+        "target": "Payments",
+        "relationship": "PROVIDES",
+        "confidence": 0.8,
+        "evidence": [
+          "packages/checkout/src/checkout.controller.ts token \"checkout\" maps to domain Payments"
+        ],
+        "strength": "medium"
+      },
+      {
+        "source": "CheckoutWidget",
+        "target": "CheckoutBloc",
+        "relationship": "USES",
+        "confidence": 0.92,
+        "evidence": [
+          "imports checkout_bloc.dart",
+          "Widget → Bloc"
+        ],
+        "strength": "medium"
+      },
+      {
+        "source": "CheckoutBloc",
+        "target": "CheckoutRepository",
+        "relationship": "USES",
+        "confidence": 0.91,
+        "evidence": [
+          "imports checkout_repository.dart",
+          "Bloc → Repository"
+        ],
+        "strength": "medium"
+      }
+    ],
+    "timingMs": 1,
+    "filesConsidered": 20,
+    "filesInspected": 15
+  },
+  "architectures": {
+    "architectures": [
+      {
+        "pattern": "Clean Architecture",
+        "confidence": 0.95,
+        "evidence": [
+          "CheckoutController USES PaymentService: imports payment.service.ts",
+          "PaymentEntity IMPLEMENTS PaymentStore: implements PaymentStore",
+          "PaymentRepository USES PaymentEntity: imports payment.entity.ts",
+          "PaymentService USES PaymentRepository: imports payment.repository.ts"
+        ],
+        "matchedRules": [
+          "Presentation -> Application -> Domain -> Infrastructure",
+          "Repositories behind interfaces"
+        ],
+        "conflictingEvidence": [],
+        "unknowns": []
+      },
+      {
+        "pattern": "DDD",
+        "confidence": 0.95,
+        "evidence": [
+          "Checkout PROVIDES Payments: packages/checkout/src/checkout.controller.ts token \"checkout\" maps to domain Payments",
+          "domain Payments (confidence 0.72) via packages/payments/src/payment.service.ts",
+          "PaymentRepository USES PaymentEntity: imports payment.entity.ts"
+        ],
+        "matchedRules": [
+          "Bounded domain vocabulary discovered",
+          "Features provide domain capabilities",
+          "Repositories protect persistence/entity access"
+        ],
+        "conflictingEvidence": [],
+        "unknowns": []
+      },
+      {
+        "pattern": "Hexagonal",
+        "confidence": 0.95,
+        "evidence": [
+          "AppModule CONFIGURES AppConfig: imports app.config.ts",
+          "AppModule PROVIDES CheckoutController: imports checkout.controller.ts",
+          "PaymentEntity IMPLEMENTS PaymentStore: implements PaymentStore"
+        ],
+        "matchedRules": [
+          "Adapters configured at boundaries",
+          "Composition root wires application ports",
+          "Port interfaces implemented by adapters"
+        ],
+        "conflictingEvidence": [],
+        "unknowns": []
+      },
+      {
+        "pattern": "Layered Architecture",
+        "confidence": 0.95,
+        "evidence": [
+          "CheckoutController USES PaymentService: imports payment.service.ts",
+          "PaymentRepository USES PaymentEntity: imports payment.entity.ts",
+          "PaymentService USES PaymentRepository: imports payment.repository.ts"
+        ],
+        "matchedRules": [
+          "Controller layer above Service layer",
+          "Repository layer above persistence",
+          "Service layer above Repository layer"
+        ],
+        "conflictingEvidence": [],
+        "unknowns": []
+      },
+      {
+        "pattern": "Modular Monolith",
+        "confidence": 0.95,
+        "evidence": [
+          "Api->Checkout",
+          "AppModule CONFIGURES AppConfig: imports app.config.ts",
+          "AppModule PROVIDES CheckoutController: imports checkout.controller.ts",
+          "Checkout->Payments",
+          "entrypoint:apps/api/src/main.ts",
+          "runtime:Flutter",
+          "runtime:NestJS"
+        ],
+        "matchedRules": [
+          "Internal modules provide/configure application parts",
+          "Single primary application runtime hosts modules",
+          "Workspace packages compose one deployable system"
+        ],
+        "conflictingEvidence": [],
+        "unknowns": []
+      },
+      {
+        "pattern": "Repository Pattern",
+        "confidence": 0.94,
+        "evidence": [
+          "PaymentRepository USES PaymentEntity: imports payment.entity.ts",
+          "PaymentService USES PaymentRepository: imports payment.repository.ts"
+        ],
+        "matchedRules": [
+          "Repositories encapsulate persistence",
+          "Services depend on repositories"
+        ],
+        "conflictingEvidence": [],
+        "unknowns": []
+      },
+      {
+        "pattern": "Plugin Architecture",
+        "confidence": 0.93,
+        "evidence": [
+          "AppModule PROVIDES CheckoutController: imports checkout.controller.ts",
+          "dynamic:Payments->Checkout (packages/payments/src/service.ts dynamically imports packages/checkout/src/index.ts)"
+        ],
+        "matchedRules": [
+          "Dynamic imports indicate pluggable extension points",
+          "Modules expose extension surfaces"
+        ],
+        "conflictingEvidence": [],
+        "unknowns": []
+      },
+      {
+        "pattern": "Microservice",
+        "confidence": 0.92,
+        "evidence": [
+          "Api package-depends Checkout",
+          "Checkout package-depends Payments",
+          "entrypoint:Flutter:mobile/lib/main.dart",
+          "entrypoint:NestJS:apps/api/src/main.ts"
+        ],
+        "matchedRules": [
+          "Multiple independently versioned package boundaries",
+          "Multiple runtime entrypoint frameworks"
+        ],
+        "conflictingEvidence": [],
+        "unknowns": []
+      },
+      {
+        "pattern": "Onion",
+        "confidence": 0.92,
+        "evidence": [
+          "Checkout PROVIDES Payments: packages/checkout/src/checkout.controller.ts token \"checkout\" maps to domain Payments",
+          "domain:Payments",
+          "PaymentService USES PaymentRepository: imports payment.repository.ts"
+        ],
+        "matchedRules": [
+          "Domain concepts at the center of feature slices",
+          "Outer layers depend inward toward repositories/domain"
+        ],
+        "conflictingEvidence": [],
+        "unknowns": []
+      },
+      {
+        "pattern": "BLoC",
+        "confidence": 0.9,
+        "evidence": [
+          "CheckoutBloc USES CheckoutRepository: imports checkout_repository.dart",
+          "CheckoutWidget USES CheckoutBloc: imports checkout_bloc.dart",
+          "entrypoint:mobile/lib/main.dart"
+        ],
+        "matchedRules": [
+          "Bloc -> Repository",
+          "Flutter entrypoint accompanies BLoC edges",
+          "Widget -> Bloc"
+        ],
+        "conflictingEvidence": [
+          "Controller/Service MVC edges coexist with BLoC UI edges"
+        ],
+        "unknowns": []
+      },
+      {
+        "pattern": "Monorepo Workspace",
+        "confidence": 0.9,
+        "evidence": [
+          "Api DEPENDS_ON Checkout: apps/api/package.json declares dependency on @acme/checkout",
+          "Checkout DEPENDS_ON Payments: packages/checkout/package.json declares dependency on @acme/payments"
+        ],
+        "matchedRules": [
+          "Manifest-declared workspace references",
+          "Workspace package dependency edges"
+        ],
+        "conflictingEvidence": [],
+        "unknowns": []
+      },
+      {
+        "pattern": "Service Layer",
+        "confidence": 0.84,
+        "evidence": [
+          "CheckoutController USES PaymentService: imports payment.service.ts"
+        ],
+        "matchedRules": [
+          "Application entrypoints delegate to services"
+        ],
+        "conflictingEvidence": [],
+        "unknowns": []
+      },
+      {
+        "pattern": "Feature-first",
+        "confidence": 0.8,
+        "evidence": [
+          "Checkout CONSUMES Payments: CheckoutController uses PaymentService"
+        ],
+        "matchedRules": [
+          "Cross-feature consumption edges"
+        ],
+        "conflictingEvidence": [],
+        "unknowns": []
+      },
+      {
+        "pattern": "MVC",
+        "confidence": 0.66,
+        "evidence": [
+          "CheckoutController USES PaymentService: imports payment.service.ts",
+          "OrdersRoute EXPOSES CheckoutController: imports checkout.controller.ts"
+        ],
+        "matchedRules": [
+          "Controller -> Service",
+          "Route -> Controller"
+        ],
+        "conflictingEvidence": [
+          "BLoC-style edge conflicts with MVC: CheckoutWidget USES CheckoutBloc: imports checkout_bloc.dart"
+        ],
+        "unknowns": [
+          "No View layer evidence"
+        ]
+      }
+    ],
+    "timingMs": 11,
+    "patternsEvaluated": 17
+  }
+}

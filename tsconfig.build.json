@@ -9,5 +9,5 @@
     "sourceMap": false
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "src/core/understanding/**"]
+  "exclude": ["node_modules", "dist", "**/*.test.ts"]
 }

@@ -1,7 +1,6 @@
-import fs from "node:fs/promises";
 import path from "node:path";
 
-import { readTextFile } from "../../../utils/fs.js";
+import { atomicWriteTextFile, readTextFile } from "../../../utils/fs.js";
 import { claudeReadDenyRule } from "../../rules/claude-deny.js";
 import type { FixAction } from "../types.js";
 
@@ -117,12 +116,7 @@ export async function readClaudeSettings(root: string): Promise<string | null> {
 }
 
 export async function writeClaudeSettings(root: string, content: string): Promise<void> {
-  const target = path.join(root, SETTINGS_RELATIVE);
-  const dir = path.dirname(target);
-  await fs.mkdir(dir, { recursive: true });
-  const tmp = path.join(dir, `.settings.json.agentdoctor.${process.pid}.tmp`);
-  await fs.writeFile(tmp, content, "utf8");
-  await fs.rename(tmp, target);
+  await atomicWriteTextFile(path.join(root, SETTINGS_RELATIVE), content);
 }
 
 function parseDenyList(currentContent: string | null): string[] {

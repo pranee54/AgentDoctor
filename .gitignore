@@ -4,6 +4,7 @@ coverage/
 test-results/
 tmp/
 .tmp/
+.tmp-mcp-*/
 *.log
 .DS_Store
 .env
@@ -34,6 +35,10 @@ tmp/
 validation/software-understanding/reports/*
 !validation/software-understanding/reports/.gitkeep
 
+# Project Brain validation / benchmark reports
+validation/project-brain/reports/*
+!validation/project-brain/reports/.gitkeep
+
 # Real-world validation laboratory (generated + checkouts)
 validation/real-world/repositories/checkouts/
 validation/real-world/results/*
@@ -45,6 +50,9 @@ validation/real-world/regressions/*
 validation/real-world/history/*
 !validation/real-world/history/.gitkeep
 
+
+# Local Project Brain state (generated snapshots under .agentdoctor/project-brain/)
+.agentdoctor/
 
 # Local-only internal docs / notes (never publish)
 .private/

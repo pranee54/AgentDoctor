@@ -1,0 +1,601 @@
+{
+  "architectures": [
+    {
+      "confidence": 0.95,
+      "conflictingEvidence": [],
+      "evidence": [
+        "CheckoutController USES PaymentService: imports payment.service.ts",
+        "PaymentEntity IMPLEMENTS PaymentStore: implements PaymentStore",
+        "PaymentRepository USES PaymentEntity: imports payment.entity.ts",
+        "PaymentService USES PaymentRepository: imports payment.repository.ts"
+      ],
+      "id": "architecture_e30c81a55849242c",
+      "matchedRules": [
+        "Presentation -> Application -> Domain -> Infrastructure",
+        "Repositories behind interfaces"
+      ],
+      "pattern": "Clean Architecture",
+      "sourcePass": "architecture-inference",
+      "timestamp": "2026-08-06T00:00:00.000Z",
+      "unknowns": []
+    },
+    {
+      "confidence": 0.95,
+      "conflictingEvidence": [],
+      "evidence": [
+        "Checkout PROVIDES Payments: packages/checkout/src/checkout.controller.ts token \"checkout\" maps to domain Payments",
+        "domain Payments (confidence 0.72) via packages/payments/src/payment.service.ts",
+        "PaymentRepository USES PaymentEntity: imports payment.entity.ts"
+      ],
+      "id": "architecture_7405f455edc10dd8",
+      "matchedRules": [
+        "Bounded domain vocabulary discovered",
+        "Features provide domain capabilities",
+        "Repositories protect persistence/entity access"
+      ],
+      "pattern": "DDD",
+      "sourcePass": "architecture-inference",
+      "timestamp": "2026-08-06T00:00:00.000Z",
+      "unknowns": []
+    },
+    {
+      "confidence": 0.95,
+      "conflictingEvidence": [],
+      "evidence": [
+        "AppModule CONFIGURES AppConfig: imports app.config.ts",
+        "AppModule PROVIDES CheckoutController: imports checkout.controller.ts",
+        "PaymentEntity IMPLEMENTS PaymentStore: implements PaymentStore"
+      ],
+      "id": "architecture_1fd834ede02bc778",
+      "matchedRules": [
+        "Adapters configured at boundaries",
+        "Composition root wires application ports",
+        "Port interfaces implemented by adapters"
+      ],
+      "pattern": "Hexagonal",
+      "sourcePass": "architecture-inference",
+      "timestamp": "2026-08-06T00:00:00.000Z",
+      "unknowns": []
+    },
+    {
+      "confidence": 0.95,
+      "conflictingEvidence": [],
+      "evidence": [
+        "CheckoutController USES PaymentService: imports payment.service.ts",
+        "PaymentRepository USES PaymentEntity: imports payment.entity.ts",
+        "PaymentService USES PaymentRepository: imports payment.repository.ts"
+      ],
+      "id": "architecture_66d918e5844fc5a5",
+      "matchedRules": [
+        "Controller layer above Service layer",
+        "Repository layer above persistence",
+        "Service layer above Repository layer"
+      ],
+      "pattern": "Layered Architecture",
+      "sourcePass": "architecture-inference",
+      "timestamp": "2026-08-06T00:00:00.000Z",
+      "unknowns": []
+    },
+    {
+      "confidence": 0.95,
+      "conflictingEvidence": [],
+      "evidence": [
+        "Api->Checkout",
+        "AppModule CONFIGURES AppConfig: imports app.config.ts",
+        "AppModule PROVIDES CheckoutController: imports checkout.controller.ts",
+        "Checkout->Payments",
+        "entrypoint:apps/api/src/main.ts",
+        "runtime:Flutter",
+        "runtime:NestJS"
+      ],
+      "id": "architecture_5424396c90637e48",
+      "matchedRules": [
+        "Internal modules provide/configure application parts",
+        "Single primary application runtime hosts modules",
+        "Workspace packages compose one deployable system"
+      ],
+      "pattern": "Modular Monolith",
+      "sourcePass": "architecture-inference",
+      "timestamp": "2026-08-06T00:00:00.000Z",
+      "unknowns": []
+    },
+    {
+      "confidence": 0.94,
+      "conflictingEvidence": [],
+      "evidence": [
+        "PaymentRepository USES PaymentEntity: imports payment.entity.ts",
+        "PaymentService USES PaymentRepository: imports payment.repository.ts"
+      ],
+      "id": "architecture_1458a32471e8d21a",
+      "matchedRules": [
+        "Repositories encapsulate persistence",
+        "Services depend on repositories"
+      ],
+      "pattern": "Repository Pattern",
+      "sourcePass": "architecture-inference",
+      "timestamp": "2026-08-06T00:00:00.000Z",
+      "unknowns": []
+    },
+    {
+      "confidence": 0.93,
+      "conflictingEvidence": [],
+      "evidence": [
+        "AppModule PROVIDES CheckoutController: imports checkout.controller.ts",
+        "dynamic:Payments->Checkout (packages/payments/src/service.ts dynamically imports packages/checkout/src/index.ts)"
+      ],
+      "id": "architecture_e7b032eba540240f",
+      "matchedRules": [
+        "Dynamic imports indicate pluggable extension points",
+        "Modules expose extension surfaces"
+      ],
+      "pattern": "Plugin Architecture",
+      "sourcePass": "architecture-inference",
+      "timestamp": "2026-08-06T00:00:00.000Z",
+      "unknowns": []
+    },
+    {
+      "confidence": 0.92,
+      "conflictingEvidence": [],
+      "evidence": [
+        "Api package-depends Checkout",
+        "Checkout package-depends Payments",
+        "entrypoint:Flutter:mobile/lib/main.dart",
+        "entrypoint:NestJS:apps/api/src/main.ts"
+      ],
+      "id": "architecture_1858fd5de728050d",
+      "matchedRules": [
+        "Multiple independently versioned package boundaries",
+        "Multiple runtime entrypoint frameworks"
+      ],
+      "pattern": "Microservice",
+      "sourcePass": "architecture-inference",
+      "timestamp": "2026-08-06T00:00:00.000Z",
+      "unknowns": []
+    },
+    {
+      "confidence": 0.92,
+      "conflictingEvidence": [],
+      "evidence": [
+        "Checkout PROVIDES Payments: packages/checkout/src/checkout.controller.ts token \"checkout\" maps to domain Payments",
+        "domain:Payments",
+        "PaymentService USES PaymentRepository: imports payment.repository.ts"
+      ],
+      "id": "architecture_3980cd835810ad75",
+      "matchedRules": [
+        "Domain concepts at the center of feature slices",
+        "Outer layers depend inward toward repositories/domain"
+      ],
+      "pattern": "Onion",
+      "sourcePass": "architecture-inference",
+      "timestamp": "2026-08-06T00:00:00.000Z",
+      "unknowns": []
+    },
+    {
+      "confidence": 0.9,
+      "conflictingEvidence": [
+        "Controller/Service MVC edges coexist with BLoC UI edges"
+      ],
+      "evidence": [
+        "CheckoutBloc USES CheckoutRepository: imports checkout_repository.dart",
+        "CheckoutWidget USES CheckoutBloc: imports checkout_bloc.dart",
+        "entrypoint:mobile/lib/main.dart"
+      ],
+      "id": "architecture_0200461fffaa070a",
+      "matchedRules": [
+        "Bloc -> Repository",
+        "Flutter entrypoint accompanies BLoC edges",
+        "Widget -> Bloc"
+      ],
+      "pattern": "BLoC",
+      "sourcePass": "architecture-inference",
+      "timestamp": "2026-08-06T00:00:00.000Z",
+      "unknowns": []
+    },
+    {
+      "confidence": 0.9,
+      "conflictingEvidence": [],
+      "evidence": [
+        "Api DEPENDS_ON Checkout: apps/api/package.json declares dependency on @acme/checkout",
+        "Checkout DEPENDS_ON Payments: packages/checkout/package.json declares dependency on @acme/payments"
+      ],
+      "id": "architecture_e36fb1b97e16db09",
+      "matchedRules": [
+        "Manifest-declared workspace references",
+        "Workspace package dependency edges"
+      ],
+      "pattern": "Monorepo Workspace",
+      "sourcePass": "architecture-inference",
+      "timestamp": "2026-08-06T00:00:00.000Z",
+      "unknowns": []
+    },
+    {
+      "confidence": 0.84,
+      "conflictingEvidence": [],
+      "evidence": [
+        "CheckoutController USES PaymentService: imports payment.service.ts"
+      ],
+      "id": "architecture_1b35a996e11e6144",
+      "matchedRules": [
+        "Application entrypoints delegate to services"
+      ],
+      "pattern": "Service Layer",
+      "sourcePass": "architecture-inference",
+      "timestamp": "2026-08-06T00:00:00.000Z",
+      "unknowns": []
+    },
+    {
+      "confidence": 0.8,
+      "conflictingEvidence": [],
+      "evidence": [
+        "Checkout CONSUMES Payments: CheckoutController uses PaymentService"
+      ],
+      "id": "architecture_36bfc070e4474dae",
+      "matchedRules": [
+        "Cross-feature consumption edges"
+      ],
+      "pattern": "Feature-first",
+      "sourcePass": "architecture-inference",
+      "timestamp": "2026-08-06T00:00:00.000Z",
+      "unknowns": []
+    },
+    {
+      "confidence": 0.66,
+      "conflictingEvidence": [
+        "BLoC-style edge conflicts with MVC: CheckoutWidget USES CheckoutBloc: imports checkout_bloc.dart"
+      ],
+      "evidence": [
+        "CheckoutController USES PaymentService: imports payment.service.ts",
+        "OrdersRoute EXPOSES CheckoutController: imports checkout.controller.ts"
+      ],
+      "id": "architecture_ab790a7b6b9e30b6",
+      "matchedRules": [
+        "Controller -> Service",
+        "Route -> Controller"
+      ],
+      "pattern": "MVC",
+      "sourcePass": "architecture-inference",
+      "timestamp": "2026-08-06T00:00:00.000Z",
+      "unknowns": [
+        "No View layer evidence"
+      ]
+    }
+  ],
+  "compilerMetadata": {
+    "compilerVersion": "0.1.0",
+    "generatedAt": "2026-08-06T00:00:00.000Z",
+    "passes": [
+      "domain-discovery",
+      "entrypoint-discovery",
+      "dependency-discovery",
+      "relationship-discovery",
+      "architecture-inference",
+      "project-model"
+    ],
+    "schemaVersion": "1.0.0"
+  },
+  "dependencies": [
+    {
+      "confidence": 0.9,
+      "evidence": [
+        "apps/api/package.json declares dependency on @acme/checkout"
+      ],
+      "from": "Api",
+      "id": "dependency_bec9134d6b98b7e6",
+      "sourcePass": "dependency-discovery",
+      "timestamp": "2026-08-06T00:00:00.000Z",
+      "to": "Checkout",
+      "type": "package"
+    },
+    {
+      "confidence": 0.9,
+      "evidence": [
+        "packages/checkout/package.json declares dependency on @acme/payments"
+      ],
+      "from": "Checkout",
+      "id": "dependency_ab6bcca88cd9e012",
+      "sourcePass": "dependency-discovery",
+      "timestamp": "2026-08-06T00:00:00.000Z",
+      "to": "Payments",
+      "type": "package"
+    },
+    {
+      "confidence": 0.75,
+      "evidence": [
+        "packages/payments/src/service.ts dynamically imports packages/checkout/src/index.ts"
+      ],
+      "from": "Payments",
+      "id": "dependency_e8663ff4b9f40840",
+      "sourcePass": "dependency-discovery",
+      "timestamp": "2026-08-06T00:00:00.000Z",
+      "to": "Checkout",
+      "type": "dynamic-import"
+    }
+  ],
+  "domains": [
+    {
+      "confidence": 0.72,
+      "evidence": [
+        "packages/checkout/src/checkout.controller.ts",
+        "packages/payments/src/payment.service.ts"
+      ],
+      "id": "domain_4494fc2b220e5078",
+      "name": "Payments",
+      "paths": [
+        "packages/checkout/src/checkout.controller.ts",
+        "packages/payments/src/payment.service.ts"
+      ],
+      "sourcePass": "domain-discovery",
+      "timestamp": "2026-08-06T00:00:00.000Z"
+    }
+  ],
+  "entrypoints": [
+    {
+      "confidence": 0.95,
+      "evidence": [
+        "MaterialApp",
+        "path:mobile/lib/main.dart",
+        "runApp()"
+      ],
+      "file": "mobile/lib/main.dart",
+      "framework": "Flutter",
+      "id": "entrypoint_a7c2926b26ca065f",
+      "sourcePass": "entrypoint-discovery",
+      "timestamp": "2026-08-06T00:00:00.000Z"
+    },
+    {
+      "confidence": 0.9,
+      "evidence": [
+        "bootstrap()",
+        "NestFactory",
+        "path:apps/api/src/main.ts"
+      ],
+      "file": "apps/api/src/main.ts",
+      "framework": "NestJS",
+      "id": "entrypoint_29c3d74c2fe0402e",
+      "sourcePass": "entrypoint-discovery",
+      "timestamp": "2026-08-06T00:00:00.000Z"
+    }
+  ],
+  "metadata": {
+    "confidence": 0.89,
+    "evidence": [
+      "schema:1.0.0",
+      "domains:1",
+      "entrypoints:2",
+      "dependencies:3",
+      "relationships:12",
+      "architectures:14"
+    ],
+    "id": "metadata_286f6094629e44d9",
+    "project": {
+      "confidence": 0.89,
+      "evidence": [
+        "domains:1",
+        "entrypoints:2",
+        "dependencies:3",
+        "relationships:12",
+        "architectures:14"
+      ],
+      "id": "project_62e54d0e6b93bfc0",
+      "name": "understanding-architecture-fixture",
+      "sourcePass": "project-model",
+      "timestamp": "2026-08-06T00:00:00.000Z"
+    },
+    "schemaVersion": "1.0.0",
+    "sourcePass": "project-model",
+    "timestamp": "2026-08-06T00:00:00.000Z"
+  },
+  "relationships": [
+    {
+      "bidirectional": false,
+      "confidence": 0.98,
+      "evidence": [
+        "constructor injection",
+        "Controller → Service",
+        "imports payment.service.ts"
+      ],
+      "id": "relationship_16165cb3d760b96b",
+      "relationship": "USES",
+      "source": "CheckoutController",
+      "sourcePass": "relationship-discovery",
+      "strength": "strong",
+      "target": "PaymentService",
+      "timestamp": "2026-08-06T00:00:00.000Z"
+    },
+    {
+      "bidirectional": false,
+      "confidence": 0.97,
+      "evidence": [
+        "implements PaymentStore",
+        "in packages/payments/src/payment.entity.ts"
+      ],
+      "id": "relationship_a6682f8d5cc56e15",
+      "relationship": "IMPLEMENTS",
+      "source": "PaymentEntity",
+      "sourcePass": "relationship-discovery",
+      "strength": "strong",
+      "target": "PaymentStore",
+      "timestamp": "2026-08-06T00:00:00.000Z"
+    },
+    {
+      "bidirectional": false,
+      "confidence": 0.96,
+      "evidence": [
+        "constructor injection",
+        "imports payment.repository.ts",
+        "Service → Repository"
+      ],
+      "id": "relationship_666b4c06ae1c584d",
+      "relationship": "USES",
+      "source": "PaymentService",
+      "sourcePass": "relationship-discovery",
+      "strength": "strong",
+      "target": "PaymentRepository",
+      "timestamp": "2026-08-06T00:00:00.000Z"
+    },
+    {
+      "bidirectional": false,
+      "confidence": 0.94,
+      "evidence": [
+        "imports payment.entity.ts",
+        "Repository → Database"
+      ],
+      "id": "relationship_aec28dbb7c2dce78",
+      "relationship": "USES",
+      "source": "PaymentRepository",
+      "sourcePass": "relationship-discovery",
+      "strength": "medium",
+      "target": "PaymentEntity",
+      "timestamp": "2026-08-06T00:00:00.000Z"
+    },
+    {
+      "bidirectional": false,
+      "confidence": 0.93,
+      "evidence": [
+        "imports checkout.controller.ts",
+        "Route → Controller"
+      ],
+      "id": "relationship_de2991f7725a7c7a",
+      "relationship": "EXPOSES",
+      "source": "OrdersRoute",
+      "sourcePass": "relationship-discovery",
+      "strength": "medium",
+      "target": "CheckoutController",
+      "timestamp": "2026-08-06T00:00:00.000Z"
+    },
+    {
+      "bidirectional": false,
+      "confidence": 0.92,
+      "evidence": [
+        "imports app.config.ts",
+        "module configuration wiring"
+      ],
+      "id": "relationship_2f7eb09a524e7137",
+      "relationship": "CONFIGURES",
+      "source": "AppModule",
+      "sourcePass": "relationship-discovery",
+      "strength": "strong",
+      "target": "AppConfig",
+      "timestamp": "2026-08-06T00:00:00.000Z"
+    },
+    {
+      "bidirectional": false,
+      "confidence": 0.92,
+      "evidence": [
+        "imports checkout_bloc.dart",
+        "Widget → Bloc"
+      ],
+      "id": "relationship_f18b30c4db32a796",
+      "relationship": "USES",
+      "source": "CheckoutWidget",
+      "sourcePass": "relationship-discovery",
+      "strength": "medium",
+      "target": "CheckoutBloc",
+      "timestamp": "2026-08-06T00:00:00.000Z"
+    },
+    {
+      "bidirectional": false,
+      "confidence": 0.91,
+      "evidence": [
+        "Bloc → Repository",
+        "imports checkout_repository.dart"
+      ],
+      "id": "relationship_57fcc8e1ed055a65",
+      "relationship": "USES",
+      "source": "CheckoutBloc",
+      "sourcePass": "relationship-discovery",
+      "strength": "medium",
+      "target": "CheckoutRepository",
+      "timestamp": "2026-08-06T00:00:00.000Z"
+    },
+    {
+      "bidirectional": false,
+      "confidence": 0.88,
+      "evidence": [
+        "imports checkout.controller.ts",
+        "Module → Controller"
+      ],
+      "id": "relationship_c458f6ad5c803293",
+      "relationship": "PROVIDES",
+      "source": "AppModule",
+      "sourcePass": "relationship-discovery",
+      "strength": "medium",
+      "target": "CheckoutController",
+      "timestamp": "2026-08-06T00:00:00.000Z"
+    },
+    {
+      "bidirectional": false,
+      "confidence": 0.86,
+      "evidence": [
+        "packages/checkout/src/checkout.controller.ts lives under feature Checkout"
+      ],
+      "id": "relationship_39922cb238c1a31c",
+      "relationship": "CONTAINS",
+      "source": "Checkout",
+      "sourcePass": "relationship-discovery",
+      "strength": "strong",
+      "target": "CheckoutController",
+      "timestamp": "2026-08-06T00:00:00.000Z"
+    },
+    {
+      "bidirectional": false,
+      "confidence": 0.85,
+      "evidence": [
+        "CheckoutController uses PaymentService"
+      ],
+      "id": "relationship_c2675cd6c27e3309",
+      "relationship": "CONSUMES",
+      "source": "Checkout",
+      "sourcePass": "relationship-discovery",
+      "strength": "medium",
+      "target": "Payments",
+      "timestamp": "2026-08-06T00:00:00.000Z"
+    },
+    {
+      "bidirectional": false,
+      "confidence": 0.8,
+      "evidence": [
+        "packages/checkout/src/checkout.controller.ts token \"checkout\" maps to domain Payments"
+      ],
+      "id": "relationship_75b35aefd0dd0780",
+      "relationship": "PROVIDES",
+      "source": "Checkout",
+      "sourcePass": "relationship-discovery",
+      "strength": "medium",
+      "target": "Payments",
+      "timestamp": "2026-08-06T00:00:00.000Z"
+    }
+  ],
+  "summary": {
+    "frameworks": [
+      "Flutter",
+      "NestJS"
+    ],
+    "statistics": {
+      "architectureCount": 14,
+      "averageConfidence": 0.89,
+      "dependencyCount": 3,
+      "domainCount": 1,
+      "entrypointCount": 2,
+      "evidenceCount": 74,
+      "passTimingMs": {
+        "architectures": 11,
+        "dependencies": 1,
+        "domains": 1,
+        "entrypoints": 1,
+        "relationships": 1
+      },
+      "relationshipCount": 12
+    },
+    "topArchitectures": [
+      "Clean Architecture",
+      "DDD",
+      "Hexagonal",
+      "Layered Architecture",
+      "Modular Monolith"
+    ],
+    "topDomains": [
+      "Payments"
+    ]
+  }
+}

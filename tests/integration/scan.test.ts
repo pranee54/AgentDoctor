@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
+import { PACKAGE_VERSION } from "../../src/constants.js";
 import { scan } from "../../src/index.js";
 import { renderJsonReport } from "../../src/reporters/json/report.js";
 
@@ -17,7 +18,7 @@ describe("scan integration", () => {
     expect(result.repository.primaryPackageManager).toBe("npm");
     expect(result.repository.filesScanned).toBeGreaterThan(0);
     expect(result.findings).toEqual([]);
-    expect(result.version).toBe("0.3.0-beta");
+    expect(result.version).toBe(PACKAGE_VERSION);
     expect(result.scoringAvailable).toBe(true);
     expect(result.scores).not.toBeNull();
     expect(result.scores?.overall).toBe(100);

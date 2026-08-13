@@ -201,13 +201,19 @@ runs:
         let verifyBaselinePath = "";
         if (verifyBaselineInput) {
           const baselineResolved = path.resolve(workspace, verifyBaselineInput);
-          if (!isInsideWorkspace(baselineResolved)) {
-            throw new Error("verify-baseline must resolve inside GITHUB_WORKSPACE");
+          if (baselineResolved === workspace || !isInsideWorkspace(baselineResolved)) {
+            throw new Error("verify-baseline must resolve to a file inside GITHUB_WORKSPACE");
           }
-          if (!fs.existsSync(baselineResolved) || !fs.statSync(baselineResolved).isFile()) {
+          if (!fs.existsSync(baselineResolved)) {
             throw new Error("verify-baseline must be an existing file inside GITHUB_WORKSPACE");
           }
-          verifyBaselinePath = fs.realpathSync(baselineResolved);
+          // Realpath first (same as path input), then re-check containment so a
+          // workspace-relative symlink cannot escape to an outside file.
+          const realBaseline = fs.realpathSync(baselineResolved);
+          if (!isInsideWorkspace(realBaseline) || !fs.statSync(realBaseline).isFile()) {
+            throw new Error("verify-baseline must remain a file inside GITHUB_WORKSPACE");
+          }
+          verifyBaselinePath = realBaseline;
         }
 
         if (minimumScoreRaw !== "") {
@@ -424,7 +430,25 @@ runs:
                 }
               }
 
-              fs.renameSync(temporaryReportPath, reportPath);
+              try {
+                fs.renameSync(temporaryReportPath, reportPath);
+              } catch (renameError) {
+                // Windows cannot rename over an existing destination.
+                const renameCode =
+                  renameError && typeof renameError === "object" && "code" in renameError
+                    ? String(renameError.code)
+                    : "";
+                if (
+                  process.platform === "win32" ||
+                  renameCode === "EEXIST" ||
+                  renameCode === "EPERM"
+                ) {
+                  fs.rmSync(reportPath, { force: true });
+                  fs.renameSync(temporaryReportPath, reportPath);
+                } else {
+                  throw renameError;
+                }
+              }
               temporaryReportCreated = false;
             } finally {
               if (temporaryReportCreated) {

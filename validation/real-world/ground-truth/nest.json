@@ -1,0 +1,54 @@
+{
+  "id": "nest",
+  "expectationVersion": "1.0.0",
+  "domains": {
+    "required": [],
+    "forbidden": []
+  },
+  "entrypoints": {
+    "required": [
+      {
+        "framework": "NestJS",
+        "fileSuffix": "main.ts"
+      }
+    ],
+    "forbiddenFrameworks": [
+      "Flutter",
+      "Laravel"
+    ]
+  },
+  "dependencies": {
+    "required": [],
+    "minCount": 80,
+    "characteristic": "dense"
+  },
+  "relationships": {
+    "required": [],
+    "minCount": 30
+  },
+  "architectures": {
+    "requiredPatterns": [
+      "Modular Monolith",
+      "Service Layer",
+      "Monorepo Workspace"
+    ],
+    "forbiddenPatterns": []
+  },
+  "projectModel": {
+    "minDomains": 0,
+    "minEntrypoints": 1,
+    "minDependencies": 40,
+    "minRelationships": 10,
+    "minArchitectures": 0
+  },
+  "query": {
+    "minListDomains": 0,
+    "minListEntrypoints": 1
+  },
+  "understand": {
+    "mustContain": [
+      "Entrypoints"
+    ]
+  },
+  "expectationLock": "a19a13860494edf1ae64f0b7bce8c982fa55800dd5f484ee6febc3ad0ec8ce69"
+}

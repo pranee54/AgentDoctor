@@ -1,0 +1,56 @@
+{
+  "id": "axios",
+  "expectationVersion": "1.0.0",
+  "domains": {
+    "required": [],
+    "forbidden": [
+      "Payments",
+      "Shipping"
+    ]
+  },
+  "entrypoints": {
+    "required": [
+      {
+        "framework": "Node",
+        "fileSuffix": "index.js"
+      }
+    ],
+    "forbiddenFrameworks": [
+      "Flutter",
+      "Laravel",
+      "Django"
+    ]
+  },
+  "dependencies": {
+    "required": [],
+    "minCount": 5,
+    "characteristic": "moderate"
+  },
+  "relationships": {
+    "required": [],
+    "minCount": 1
+  },
+  "architectures": {
+    "requiredPatterns": [],
+    "forbiddenPatterns": [
+      "Microservice"
+    ]
+  },
+  "projectModel": {
+    "minDomains": 0,
+    "minEntrypoints": 0,
+    "minDependencies": 1,
+    "minRelationships": 0,
+    "minArchitectures": 0
+  },
+  "query": {
+    "minListDomains": 0,
+    "minListEntrypoints": 0
+  },
+  "understand": {
+    "mustContain": [
+      "Repository"
+    ]
+  },
+  "expectationLock": "97e48322882656dbaa19462c296d7dd3022d5c03301c2fedda4d46981de73b73"
+}

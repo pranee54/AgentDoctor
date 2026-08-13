@@ -1,0 +1,52 @@
+{
+  "id": "gin",
+  "expectationVersion": "1.0.0",
+  "domains": {
+    "required": [],
+    "forbidden": [
+      "Payments"
+    ]
+  },
+  "entrypoints": {
+    "required": [],
+    "forbiddenFrameworks": [
+      "Flutter",
+      "Laravel",
+      "Django"
+    ]
+  },
+  "dependencies": {
+    "required": [],
+    "minCount": 5,
+    "characteristic": "moderate"
+  },
+  "relationships": {
+    "required": [],
+    "minCount": 1
+  },
+  "architectures": {
+    "requiredPatterns": [
+      "Layered Architecture"
+    ],
+    "forbiddenPatterns": [
+      "BLoC"
+    ]
+  },
+  "projectModel": {
+    "minDomains": 0,
+    "minEntrypoints": 0,
+    "minDependencies": 1,
+    "minRelationships": 0,
+    "minArchitectures": 0
+  },
+  "query": {
+    "minListDomains": 0,
+    "minListEntrypoints": 0
+  },
+  "understand": {
+    "mustContain": [
+      "Repository"
+    ]
+  },
+  "expectationLock": "3bc1e9b49942f355bb7953e15a3bddcb6a8a61b549de6368840d0b33598fd840"
+}

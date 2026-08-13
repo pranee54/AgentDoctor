@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "@acme/payments": ["packages/payments/src"],
+      "@acme/payments/*": ["packages/payments/src/*"],
+      "@acme/checkout": ["packages/checkout/src"],
+      "@acme/checkout/*": ["packages/checkout/src/*"]
+    }
+  }
+}

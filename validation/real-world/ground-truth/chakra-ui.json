@@ -1,0 +1,48 @@
+{
+  "id": "chakra-ui",
+  "expectationVersion": "1.0.0",
+  "domains": {
+    "required": [],
+    "forbidden": []
+  },
+  "entrypoints": {
+    "required": [],
+    "forbiddenFrameworks": [
+      "Django"
+    ]
+  },
+  "dependencies": {
+    "required": [],
+    "minCount": 50,
+    "characteristic": "dense"
+  },
+  "relationships": {
+    "required": [],
+    "minCount": 20
+  },
+  "architectures": {
+    "requiredPatterns": [
+      "Monorepo Workspace"
+    ],
+    "forbiddenPatterns": [
+      "Microservice"
+    ]
+  },
+  "projectModel": {
+    "minDomains": 0,
+    "minEntrypoints": 0,
+    "minDependencies": 20,
+    "minRelationships": 5,
+    "minArchitectures": 0
+  },
+  "query": {
+    "minListDomains": 0,
+    "minListEntrypoints": 0
+  },
+  "understand": {
+    "mustContain": [
+      "Dependencies"
+    ]
+  },
+  "expectationLock": "72e0abb7d8788cb993837a4d264854e3d22f5dc37c01242b7e22ef8989ddd87b"
+}

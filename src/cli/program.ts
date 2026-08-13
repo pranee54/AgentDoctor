@@ -3,6 +3,7 @@ import { Command, InvalidArgumentError } from "commander";
 import { PACKAGE_VERSION } from "../constants.js";
 import { parseFailOnRules, parseSeverityGate } from "../core/policy/evaluate.js";
 import { EXIT_CODES } from "../types/index.js";
+import { runBrainMcpCommand } from "./commands/brain-mcp.js";
 import { runDoctorCommand } from "./commands/doctor.js";
 import { runExplainCommand } from "./commands/explain.js";
 import { runFixCommand } from "./commands/fix.js";
@@ -241,6 +242,27 @@ export function createProgram(): Command {
     .description("Check AgentDoctor installation health")
     .action(async () => {
       const code = await runDoctorCommand();
+      process.exitCode = code;
+    });
+
+  program
+    .command("brain-mcp")
+    .description(
+      "Start the local Project Brain MCP server over STDIO (evidence-backed agent context; no API key)",
+    )
+    .requiredOption(
+      "--root <path>",
+      "Absolute or relative project root (required; never uses process.cwd() implicitly)",
+    )
+    .option(
+      "--no-build-if-missing",
+      "Fail when no snapshot exists instead of compiling Project Brain",
+    )
+    .action(async (options: { root: string; buildIfMissing?: boolean }) => {
+      const code = await runBrainMcpCommand({
+        root: options.root,
+        buildIfMissing: options.buildIfMissing !== false,
+      });
       process.exitCode = code;
     });
 

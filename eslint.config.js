@@ -11,8 +11,6 @@ export default tseslint.config(
       "test-results/**",
       "scripts/**",
       "validation/**",
-      "src/core/understanding/**",
-      "tests/unit/understanding/**",
       ".private/**",
       "AgentDoctorOS/**",
     ],

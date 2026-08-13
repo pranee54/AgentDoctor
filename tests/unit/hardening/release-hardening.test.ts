@@ -96,4 +96,25 @@ describe("release hardening regressions", () => {
     const codex = await fs.readFile(path.join(root, ".codex", "config.toml"), "utf8");
     expect(codex).toBe("[[[not-toml\n");
   });
+
+  it("atomic overwrite of existing Fix targets succeeds (Windows-safe rename path)", async () => {
+    const root = await makeTemp();
+    await fs.writeFile(path.join(root, "package.json"), JSON.stringify({ name: "x" }), "utf8");
+    await fs.writeFile(path.join(root, ".cursorrules"), "# cursor\n", "utf8");
+    await fs.writeFile(path.join(root, ".cursorignore"), "# keep me\nnode_modules/\n", "utf8");
+    await fs.mkdir(path.join(root, "build"));
+    await fs.writeFile(path.join(root, "build", "out.txt"), "g\n", "utf8");
+
+    const first = await runFixCommand({ targetPath: root, yes: true, dryRun: false });
+    expect(first).toBe(EXIT_CODES.SUCCESS);
+    const afterFirst = await fs.readFile(path.join(root, ".cursorignore"), "utf8");
+    expect(afterFirst).toContain("node_modules/");
+    expect(afterFirst).toContain("build/");
+
+    // Second apply must overwrite the existing file without rename failure.
+    const second = await runFixCommand({ targetPath: root, yes: true, dryRun: false });
+    expect(second).toBe(EXIT_CODES.SUCCESS);
+    const afterSecond = await fs.readFile(path.join(root, ".cursorignore"), "utf8");
+    expect(afterSecond).toBe(afterFirst);
+  });
 });

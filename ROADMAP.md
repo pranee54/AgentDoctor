@@ -4,48 +4,29 @@ AgentDoctor aims to be the standard health check for AI coding agent environment
 
 ## Released
 
-### Readiness scoring (v0.2.0-beta)
+### v1.0.0 — Scan → Fix → Verify → CI
 
-Deterministic 0–100 scores derived from current findings:
-
-- Overall
-- Security / Context / Instructions / MCP / Compatibility / Performance
-- Per-agent readiness
-- CLI `--min-score` enforcement
-- Terminal overall readiness line (`N/100`, or `n/a` when analysis is limited)
-
-Documented in [docs/scoring.md](docs/scoring.md).
-
-### Safe context Fix writers
-
-Conservative, reversible fixes with dry-run and confirmation:
-
-- Cursor `.cursorignore` (published `0.3.0-beta`)
-- Claude Code `permissions.deny` Read rules and Codex filesystem `deny` keys (Unreleased in this repository)
-
-### CI packaging (v0.1.4-beta)
-
-- First-class GitHub Action wrapping the published CLI and emitting a JSON artifact
-
-### CI policy enforcement (Unreleased)
-
-- Shared policy evaluator reused by CLI + Action
-- Action inputs: `minimum-score`, `fail-on-severity`, `fail-on-rule`, `fail-on-new`, `verify-baseline`, `json-output`, `summary`, `annotations`
-- CLI flags: `--fail-on-severity`, `--fail-on-rule`, `--fail-on-new`, `--summary`, `--annotations`
-- `scan --ci` fails on critical findings (report-only = omit `--ci`; published `0.3.0-beta` `--ci` remains report-only)
-- `version: workspace` for local Action CI against `dist/cli`
-
-### Scan → Fix → Verify → CI loop (complete)
-
-First-user workflow is feature-complete and frozen unless real users report friction:
+First production release. Contracts frozen in [docs/compatibility.md](docs/compatibility.md).
 
 - Local: `doctor` → `scan` → `fix` → `verify`
-- CI: GitHub Action policy failure → Step Summary **Next** → local reproduce / fix / explain → verify → push
-- Terminal Next footers on scan, fix, and verify point to the shortest path back to green
+- CI: GitHub Action policy gates → Step Summary **Next** → local reproduce / fix / explain → verify → push
+- Safe context Fix: Cursor `.cursorignore`, Claude Code Read deny, Codex filesystem deny
+- Shared policy evaluator: `--min-score`, `--fail-on-severity`, `--fail-on-rule`, `--fail-on-new`
+- `scan --ci` fails on critical findings (report-only = omit `--ci`)
+- Windows CI quality job + Windows-safe Fix overwrite
 
-Engineering priority after this milestone: user-reported bugs, corpus-driven precision, performance regressions, and adoption feedback — not more workflow chrome.
+Engineering priority after v1: user-reported bugs, corpus-driven precision, performance regressions, and adoption feedback — not more workflow chrome.
 
 **Precision policy:** Prefer small, measurable precision improvements over large architectural rewrites. Ship the largest _safe_ corpus-backed slice; leave harder residual noise until new evidence appears.
+
+### Readiness scoring (v0.2.0-beta → v1)
+
+Deterministic 0–100 scores derived from current findings. Documented in [docs/scoring.md](docs/scoring.md).
+
+### CI packaging (v0.1.4-beta → v1)
+
+- First-class GitHub Action wrapping the published CLI and emitting a JSON artifact
+- Policy inputs and `version: workspace` for local Action CI against `dist/cli`
 
 ## Near term
 
@@ -71,5 +52,7 @@ Engineering priority after this milestone: user-reported bugs, corpus-driven pre
 - Replacing coding agents
 - Becoming an LLM gateway
 - Claiming complete security certification
+- Shipping a Software Understanding / Project Brain product in the published V1 CLI pack (Brain remains a separate laboratory module; see [docs/project-brain.md](docs/project-brain.md))
+- Memory layers, RAG, vector/graph databases, or chat products as part of AgentDoctor V1
 
 Suggestions welcome via GitHub issues.

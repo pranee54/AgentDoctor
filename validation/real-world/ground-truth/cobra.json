@@ -1,0 +1,50 @@
+{
+  "id": "cobra",
+  "expectationVersion": "1.0.0",
+  "domains": {
+    "required": [],
+    "forbidden": [
+      "Payments",
+      "Shipping"
+    ]
+  },
+  "entrypoints": {
+    "required": [],
+    "forbiddenFrameworks": [
+      "Flutter",
+      "Laravel"
+    ]
+  },
+  "dependencies": {
+    "required": [],
+    "minCount": 1,
+    "characteristic": "sparse"
+  },
+  "relationships": {
+    "required": [],
+    "minCount": 0
+  },
+  "architectures": {
+    "requiredPatterns": [],
+    "forbiddenPatterns": [
+      "Microservice"
+    ]
+  },
+  "projectModel": {
+    "minDomains": 0,
+    "minEntrypoints": 0,
+    "minDependencies": 0,
+    "minRelationships": 0,
+    "minArchitectures": 0
+  },
+  "query": {
+    "minListDomains": 0,
+    "minListEntrypoints": 0
+  },
+  "understand": {
+    "mustContain": [
+      "Repository"
+    ]
+  },
+  "expectationLock": "6959be9d0c7cac628fd2e2338e7baea6f399fc24e4682144e2151b393a2abf1f"
+}

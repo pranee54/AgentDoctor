@@ -1,0 +1,74 @@
+Repository Overview
+Project: understanding-architecture-fixture
+Schema: 1.0.0
+Compiler: 0.1.0
+Generated At: 2026-08-06T00:00:00.000Z
+Frameworks: Flutter, NestJS
+Top Domains: Payments
+Top Architectures: Clean Architecture, DDD, Hexagonal, Layered Architecture, Modular Monolith
+
+Detected Domains
+- Payments (confidence=0.72, paths=2)
+
+Primary Entry Points
+- Flutter: mobile/lib/main.dart (confidence=0.95)
+- NestJS: apps/api/src/main.ts (confidence=0.90)
+
+Detected Architecture
+- Clean Architecture (confidence=0.95, rules=2)
+- DDD (confidence=0.95, rules=3)
+- Hexagonal (confidence=0.95, rules=3)
+- Layered Architecture (confidence=0.95, rules=3)
+- Modular Monolith (confidence=0.95, rules=3)
+- Repository Pattern (confidence=0.94, rules=2)
+- Plugin Architecture (confidence=0.93, rules=2)
+- Microservice (confidence=0.92, rules=2)
+
+Dependency Highlights
+- Api -[package]-> Checkout (confidence=0.90)
+- Checkout -[package]-> Payments (confidence=0.90)
+- Payments -[dynamic-import]-> Checkout (confidence=0.75)
+
+Relationship Highlights
+- CheckoutController -[USES/strong]-> PaymentService (confidence=0.98)
+- PaymentEntity -[IMPLEMENTS/strong]-> PaymentStore (confidence=0.97)
+- PaymentService -[USES/strong]-> PaymentRepository (confidence=0.96)
+- PaymentRepository -[USES/medium]-> PaymentEntity (confidence=0.94)
+- OrdersRoute -[EXPOSES/medium]-> CheckoutController (confidence=0.93)
+- AppModule -[CONFIGURES/strong]-> AppConfig (confidence=0.92)
+- CheckoutWidget -[USES/medium]-> CheckoutBloc (confidence=0.92)
+- CheckoutBloc -[USES/medium]-> CheckoutRepository (confidence=0.91)
+
+Compiler Confidence
+Average Confidence: 0.89
+Repository Summary Confidence: 0.89
+Domains: 1
+Entrypoints: 2
+Dependencies: 3
+Relationships: 12
+Architectures: 14
+
+Statistics
+Evidence Count: 74
+Pass Timing (ms): domains=1, entrypoints=1, dependencies=1, relationships=1, architectures=11
+Queries Executed: 7
+
+Evidence Summary
+- domain:Payments: packages/checkout/src/checkout.controller.ts
+- domain:Payments: packages/payments/src/payment.service.ts
+- entrypoint:mobile/lib/main.dart: MaterialApp
+- entrypoint:apps/api/src/main.ts: bootstrap()
+- architecture:Clean Architecture: Presentation -> Application -> Domain -> Infrastructure
+- architecture:DDD: Bounded domain vocabulary discovered
+- architecture:Hexagonal: Adapters configured at boundaries
+
+Unknowns
+- No View layer evidence
+
+Limitations
+- Summary is assembled only from Query Engine results over an existing ProjectModel.
+- No repository scan, compiler pass, or source parse runs during understand.
+- No AI, LLM, or natural-language generation is used.
+- Architecture confidence is capped below certainty by the inference engine.
+- Absence of a signal means evidence was not found, not that the concept is impossible.
+- Explain/Trace/Verify capabilities are not included in this vertical slice.

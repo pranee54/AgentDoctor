@@ -1,0 +1,54 @@
+{
+  "id": "flask",
+  "expectationVersion": "1.0.0",
+  "domains": {
+    "required": [],
+    "forbidden": []
+  },
+  "entrypoints": {
+    "required": [
+      {
+        "framework": "Python",
+        "fileSuffix": "app.py"
+      }
+    ],
+    "forbiddenFrameworks": [
+      "Flutter",
+      "Laravel"
+    ]
+  },
+  "dependencies": {
+    "required": [],
+    "minCount": 5,
+    "characteristic": "moderate"
+  },
+  "relationships": {
+    "required": [],
+    "minCount": 1
+  },
+  "architectures": {
+    "requiredPatterns": [
+      "Layered Architecture"
+    ],
+    "forbiddenPatterns": [
+      "Microservice"
+    ]
+  },
+  "projectModel": {
+    "minDomains": 0,
+    "minEntrypoints": 0,
+    "minDependencies": 1,
+    "minRelationships": 0,
+    "minArchitectures": 0
+  },
+  "query": {
+    "minListDomains": 0,
+    "minListEntrypoints": 0
+  },
+  "understand": {
+    "mustContain": [
+      "Repository"
+    ]
+  },
+  "expectationLock": "16fb055f809df90c1547583b251c30d5ec5c4b058264809f9cdbb7b91b3f7694"
+}

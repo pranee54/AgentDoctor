@@ -1,0 +1,16 @@
+{
+  "id": "java",
+  "framework": "Java",
+  "version": "1.0.0",
+  "domains": { "required": ["Payments"], "forbidden": [] },
+  "entrypoints": {
+    "required": [{ "framework": "Java", "fileSuffix": "CheckoutApplication.java" }],
+    "forbiddenFrameworks": []
+  },
+  "dependencies": { "required": [{ "from": "Checkout", "to": "Payments", "type": "import" }], "minCount": 1 },
+  "relationships": { "required": [], "minCount": 1 },
+  "architectures": { "requiredPatterns": ["DDD"], "forbiddenPatterns": [] },
+  "projectModel": { "minDomains": 1, "minEntrypoints": 1, "minDependencies": 1, "minRelationships": 1, "minArchitectures": 1 },
+  "query": { "mustFindDomain": "Payments", "minListDomains": 1, "minListEntrypoints": 1 },
+  "understand": { "mustContain": ["Repository Overview", "Java", "Payments", "Limitations"] }
+}

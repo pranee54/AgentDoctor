@@ -21,6 +21,12 @@
     "types": ["node"],
     "noEmit": true
   },
-  "include": ["src/**/*", "tests/**/*", "vitest.config.ts", "eslint.config.js"],
+  "include": [
+    "src/**/*",
+    "tests/**/*",
+    "vitest.config.ts",
+    "vitest.understanding.config.ts",
+    "eslint.config.js"
+  ],
   "exclude": ["node_modules", "dist", "fixtures"]
 }

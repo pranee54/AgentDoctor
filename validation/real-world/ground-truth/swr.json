@@ -1,0 +1,51 @@
+{
+  "id": "swr",
+  "expectationVersion": "1.0.0",
+  "domains": {
+    "required": [],
+    "forbidden": [
+      "Payments",
+      "Shipping"
+    ]
+  },
+  "entrypoints": {
+    "required": [],
+    "forbiddenFrameworks": [
+      "Laravel",
+      "Django",
+      "Flutter"
+    ]
+  },
+  "dependencies": {
+    "required": [],
+    "minCount": 10,
+    "characteristic": "moderate"
+  },
+  "relationships": {
+    "required": [],
+    "minCount": 3
+  },
+  "architectures": {
+    "requiredPatterns": [],
+    "forbiddenPatterns": [
+      "Microservice"
+    ]
+  },
+  "projectModel": {
+    "minDomains": 0,
+    "minEntrypoints": 0,
+    "minDependencies": 5,
+    "minRelationships": 1,
+    "minArchitectures": 0
+  },
+  "query": {
+    "minListDomains": 0,
+    "minListEntrypoints": 0
+  },
+  "understand": {
+    "mustContain": [
+      "Dependencies"
+    ]
+  },
+  "expectationLock": "9c21ac40ddf5b45a2a91b63bf17c100800d9169c5f7ce828eb3f66d9d50fd06c"
+}

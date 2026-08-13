@@ -1,0 +1,3 @@
+package payments
+
+func Charge() {}

@@ -1,0 +1,13 @@
+{
+  "id": "node",
+  "framework": "Node",
+  "version": "1.0.0",
+  "domains": { "required": ["Payments"], "forbidden": [] },
+  "entrypoints": { "required": [{ "framework": "Node", "fileSuffix": "server.ts" }], "forbiddenFrameworks": [] },
+  "dependencies": { "required": [], "minCount": 0 },
+  "relationships": { "required": [], "minCount": 1 },
+  "architectures": { "requiredPatterns": ["DDD"], "forbiddenPatterns": [] },
+  "projectModel": { "minDomains": 1, "minEntrypoints": 1, "minDependencies": 0, "minRelationships": 1, "minArchitectures": 1 },
+  "query": { "mustFindDomain": "Payments", "minListDomains": 1, "minListEntrypoints": 1 },
+  "understand": { "mustContain": ["Repository Overview", "Node", "Payments", "Limitations"] }
+}

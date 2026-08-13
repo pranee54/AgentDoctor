@@ -1,0 +1,58 @@
+{
+  "id": "express",
+  "expectationVersion": "1.0.0",
+  "domains": {
+    "required": [],
+    "forbidden": [
+      "Payments"
+    ]
+  },
+  "entrypoints": {
+    "required": [
+      {
+        "framework": "Node",
+        "fileSuffix": "lib/express.js"
+      }
+    ],
+    "forbiddenFrameworks": [
+      "Flutter",
+      "Laravel",
+      "Django"
+    ]
+  },
+  "dependencies": {
+    "required": [],
+    "minCount": 5,
+    "characteristic": "moderate"
+  },
+  "relationships": {
+    "required": [],
+    "minCount": 1
+  },
+  "architectures": {
+    "requiredPatterns": [
+      "Layered Architecture"
+    ],
+    "forbiddenPatterns": [
+      "BLoC",
+      "Microservice"
+    ]
+  },
+  "projectModel": {
+    "minDomains": 0,
+    "minEntrypoints": 0,
+    "minDependencies": 1,
+    "minRelationships": 0,
+    "minArchitectures": 0
+  },
+  "query": {
+    "minListDomains": 0,
+    "minListEntrypoints": 0
+  },
+  "understand": {
+    "mustContain": [
+      "Repository"
+    ]
+  },
+  "expectationLock": "aa181da737cd99cc00426ed53c3ebed316010cd5c3884d474eff0c0a9abc3294"
+}

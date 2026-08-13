@@ -1,0 +1,54 @@
+{
+  "id": "compose",
+  "expectationVersion": "1.0.0",
+  "domains": {
+    "required": [],
+    "forbidden": []
+  },
+  "entrypoints": {
+    "required": [
+      {
+        "framework": "Go",
+        "fileSuffix": "main.go"
+      }
+    ],
+    "forbiddenFrameworks": [
+      "Flutter",
+      "Laravel"
+    ]
+  },
+  "dependencies": {
+    "required": [],
+    "minCount": 20,
+    "characteristic": "dense"
+  },
+  "relationships": {
+    "required": [],
+    "minCount": 5
+  },
+  "architectures": {
+    "requiredPatterns": [
+      "Layered Architecture"
+    ],
+    "forbiddenPatterns": [
+      "BLoC"
+    ]
+  },
+  "projectModel": {
+    "minDomains": 0,
+    "minEntrypoints": 1,
+    "minDependencies": 5,
+    "minRelationships": 1,
+    "minArchitectures": 0
+  },
+  "query": {
+    "minListDomains": 0,
+    "minListEntrypoints": 1
+  },
+  "understand": {
+    "mustContain": [
+      "Entrypoints"
+    ]
+  },
+  "expectationLock": "f1aef942fa23ac721dcf012fea7208245d14658f62527b3ccc3f6dd3baa14931"
+}

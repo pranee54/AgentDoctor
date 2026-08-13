@@ -1,0 +1,51 @@
+{
+  "id": "chi",
+  "expectationVersion": "1.0.0",
+  "domains": {
+    "required": [],
+    "forbidden": [
+      "Payments"
+    ]
+  },
+  "entrypoints": {
+    "required": [],
+    "forbiddenFrameworks": [
+      "Flutter",
+      "Laravel"
+    ]
+  },
+  "dependencies": {
+    "required": [],
+    "minCount": 1,
+    "characteristic": "sparse"
+  },
+  "relationships": {
+    "required": [],
+    "minCount": 0
+  },
+  "architectures": {
+    "requiredPatterns": [
+      "Layered Architecture"
+    ],
+    "forbiddenPatterns": [
+      "BLoC"
+    ]
+  },
+  "projectModel": {
+    "minDomains": 0,
+    "minEntrypoints": 0,
+    "minDependencies": 0,
+    "minRelationships": 0,
+    "minArchitectures": 0
+  },
+  "query": {
+    "minListDomains": 0,
+    "minListEntrypoints": 0
+  },
+  "understand": {
+    "mustContain": [
+      "Repository"
+    ]
+  },
+  "expectationLock": "d1a0befc6187d88e2eb914a5ae4f2e9a9fe998864bdf456b03bcd8e1a1d87681"
+}

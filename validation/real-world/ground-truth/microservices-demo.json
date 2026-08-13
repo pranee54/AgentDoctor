@@ -1,0 +1,56 @@
+{
+  "id": "microservices-demo",
+  "expectationVersion": "1.0.0",
+  "domains": {
+    "required": [
+      "Orders",
+      "Shipping",
+      "Payments",
+      "Users",
+      "Inventory"
+    ],
+    "forbidden": []
+  },
+  "entrypoints": {
+    "required": [
+      {
+        "framework": "Go",
+        "fileSuffix": "main.go"
+      }
+    ],
+    "forbiddenFrameworks": []
+  },
+  "dependencies": {
+    "required": [],
+    "minCount": 20,
+    "characteristic": "dense"
+  },
+  "relationships": {
+    "required": [],
+    "minCount": 10
+  },
+  "architectures": {
+    "requiredPatterns": [
+      "Microservice"
+    ],
+    "forbiddenPatterns": []
+  },
+  "projectModel": {
+    "minDomains": 3,
+    "minEntrypoints": 1,
+    "minDependencies": 10,
+    "minRelationships": 5,
+    "minArchitectures": 0
+  },
+  "query": {
+    "mustFindDomain": "Orders",
+    "minListDomains": 3,
+    "minListEntrypoints": 1
+  },
+  "understand": {
+    "mustContain": [
+      "Domains"
+    ]
+  },
+  "expectationLock": "6115260c96e55f12f38e655a7684793e6aad3486b76ff4101680cc430e7c63e6"
+}

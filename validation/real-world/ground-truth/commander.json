@@ -1,0 +1,57 @@
+{
+  "id": "commander",
+  "expectationVersion": "1.0.0",
+  "domains": {
+    "required": [],
+    "forbidden": [
+      "Payments",
+      "Shipping",
+      "Inventory"
+    ]
+  },
+  "entrypoints": {
+    "required": [
+      {
+        "framework": "Node",
+        "fileSuffix": "index.js"
+      }
+    ],
+    "forbiddenFrameworks": [
+      "Flutter",
+      "Laravel",
+      "Django"
+    ]
+  },
+  "dependencies": {
+    "required": [],
+    "minCount": 1,
+    "characteristic": "sparse"
+  },
+  "relationships": {
+    "required": [],
+    "minCount": 0
+  },
+  "architectures": {
+    "requiredPatterns": [],
+    "forbiddenPatterns": [
+      "Microservice"
+    ]
+  },
+  "projectModel": {
+    "minDomains": 0,
+    "minEntrypoints": 0,
+    "minDependencies": 0,
+    "minRelationships": 0,
+    "minArchitectures": 0
+  },
+  "query": {
+    "minListDomains": 0,
+    "minListEntrypoints": 0
+  },
+  "understand": {
+    "mustContain": [
+      "Repository"
+    ]
+  },
+  "expectationLock": "ef89fb5ed46fb8bb165a4c2c53335908b0e527d8db473c6401631a349227fd96"
+}

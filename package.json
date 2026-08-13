@@ -1,6 +1,6 @@
 {
   "name": "@praneeth_54/agentdoctor",
-  "version": "0.3.0-beta",
+  "version": "1.1.0",
   "description": "Audit AI coding agent configuration in a repository — local, deterministic, no API key.",
   "type": "module",
   "bin": {
@@ -33,7 +33,17 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:understanding": "vitest run --config vitest.understanding.config.ts",
+    "test:mcp": "vitest run tests/unit/mcp",
+    "validate:understanding": "tsx validation/software-understanding/runner/run.ts",
+    "validate:mcp-agent": "tsx validation/mcp-agent/run.ts",
+    "validate:project-brain": "tsx validation/project-brain/run.ts",
+    "validate:project-brain:real-world": "tsx validation/project-brain/real-world-run.ts",
+    "benchmark:project-brain": "tsx validation/project-brain/benchmark.ts",
     "verify": "npm run typecheck && npm run lint && npm run format:check && npm test && npm run build",
+    "verify:understanding": "npm run typecheck && npm run test:understanding",
+    "verify:project-brain": "npm run typecheck && npm run test:understanding && npm run validate:project-brain && npm run benchmark:project-brain",
+    "verify:mcp": "npm run typecheck && npm run test:mcp",
     "prepare": "node scripts/ensure-cli-bin.mjs",
     "prepublishOnly": "npm run verify"
   },
@@ -65,6 +75,7 @@
     "access": "public"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "commander": "^14.0.3",
     "picocolors": "^1.1.1"
   },

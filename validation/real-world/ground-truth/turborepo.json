@@ -1,0 +1,51 @@
+{
+  "id": "turborepo",
+  "expectationVersion": "1.0.0",
+  "domains": {
+    "required": [],
+    "forbidden": []
+  },
+  "entrypoints": {
+    "required": [
+      {
+        "framework": "Rust",
+        "fileSuffix": "main.rs"
+      }
+    ],
+    "forbiddenFrameworks": [
+      "Laravel"
+    ]
+  },
+  "dependencies": {
+    "required": [],
+    "minCount": 30,
+    "characteristic": "dense"
+  },
+  "relationships": {
+    "required": [],
+    "minCount": 10
+  },
+  "architectures": {
+    "requiredPatterns": [
+      "Monorepo Workspace"
+    ],
+    "forbiddenPatterns": []
+  },
+  "projectModel": {
+    "minDomains": 0,
+    "minEntrypoints": 0,
+    "minDependencies": 10,
+    "minRelationships": 1,
+    "minArchitectures": 0
+  },
+  "query": {
+    "minListDomains": 0,
+    "minListEntrypoints": 0
+  },
+  "understand": {
+    "mustContain": [
+      "Dependencies"
+    ]
+  },
+  "expectationLock": "42804adcda993a976daf2a06493583e619aa796cd2a3d482f8d8dbddade00a4f"
+}

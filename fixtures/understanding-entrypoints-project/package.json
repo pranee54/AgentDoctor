@@ -1,0 +1,5 @@
+{
+  "name": "understanding-entrypoints-fixture",
+  "private": true,
+  "workspaces": ["apps/*", "services/*"]
+}

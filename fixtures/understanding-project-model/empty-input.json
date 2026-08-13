@@ -1,0 +1,32 @@
+{
+  "projectName": "empty-project",
+  "generatedAt": "2026-08-06T00:00:00.000Z",
+  "domains": {
+    "domains": [],
+    "timingMs": 0,
+    "filesConsidered": 0
+  },
+  "entrypoints": {
+    "entrypoints": [],
+    "timingMs": 0,
+    "filesConsidered": 0,
+    "filesInspected": 0
+  },
+  "dependencies": {
+    "dependencies": [],
+    "timingMs": 0,
+    "filesConsidered": 0,
+    "filesInspected": 0
+  },
+  "relationships": {
+    "relationships": [],
+    "timingMs": 0,
+    "filesConsidered": 0,
+    "filesInspected": 0
+  },
+  "architectures": {
+    "architectures": [],
+    "timingMs": 0,
+    "patternsEvaluated": 17
+  }
+}

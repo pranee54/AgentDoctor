@@ -1,0 +1,12 @@
+# Example Codex MCP server entry (project-local).
+# Merge under [mcp_servers.agentdoctor-brain] in .codex/config.toml
+# Replace absolute paths before use.
+
+[mcp_servers.agentdoctor-brain]
+command = "node"
+args = [
+  "/ABSOLUTE/PATH/TO/AgentDoctor/dist/cli/index.js",
+  "brain-mcp",
+  "--root",
+  "/ABSOLUTE/PATH/TO/YOUR/PROJECT",
+]

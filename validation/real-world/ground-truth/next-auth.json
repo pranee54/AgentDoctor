@@ -1,0 +1,51 @@
+{
+  "id": "next-auth",
+  "expectationVersion": "1.0.0",
+  "domains": {
+    "required": [
+      "Auth",
+      "Users"
+    ],
+    "forbidden": []
+  },
+  "entrypoints": {
+    "required": [],
+    "forbiddenFrameworks": [
+      "Laravel",
+      "Flutter"
+    ]
+  },
+  "dependencies": {
+    "required": [],
+    "minCount": 30,
+    "characteristic": "dense"
+  },
+  "relationships": {
+    "required": [],
+    "minCount": 10
+  },
+  "architectures": {
+    "requiredPatterns": [
+      "Monorepo Workspace"
+    ],
+    "forbiddenPatterns": []
+  },
+  "projectModel": {
+    "minDomains": 1,
+    "minEntrypoints": 0,
+    "minDependencies": 10,
+    "minRelationships": 5,
+    "minArchitectures": 0
+  },
+  "query": {
+    "mustFindDomain": "Auth",
+    "minListDomains": 1,
+    "minListEntrypoints": 0
+  },
+  "understand": {
+    "mustContain": [
+      "Domains"
+    ]
+  },
+  "expectationLock": "3d471ac4a0f33cc73658c54efeeee196cb9a2d061f094978128b1188b8584e38"
+}

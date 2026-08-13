@@ -16,7 +16,9 @@ AgentDoctor is a local CLI that inspects project-level AI coding agent setup —
 npx @praneeth_54/agentdoctor
 ```
 
-Public release (`1.0.0`). Scan → Fix → Verify → CI. Deterministic scores in the terminal and JSON.
+Public release track: Safety V1 (`1.0.0`) plus Project Brain MCP for agents (`1.1.0`).
+Scan → Fix → Verify → CI remains the Safety contract. Brain MCP helps agents understand
+what is in a repository, what can be trusted, and why — not a generic coding assistant.
 
 ---
 
@@ -378,6 +380,8 @@ Details: [docs/architecture.md](docs/architecture.md)
 | [docs/exit-codes.md](docs/exit-codes.md)                           | Process exit codes              |
 | [docs/scoring.md](docs/scoring.md)                                 | Readiness scoring specification |
 | [docs/compatibility.md](docs/compatibility.md)                     | v1 compatibility promises       |
+| [docs/project-brain.md](docs/project-brain.md)                     | Project Brain understanding     |
+| [docs/mcp/brain-mcp.md](docs/mcp/brain-mcp.md)                     | Brain → MCP → Agent bridge      |
 | [docs/development.md](docs/development.md)                         | Local development               |
 | [docs/github-launch-checklist.md](docs/github-launch-checklist.md) | GitHub About / topics / launch  |
 | [ROADMAP.md](ROADMAP.md)                                           | Near- and medium-term plans     |
@@ -400,6 +404,20 @@ npm install
 npm run verify
 node dist/cli/index.js ./fixtures/clean-configured-project
 ```
+
+---
+
+## Project Brain MCP (agent context)
+
+Evidence-backed repository understanding for agents (not a search MCP):
+
+```bash
+agentdoctor brain-mcp --root /absolute/path/to/project
+```
+
+Tools: overview, query, explain, trace, claims, evidence, ownership, risk, delta, snapshot.
+Local STDIO only — no API key, no upload. Docs: [docs/mcp/brain-mcp.md](docs/mcp/brain-mcp.md).
+Examples: [examples/mcp/](examples/mcp/).
 
 ---
 

@@ -1,0 +1,53 @@
+{
+  "id": "axum",
+  "expectationVersion": "1.0.0",
+  "domains": {
+    "required": [],
+    "forbidden": []
+  },
+  "entrypoints": {
+    "required": [
+      {
+        "framework": "Rust",
+        "fileSuffix": "main.rs"
+      }
+    ],
+    "forbiddenFrameworks": [
+      "Laravel",
+      "Flutter"
+    ]
+  },
+  "dependencies": {
+    "required": [],
+    "minCount": 20,
+    "characteristic": "dense"
+  },
+  "relationships": {
+    "required": [],
+    "minCount": 5
+  },
+  "architectures": {
+    "requiredPatterns": [
+      "Monorepo Workspace",
+      "Layered Architecture"
+    ],
+    "forbiddenPatterns": []
+  },
+  "projectModel": {
+    "minDomains": 0,
+    "minEntrypoints": 0,
+    "minDependencies": 5,
+    "minRelationships": 1,
+    "minArchitectures": 0
+  },
+  "query": {
+    "minListDomains": 0,
+    "minListEntrypoints": 0
+  },
+  "understand": {
+    "mustContain": [
+      "Dependencies"
+    ]
+  },
+  "expectationLock": "47c60df40fc4d3ccf11e0231023bb445712aa8dca8751803b02424de96ac488f"
+}

@@ -1,0 +1,73 @@
+{
+  "domains": {
+    "domains": [{ "name": "Payments", "confidence": 0.6, "evidence": ["src/payment.service.ts"] }],
+    "timingMs": 0,
+    "filesConsidered": 5
+  },
+  "entrypoints": {
+    "entrypoints": [
+      {
+        "framework": "NestJS",
+        "file": "src/main.ts",
+        "confidence": 0.9,
+        "evidence": ["NestFactory"]
+      }
+    ],
+    "timingMs": 0,
+    "filesConsidered": 5,
+    "filesInspected": 1
+  },
+  "dependencies": {
+    "dependencies": [],
+    "timingMs": 0,
+    "filesConsidered": 5,
+    "filesInspected": 3
+  },
+  "relationships": {
+    "relationships": [
+      {
+        "source": "CheckoutController",
+        "target": "PaymentService",
+        "relationship": "USES",
+        "confidence": 0.96,
+        "evidence": ["imports payment.service.ts", "constructor injection", "Controller → Service"],
+        "strength": "strong"
+      },
+      {
+        "source": "PaymentService",
+        "target": "PaymentRepository",
+        "relationship": "USES",
+        "confidence": 0.95,
+        "evidence": ["imports payment.repository.ts", "Service → Repository"],
+        "strength": "medium"
+      },
+      {
+        "source": "PaymentRepository",
+        "target": "PaymentEntity",
+        "relationship": "USES",
+        "confidence": 0.94,
+        "evidence": ["imports payment.entity.ts", "Repository → Database"],
+        "strength": "medium"
+      },
+      {
+        "source": "PaymentEntity",
+        "target": "PaymentStore",
+        "relationship": "IMPLEMENTS",
+        "confidence": 0.97,
+        "evidence": ["implements PaymentStore"],
+        "strength": "strong"
+      },
+      {
+        "source": "CheckoutController",
+        "target": "PaymentEntity",
+        "relationship": "USES",
+        "confidence": 0.84,
+        "evidence": ["imports payment.entity.ts", "Controller → Database"],
+        "strength": "weak"
+      }
+    ],
+    "timingMs": 0,
+    "filesConsidered": 5,
+    "filesInspected": 5
+  }
+}

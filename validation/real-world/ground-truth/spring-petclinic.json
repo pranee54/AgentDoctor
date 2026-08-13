@@ -1,0 +1,61 @@
+{
+  "id": "spring-petclinic",
+  "expectationVersion": "1.0.0",
+  "domains": {
+    "required": [
+      "Users",
+      "Admin"
+    ],
+    "forbidden": []
+  },
+  "entrypoints": {
+    "required": [
+      {
+        "framework": "Java",
+        "fileSuffix": "PetClinicApplication.java"
+      }
+    ],
+    "forbiddenFrameworks": [
+      "Flutter",
+      "Laravel"
+    ]
+  },
+  "dependencies": {
+    "required": [],
+    "minCount": 10,
+    "characteristic": "moderate"
+  },
+  "relationships": {
+    "required": [],
+    "minCount": 5
+  },
+  "architectures": {
+    "requiredPatterns": [
+      "MVC",
+      "Service Layer",
+      "Repository Pattern"
+    ],
+    "forbiddenPatterns": [
+      "BLoC",
+      "Microservice"
+    ]
+  },
+  "projectModel": {
+    "minDomains": 1,
+    "minEntrypoints": 1,
+    "minDependencies": 5,
+    "minRelationships": 1,
+    "minArchitectures": 0
+  },
+  "query": {
+    "mustFindDomain": "Users",
+    "minListDomains": 1,
+    "minListEntrypoints": 1
+  },
+  "understand": {
+    "mustContain": [
+      "Entrypoints"
+    ]
+  },
+  "expectationLock": "6e457a0044c10ccdb933dc12e0abbd98feac298d6f6bb27e78650fe968ec396d"
+}

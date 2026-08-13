@@ -1,0 +1,5 @@
+{
+  "name": "understanding-dependencies-fixture",
+  "private": true,
+  "workspaces": ["packages/*", "apps/*"]
+}

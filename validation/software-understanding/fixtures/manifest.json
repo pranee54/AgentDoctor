@@ -1,0 +1,14 @@
+{
+  "suiteVersion": "1.0.0",
+  "frameworks": [
+    "flutter",
+    "laravel",
+    "react",
+    "next",
+    "node",
+    "python",
+    "go",
+    "java",
+    "rust"
+  ]
+}

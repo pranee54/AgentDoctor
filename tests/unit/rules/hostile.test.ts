@@ -5,6 +5,7 @@ import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { scan } from "../../../src/index.js";
+import { PACKAGE_VERSION } from "../../../src/constants.js";
 import { renderTerminalReport } from "../../../src/reporters/terminal/report.js";
 
 const tempDirs: string[] = [];
@@ -75,7 +76,7 @@ describe("hostile repository input", () => {
     await fs.writeFile(path.join(root, "CLAUDE.md"), buf);
 
     const result = await scan({ cwd: root });
-    expect(result.version).toBe("0.3.0-beta");
+    expect(result.version).toBe(PACKAGE_VERSION);
     expect(result.scoringAvailable).toBe(true);
     expect(result.scores).not.toBeNull();
   });

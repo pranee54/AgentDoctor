@@ -1,7 +1,6 @@
-import fs from "node:fs/promises";
 import path from "node:path";
 
-import { readTextFile } from "../../../utils/fs.js";
+import { atomicWriteTextFile, readTextFile } from "../../../utils/fs.js";
 import { missingPatternsForCursorignore } from "../plan.js";
 import type { FixAction } from "../types.js";
 
@@ -69,12 +68,7 @@ export async function readCursorignore(root: string): Promise<string | null> {
 }
 
 export async function writeCursorignore(root: string, content: string): Promise<void> {
-  const target = path.join(root, ".cursorignore");
-  const dir = path.dirname(target);
-  await fs.mkdir(dir, { recursive: true });
-  const tmp = path.join(dir, `.cursorignore.agentdoctor.${process.pid}.tmp`);
-  await fs.writeFile(tmp, content, "utf8");
-  await fs.rename(tmp, target);
+  await atomicWriteTextFile(path.join(root, ".cursorignore"), content);
 }
 
 function formatSimpleDiff(fileLabel: string, before: string, after: string): string {

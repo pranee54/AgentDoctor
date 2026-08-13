@@ -7,10 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Notes
+
+- Owner-only after this tree is green: `npm publish`, git tag `v1.1.0`, GitHub Release.
+  Do **not** auto-publish from CI agents.
+
+## [1.1.0] — 2026-08-13
+
+Minor release: Brain → MCP → Agent consumption for Project Brain (Safety V1 unchanged).
+
+### Added
+
+- Project Brain MCP bridge (`agentdoctor brain-mcp --root <path>`): STDIO MCP server
+  exposing evidence-backed Brain tools (`brain_overview`, `brain_query`, `brain_explain`,
+  `brain_trace`, `brain_claims`, `brain_evidence`, `brain_ownership`, `brain_risk`,
+  `brain_delta`, `brain_snapshot`) with provenance envelopes. Local-only; no API key.
+  Docs: [docs/mcp/brain-mcp.md](docs/mcp/brain-mcp.md). Examples: [examples/mcp/](examples/mcp/).
+  Demo: [docs/demo/brain-mcp-demo.md](docs/demo/brain-mcp-demo.md).
+  Validation: [validation/mcp-agent/](validation/mcp-agent/).
+
 ### Changed
 
-- GitHub Action default `version` input is now `1.0.0` after the
-  `@praneeth_54/agentdoctor@1.0.0` npm release.
+- Build packaging now includes `src/core/understanding/**` and `src/mcp/**` so the
+  `brain-mcp` CLI command can run from `dist/` (Safety public API export remains
+  Scan/Fix/Verify-focused).
+- MCP tool descriptions explicitly mark READ vs CONTROLLED WRITE (`brain_snapshot` rebuild
+  only under `.agentdoctor/project-brain/`).
+
+### Notes
+
+- Product promise: help AI coding agents understand what is in a repository, what can be
+  trusted, and why. Not a generic coding assistant, not RAG, not chatbot memory.
+- Authenticated third-party agent LLM smoke (Cursor / Claude Code / Codex Q1–Q7) remains an
+  environment/auth gate; engineering MCP + Brain contracts pass without it.
 
 ## [1.0.0] — 2026-08-12
 
@@ -244,7 +273,8 @@ First public beta.
 - Not a complete secret scanner
 - Git “tracked secret” detection deferred
 
-[Unreleased]: https://github.com/pranee54/AgentDoctor/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/pranee54/AgentDoctor/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/pranee54/AgentDoctor/releases/tag/v1.1.0
 [1.0.0]: https://github.com/pranee54/AgentDoctor/releases/tag/v1.0.0
 [0.3.0-beta]: https://github.com/pranee54/AgentDoctor/releases/tag/v0.3.0-beta
 [0.2.0-beta]: https://github.com/pranee54/AgentDoctor/releases/tag/v0.2.0-beta

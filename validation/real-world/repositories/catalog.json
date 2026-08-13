@@ -1,0 +1,422 @@
+{
+  "suiteVersion": "1.0.0",
+  "selectionRules": [
+    "Well maintained",
+    "Widely used",
+    "Representative architecture",
+    "Diverse sizes/languages",
+    "No toys",
+    "No generated repos"
+  ],
+  "repositories": [
+    {
+      "id": "flutter-gallery",
+      "url": "https://github.com/flutter/gallery.git",
+      "commitSha": "d12640d4b08ee6e706fd8c64a83fba0620c9aa8d",
+      "framework": "Flutter",
+      "language": "Dart",
+      "sizeClass": "medium",
+      "category": "application",
+      "knownPatterns": [
+        "Feature-first",
+        "BLoC"
+      ],
+      "notes": "Official Flutter Gallery reference application."
+    },
+    {
+      "id": "flutter-bloc",
+      "url": "https://github.com/felangel/bloc.git",
+      "commitSha": "31a017d572b623f9fd395836e2ca548dfb13f243",
+      "framework": "Flutter",
+      "language": "Dart",
+      "sizeClass": "medium",
+      "category": "library",
+      "knownPatterns": [
+        "BLoC"
+      ],
+      "notes": "Canonical BLoC state-management library monorepo."
+    },
+    {
+      "id": "laravel-laravel",
+      "url": "https://github.com/laravel/laravel.git",
+      "commitSha": "c926b8ca7fa01e71852e19141f2bdd7fabfb6ade",
+      "framework": "Laravel",
+      "language": "PHP",
+      "sizeClass": "small",
+      "category": "application",
+      "knownPatterns": [
+        "MVC",
+        "Service Layer"
+      ],
+      "notes": "Official Laravel application skeleton used in production apps."
+    },
+    {
+      "id": "filament",
+      "url": "https://github.com/filamentphp/filament.git",
+      "commitSha": "8e08e3aa4e40a78859b7963589ecae27ca6f5c5b",
+      "framework": "Laravel",
+      "language": "PHP",
+      "sizeClass": "large",
+      "category": "library",
+      "knownPatterns": [
+        "Modular Monolith",
+        "Plugin Architecture",
+        "Admin"
+      ],
+      "notes": "Laravel admin panel framework; package monorepo."
+    },
+    {
+      "id": "livewire",
+      "url": "https://github.com/livewire/livewire.git",
+      "commitSha": "bcbfaa0b37b411d66ee7379da6c9484652964aea",
+      "framework": "Laravel",
+      "language": "PHP",
+      "sizeClass": "medium",
+      "category": "library",
+      "knownPatterns": [
+        "Component",
+        "MVC"
+      ],
+      "notes": "Full-stack Laravel Livewire framework."
+    },
+    {
+      "id": "react-router",
+      "url": "https://github.com/remix-run/react-router.git",
+      "commitSha": "66382263a6638b3d26d58a6fb0af6ddd80ed9e0e",
+      "framework": "React",
+      "language": "TypeScript",
+      "sizeClass": "medium",
+      "category": "library",
+      "knownPatterns": [
+        "Monorepo Workspace"
+      ],
+      "notes": "React Router / Remix routing monorepo."
+    },
+    {
+      "id": "tanstack-query",
+      "url": "https://github.com/TanStack/query.git",
+      "commitSha": "46d7f02f1c7b9fcd3255082cc7103e8bfa3dab76",
+      "framework": "React",
+      "language": "TypeScript",
+      "sizeClass": "medium",
+      "category": "library",
+      "knownPatterns": [
+        "Monorepo Workspace",
+        "Feature-first"
+      ],
+      "notes": "TanStack Query monorepo across frameworks."
+    },
+    {
+      "id": "chakra-ui",
+      "url": "https://github.com/chakra-ui/chakra-ui.git",
+      "commitSha": "f6747f9c4ef6cbf117bfd55761304369cf404120",
+      "framework": "React",
+      "language": "TypeScript",
+      "sizeClass": "large",
+      "category": "library",
+      "knownPatterns": [
+        "Monorepo Workspace",
+        "Component"
+      ],
+      "notes": "Chakra UI component library monorepo."
+    },
+    {
+      "id": "next-auth",
+      "url": "https://github.com/nextauthjs/next-auth.git",
+      "commitSha": "a1a16a5a7780488c7449feece410033f445d0b31",
+      "framework": "Next.js",
+      "language": "TypeScript",
+      "sizeClass": "medium",
+      "category": "library",
+      "knownPatterns": [
+        "Monorepo Workspace"
+      ],
+      "notes": "Auth.js / NextAuth authentication library."
+    },
+    {
+      "id": "swr",
+      "url": "https://github.com/vercel/swr.git",
+      "commitSha": "ace8c0f481cc8315eaeb31f3911f0eb461feca35",
+      "framework": "React",
+      "language": "TypeScript",
+      "sizeClass": "small",
+      "category": "library",
+      "knownPatterns": [
+        "Feature-first"
+      ],
+      "notes": "Vercel SWR data-fetching library."
+    },
+    {
+      "id": "express",
+      "url": "https://github.com/expressjs/express.git",
+      "commitSha": "a3714473feb3d2908add734d340e7755fd85e0a3",
+      "framework": "Node",
+      "language": "JavaScript",
+      "sizeClass": "small",
+      "category": "framework",
+      "knownPatterns": [
+        "Layered Architecture",
+        "Middleware"
+      ],
+      "notes": "Express.js HTTP framework."
+    },
+    {
+      "id": "nest",
+      "url": "https://github.com/nestjs/nest.git",
+      "commitSha": "4e3b42d9280b50c928c85915686b43257703cd24",
+      "framework": "NestJS",
+      "language": "TypeScript",
+      "sizeClass": "large",
+      "category": "framework",
+      "knownPatterns": [
+        "Modular Monolith",
+        "Service Layer",
+        "Monorepo Workspace"
+      ],
+      "notes": "NestJS framework monorepo."
+    },
+    {
+      "id": "socket-io",
+      "url": "https://github.com/socketio/socket.io.git",
+      "commitSha": "ae7fb46e08c5ed964b4a1ea8b1703e816511598e",
+      "framework": "Node",
+      "language": "TypeScript",
+      "sizeClass": "medium",
+      "category": "library",
+      "knownPatterns": [
+        "Monorepo Workspace"
+      ],
+      "notes": "Socket.IO realtime library monorepo."
+    },
+    {
+      "id": "commander",
+      "url": "https://github.com/tj/commander.js.git",
+      "commitSha": "ba6d13ddb4243e5913367734f8c159089ffe7834",
+      "framework": "Node",
+      "language": "JavaScript",
+      "sizeClass": "small",
+      "category": "cli",
+      "knownPatterns": [
+        "Library"
+      ],
+      "notes": "Node.js CLI framework library."
+    },
+    {
+      "id": "fastapi",
+      "url": "https://github.com/tiangolo/fastapi.git",
+      "commitSha": "a375f6b948b99fa4260129856bbf11d037f363ef",
+      "framework": "FastAPI",
+      "language": "Python",
+      "sizeClass": "medium",
+      "category": "framework",
+      "knownPatterns": [
+        "Layered Architecture",
+        "Service Layer"
+      ],
+      "notes": "FastAPI web framework."
+    },
+    {
+      "id": "flask",
+      "url": "https://github.com/pallets/flask.git",
+      "commitSha": "6a2f545bfd8ed31e19066a299296917e034aca58",
+      "framework": "Python",
+      "language": "Python",
+      "sizeClass": "medium",
+      "category": "framework",
+      "knownPatterns": [
+        "Layered Architecture"
+      ],
+      "notes": "Flask WSGI framework."
+    },
+    {
+      "id": "django-rest",
+      "url": "https://github.com/encode/django-rest-framework.git",
+      "commitSha": "80d535ddf08226020a9f44ca57f6eb1bbd91fa6a",
+      "framework": "Django",
+      "language": "Python",
+      "sizeClass": "medium",
+      "category": "library",
+      "knownPatterns": [
+        "MVC",
+        "Service Layer"
+      ],
+      "notes": "Django REST Framework."
+    },
+    {
+      "id": "httpx",
+      "url": "https://github.com/encode/httpx.git",
+      "commitSha": "b5addb64f0161ff6bfe94c124ef76f6a1fba5254",
+      "framework": "Python",
+      "language": "Python",
+      "sizeClass": "small",
+      "category": "library",
+      "knownPatterns": [
+        "Library"
+      ],
+      "notes": "HTTPX HTTP client library."
+    },
+    {
+      "id": "gin",
+      "url": "https://github.com/gin-gonic/gin.git",
+      "commitSha": "34dac209ffb6ef85cc78c5d217bbb7ad001d68fd",
+      "framework": "Go",
+      "language": "Go",
+      "sizeClass": "medium",
+      "category": "framework",
+      "knownPatterns": [
+        "Layered Architecture",
+        "Middleware"
+      ],
+      "notes": "Gin HTTP web framework."
+    },
+    {
+      "id": "cobra",
+      "url": "https://github.com/spf13/cobra.git",
+      "commitSha": "adbc8813901bba65827259daa8e22ff94ec1f30e",
+      "framework": "Go",
+      "language": "Go",
+      "sizeClass": "small",
+      "category": "cli",
+      "knownPatterns": [
+        "Library"
+      ],
+      "notes": "Cobra CLI library used across Go tooling."
+    },
+    {
+      "id": "chi",
+      "url": "https://github.com/go-chi/chi.git",
+      "commitSha": "8b258c7bb28f97a5f2a856ff7ef962578fec9215",
+      "framework": "Go",
+      "language": "Go",
+      "sizeClass": "small",
+      "category": "library",
+      "knownPatterns": [
+        "Layered Architecture"
+      ],
+      "notes": "lightweight Go HTTP router."
+    },
+    {
+      "id": "clap",
+      "url": "https://github.com/clap-rs/clap.git",
+      "commitSha": "4a622b4340d5e1fffff60c0ecefdc6882f738159",
+      "framework": "Rust",
+      "language": "Rust",
+      "sizeClass": "medium",
+      "category": "cli",
+      "knownPatterns": [
+        "Monorepo Workspace"
+      ],
+      "notes": "Clap CLI argument parser."
+    },
+    {
+      "id": "serde",
+      "url": "https://github.com/serde-rs/serde.git",
+      "commitSha": "747814f7d5fbab872df3b02f070c165b91bde062",
+      "framework": "Rust",
+      "language": "Rust",
+      "sizeClass": "medium",
+      "category": "library",
+      "knownPatterns": [
+        "Library"
+      ],
+      "notes": "Serde serialization framework."
+    },
+    {
+      "id": "axum",
+      "url": "https://github.com/tokio-rs/axum.git",
+      "commitSha": "c9a911b7999de50e9e5023942ca072e9725ae943",
+      "framework": "Rust",
+      "language": "Rust",
+      "sizeClass": "medium",
+      "category": "framework",
+      "knownPatterns": [
+        "Layered Architecture",
+        "Monorepo Workspace"
+      ],
+      "notes": "Axum web framework on Tokio."
+    },
+    {
+      "id": "spring-petclinic",
+      "url": "https://github.com/spring-projects/spring-petclinic.git",
+      "commitSha": "88e37c15cf6fc8490b01bc3e8e2c800cec1ac272",
+      "framework": "Spring",
+      "language": "Java",
+      "sizeClass": "small",
+      "category": "application",
+      "knownPatterns": [
+        "MVC",
+        "Service Layer",
+        "Repository Pattern"
+      ],
+      "notes": "Classic Spring Boot sample application."
+    },
+    {
+      "id": "microservices-demo",
+      "url": "https://github.com/GoogleCloudPlatform/microservices-demo.git",
+      "commitSha": "6bece005bb4460e1ae252ba8f7de5fd3ae2cb62d",
+      "framework": "Microservices",
+      "language": "Multi",
+      "sizeClass": "medium",
+      "category": "microservices",
+      "knownPatterns": [
+        "Microservice"
+      ],
+      "notes": "Google Online Boutique microservices demo."
+    },
+    {
+      "id": "turborepo",
+      "url": "https://github.com/vercel/turborepo.git",
+      "commitSha": "a98e5cde97796088c6107684a64a40a967cd1ef0",
+      "framework": "Monorepo",
+      "language": "Rust",
+      "sizeClass": "large",
+      "category": "monorepo",
+      "knownPatterns": [
+        "Monorepo Workspace",
+        "CLI"
+      ],
+      "notes": "Turborepo monorepo build system."
+    },
+    {
+      "id": "gh-cli",
+      "url": "https://github.com/cli/cli.git",
+      "commitSha": "83c6321b8faba2ec6202af70b1cc0e2ed936495e",
+      "framework": "Go",
+      "language": "Go",
+      "sizeClass": "large",
+      "category": "cli",
+      "knownPatterns": [
+        "CLI",
+        "Feature-first"
+      ],
+      "notes": "GitHub official CLI."
+    },
+    {
+      "id": "axios",
+      "url": "https://github.com/axios/axios.git",
+      "commitSha": "a339fe124a4b120ac419f9c8c11b6e9ba74b9421",
+      "framework": "Node",
+      "language": "JavaScript",
+      "sizeClass": "small",
+      "category": "library",
+      "knownPatterns": [
+        "Library"
+      ],
+      "notes": "Axios HTTP client."
+    },
+    {
+      "id": "compose",
+      "url": "https://github.com/docker/compose.git",
+      "commitSha": "d95ff5b3d52e0ce911408fdd19069503ef383507",
+      "framework": "Go",
+      "language": "Go",
+      "sizeClass": "medium",
+      "category": "infrastructure",
+      "knownPatterns": [
+        "CLI",
+        "Layered Architecture"
+      ],
+      "notes": "Docker Compose infrastructure CLI."
+    }
+  ]
+}

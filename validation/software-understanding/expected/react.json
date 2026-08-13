@@ -1,0 +1,13 @@
+{
+  "id": "react",
+  "framework": "React",
+  "version": "1.0.0",
+  "domains": { "required": ["Payments"], "forbidden": [] },
+  "entrypoints": { "required": [{ "framework": "React", "fileSuffix": "src/main.tsx" }], "forbiddenFrameworks": [] },
+  "dependencies": { "required": [{ "from": "App", "to": "Payments", "type": "import" }], "minCount": 1 },
+  "relationships": { "required": [], "minCount": 1 },
+  "architectures": { "requiredPatterns": ["DDD"], "forbiddenPatterns": [] },
+  "projectModel": { "minDomains": 1, "minEntrypoints": 1, "minDependencies": 1, "minRelationships": 1, "minArchitectures": 1 },
+  "query": { "mustFindDomain": "Payments", "minListDomains": 1, "minListEntrypoints": 1 },
+  "understand": { "mustContain": ["Repository Overview", "React", "Payments", "Limitations"] }
+}

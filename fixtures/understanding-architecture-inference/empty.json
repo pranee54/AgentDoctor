@@ -1,0 +1,25 @@
+{
+  "domains": {
+    "domains": [],
+    "timingMs": 0,
+    "filesConsidered": 0
+  },
+  "entrypoints": {
+    "entrypoints": [],
+    "timingMs": 0,
+    "filesConsidered": 0,
+    "filesInspected": 0
+  },
+  "dependencies": {
+    "dependencies": [],
+    "timingMs": 0,
+    "filesConsidered": 0,
+    "filesInspected": 0
+  },
+  "relationships": {
+    "relationships": [],
+    "timingMs": 0,
+    "filesConsidered": 0,
+    "filesInspected": 0
+  }
+}

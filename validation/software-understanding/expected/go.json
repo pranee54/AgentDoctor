@@ -1,0 +1,13 @@
+{
+  "id": "go",
+  "framework": "Go",
+  "version": "1.0.0",
+  "domains": { "required": ["Payments"], "forbidden": [] },
+  "entrypoints": { "required": [{ "framework": "Go", "fileSuffix": "main.go" }], "forbiddenFrameworks": [] },
+  "dependencies": { "required": [{ "from": "Main", "to": "Payments", "type": "import" }], "minCount": 1 },
+  "relationships": { "required": [], "minCount": 1 },
+  "architectures": { "requiredPatterns": ["DDD"], "forbiddenPatterns": [] },
+  "projectModel": { "minDomains": 1, "minEntrypoints": 1, "minDependencies": 1, "minRelationships": 1, "minArchitectures": 1 },
+  "query": { "mustFindDomain": "Payments", "minListDomains": 1, "minListEntrypoints": 1 },
+  "understand": { "mustContain": ["Repository Overview", "Go", "Payments", "Limitations"] }
+}

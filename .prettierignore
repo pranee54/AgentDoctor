@@ -13,5 +13,6 @@ package-lock.json
 !ROADMAP.md
 fixtures/**
 .private/**
+.agentdoctor/**
 validation/**
 AgentDoctorOS/**
