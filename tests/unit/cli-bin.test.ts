@@ -78,14 +78,25 @@ function isPosixShellBinShim(filePath: string): boolean {
 }
 
 /**
+ * Escape a value for inclusion inside Windows double quotes (CRT/cmd argv rules):
+ * 1. For N backslashes followed by `"`, emit 2N backslashes then `\"`
+ * 2. Double any trailing backslashes so they do not escape the closing `"`
+ */
+export function escapeWindowsCmdQuotedToken(value: string): string {
+  return value
+    .replace(/(\\*)"/g, (_match, slashes: string) => `${slashes}${slashes}\\"`)
+    .replace(/(\\+)$/, (_match, slashes: string) => `${slashes}${slashes}`);
+}
+
+/**
  * Build the single /c argument for `cmd.exe /d /s /c`.
  * Required form (paths may contain spaces):
  *   ""C:\path\to\agentdoctor.cmd" "--version"
  * With /s, cmd strips the outer quotes and runs the remainder.
  */
 export function buildWindowsCmdCArgument(executable: string, args: string[]): string {
-  const exe = `"${executable.replace(/"/g, "")}"`;
-  const quotedArgs = args.map((arg) => `"${arg.replace(/"/g, '\\"')}"`);
+  const exe = `"${escapeWindowsCmdQuotedToken(executable)}"`;
+  const quotedArgs = args.map((arg) => `"${escapeWindowsCmdQuotedToken(arg)}"`);
   const inner = [exe, ...quotedArgs].join(" ");
   return `"${inner}"`;
 }
@@ -130,11 +141,52 @@ afterEach(async () => {
 });
 
 describe("local CLI bin reliability", () => {
-  it("builds cmd.exe /c argument with nested quoting for spaced Windows paths", () => {
-    const exe = String.raw`C:\Program Files\app\node_modules\.bin\agentdoctor.cmd`;
-    expect(buildWindowsCmdCArgument(exe, ["--version"])).toBe(
-      String.raw`""C:\Program Files\app\node_modules\.bin\agentdoctor.cmd" "--version""`,
-    );
+  describe("buildWindowsCmdCArgument", () => {
+    const exeWithSpaces = "C:\\Program Files\\app\\node_modules\\.bin\\agentdoctor.cmd";
+
+    it("quotes executable paths that contain spaces", () => {
+      expect(buildWindowsCmdCArgument(exeWithSpaces, [])).toBe(
+        '""C:\\Program Files\\app\\node_modules\\.bin\\agentdoctor.cmd""',
+      );
+    });
+
+    it("quotes a normal --version argument", () => {
+      expect(buildWindowsCmdCArgument(exeWithSpaces, ["--version"])).toBe(
+        '""C:\\Program Files\\app\\node_modules\\.bin\\agentdoctor.cmd" "--version""',
+      );
+    });
+
+    it("escapes an argument containing a double quote", () => {
+      expect(buildWindowsCmdCArgument(exeWithSpaces, ['say "hi"'])).toBe(
+        '""C:\\Program Files\\app\\node_modules\\.bin\\agentdoctor.cmd" "say \\"hi\\"""',
+      );
+    });
+
+    it("preserves an argument containing a backslash that is not before a quote", () => {
+      expect(buildWindowsCmdCArgument(exeWithSpaces, ["C:\\tmp\\out"])).toBe(
+        '""C:\\Program Files\\app\\node_modules\\.bin\\agentdoctor.cmd" "C:\\tmp\\out""',
+      );
+    });
+
+    it("escapes an argument containing both backslash and quote", () => {
+      expect(buildWindowsCmdCArgument(exeWithSpaces, ['dir\\"x'])).toBe(
+        '""C:\\Program Files\\app\\node_modules\\.bin\\agentdoctor.cmd" "dir\\\\\\"x""',
+      );
+    });
+
+    it("doubles trailing backslashes before the closing quote", () => {
+      expect(buildWindowsCmdCArgument(exeWithSpaces, ["C:\\tmp\\"])).toBe(
+        '""C:\\Program Files\\app\\node_modules\\.bin\\agentdoctor.cmd" "C:\\tmp\\\\""',
+      );
+    });
+
+    it("quotes multiple arguments independently", () => {
+      expect(
+        buildWindowsCmdCArgument(exeWithSpaces, ["--root", "D:\\work\\repo", "--version"]),
+      ).toBe(
+        '""C:\\Program Files\\app\\node_modules\\.bin\\agentdoctor.cmd" "--root" "D:\\work\\repo" "--version""',
+      );
+    });
   });
 
   beforeAll(() => {
