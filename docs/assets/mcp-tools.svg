@@ -1,61 +1,59 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="780" viewBox="0 0 1200 780" role="img" aria-labelledby="title desc">
   <title id="title">Brain MCP tool map</title>
   <desc id="desc">Ten AgentDoctor Brain MCP tools grouped by purpose</desc>
-  <defs>
-    <marker id="m" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
-      <path d="M0,0 L7,3.5 L0,7 Z" fill="#06B6D4"/>
-    </marker>
-  </defs>
   <rect width="1200" height="780" fill="#07111F"/>
   <rect x="28" y="28" width="1144" height="724" rx="14" fill="none" stroke="#1E293B"/>
-  <text x="52" y="72" font-family="ui-sans-serif, system-ui, sans-serif" font-size="24" font-weight="700" fill="#F8FAFC">Brain MCP Tools</text>
-  <text x="52" y="100" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" fill="#94A3B8">agentdoctor-brain - STDIO - 10 tools</text>
+  <text x="52" y="72" font-family="system-ui,sans-serif" font-size="24" font-weight="700" fill="#F8FAFC">Brain MCP Tools</text>
+  <text x="52" y="100" font-family="system-ui,sans-serif" font-size="14" fill="#94A3B8">agentdoctor-brain - STDIO - 10 tools</text>
 
-  <g font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="600" fill="#F8FAFC">
+  <g font-family="system-ui,sans-serif" font-size="13" font-weight="600" fill="#F8FAFC">
     <rect x="80" y="130" width="140" height="44" rx="8" fill="#0F1B2D" stroke="#10B981"/><text x="150" y="157" text-anchor="middle">AI Agent</text>
-    <line x1="220" y1="152" x2="268" y2="152" stroke="#06B6D4" stroke-width="2" marker-end="url(#m)"/>
+    <line x1="220" y1="152" x2="258" y2="152" stroke="#06B6D4" stroke-width="2"/>
+    <polygon points="268,152 258,146 258,158" fill="#06B6D4"/>
     <rect x="276" y="130" width="140" height="44" rx="8" fill="#0F1B2D" stroke="#2563EB"/><text x="346" y="157" text-anchor="middle">MCP Client</text>
-    <line x1="416" y1="152" x2="464" y2="152" stroke="#06B6D4" stroke-width="2" marker-end="url(#m)"/>
+    <line x1="416" y1="152" x2="454" y2="152" stroke="#06B6D4" stroke-width="2"/>
+    <polygon points="464,152 454,146 454,158" fill="#06B6D4"/>
     <rect x="472" y="130" width="220" height="44" rx="8" fill="#0F1B2D" stroke="#06B6D4"/><text x="582" y="157" text-anchor="middle">AgentDoctor Brain MCP</text>
-    <line x1="692" y1="152" x2="740" y2="152" stroke="#06B6D4" stroke-width="2" marker-end="url(#m)"/>
+    <line x1="692" y1="152" x2="730" y2="152" stroke="#06B6D4" stroke-width="2"/>
+    <polygon points="740,152 730,146 730,158" fill="#06B6D4"/>
     <rect x="748" y="130" width="160" height="44" rx="8" fill="#0F1B2D" stroke="#7C3AED"/><text x="828" y="157" text-anchor="middle">Project Brain</text>
   </g>
 
-  <g font-family="ui-monospace, Menlo, monospace" font-size="13">
+  <g font-family="ui-monospace,monospace" font-size="13">
     <rect x="52" y="220" width="210" height="160" rx="10" fill="#0B1628" stroke="#2563EB"/>
-    <text x="72" y="250" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" font-weight="700" fill="#2563EB">Overview</text>
+    <text x="72" y="250" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#2563EB">Overview</text>
     <text x="72" y="290" fill="#F8FAFC">brain_overview</text>
 
     <rect x="282" y="220" width="210" height="160" rx="10" fill="#0B1628" stroke="#7C3AED"/>
-    <text x="302" y="250" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" font-weight="700" fill="#7C3AED">Query / Explain</text>
+    <text x="302" y="250" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#7C3AED">Query / Explain</text>
     <text x="302" y="290" fill="#F8FAFC">brain_query</text>
     <text x="302" y="318" fill="#F8FAFC">brain_explain</text>
     <text x="302" y="346" fill="#F8FAFC">brain_trace</text>
 
     <rect x="512" y="220" width="210" height="160" rx="10" fill="#0B1628" stroke="#06B6D4"/>
-    <text x="532" y="250" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" font-weight="700" fill="#06B6D4">Evidence / Claims</text>
+    <text x="532" y="250" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#06B6D4">Evidence / Claims</text>
     <text x="532" y="290" fill="#F8FAFC">brain_claims</text>
     <text x="532" y="318" fill="#F8FAFC">brain_evidence</text>
 
     <rect x="742" y="220" width="210" height="160" rx="10" fill="#0B1628" stroke="#F59E0B"/>
-    <text x="762" y="250" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" font-weight="700" fill="#F59E0B">Ownership / Risk</text>
+    <text x="762" y="250" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#F59E0B">Ownership / Risk</text>
     <text x="762" y="290" fill="#F8FAFC">brain_ownership</text>
     <text x="762" y="318" fill="#F8FAFC">brain_risk</text>
 
     <rect x="972" y="220" width="176" height="160" rx="10" fill="#0B1628" stroke="#10B981"/>
-    <text x="992" y="250" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" font-weight="700" fill="#10B981">Snapshots</text>
+    <text x="992" y="250" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#10B981">Snapshots</text>
     <text x="992" y="290" fill="#F8FAFC">brain_delta</text>
     <text x="992" y="318" fill="#F8FAFC">brain_snapshot</text>
   </g>
 
   <rect x="52" y="420" width="1096" height="280" rx="12" fill="#0B1628" stroke="#1E293B"/>
-  <text x="80" y="460" font-family="ui-sans-serif, system-ui, sans-serif" font-size="16" font-weight="700" fill="#F8FAFC">Provenance envelope (success)</text>
-  <text x="80" y="500" font-family="ui-monospace, Menlo, monospace" font-size="13" fill="#94A3B8">{ "ok": true,</text>
-  <text x="80" y="524" font-family="ui-monospace, Menlo, monospace" font-size="13" fill="#94A3B8">  "result": { ... },</text>
-  <text x="80" y="548" font-family="ui-monospace, Menlo, monospace" font-size="13" fill="#CBD5E1">  "evidenceIds": [ ... ],</text>
-  <text x="80" y="572" font-family="ui-monospace, Menlo, monospace" font-size="13" fill="#CBD5E1">  "confidence": 0.0-1.0,</text>
-  <text x="80" y="596" font-family="ui-monospace, Menlo, monospace" font-size="13" fill="#CBD5E1">  "snapshot": { id, contentHash, ... },</text>
-  <text x="80" y="620" font-family="ui-monospace, Menlo, monospace" font-size="13" fill="#CBD5E1">  "claimStatus": "ACTIVE" | ...,</text>
-  <text x="80" y="644" font-family="ui-monospace, Menlo, monospace" font-size="13" fill="#94A3B8">  "metadata": { "tool": "..." }</text>
-  <text x="80" y="680" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" fill="#64748B">Read tools never write. Controlled write: brain_snapshot action=rebuild under .agentdoctor/project-brain/ only.</text>
+  <text x="80" y="460" font-family="system-ui,sans-serif" font-size="16" font-weight="700" fill="#F8FAFC">Provenance envelope (success)</text>
+  <text x="80" y="500" font-family="ui-monospace,monospace" font-size="13" fill="#94A3B8">{ "ok": true,</text>
+  <text x="80" y="524" font-family="ui-monospace,monospace" font-size="13" fill="#94A3B8">  "result": { ... },</text>
+  <text x="80" y="548" font-family="ui-monospace,monospace" font-size="13" fill="#CBD5E1">  "evidenceIds": [ ... ],</text>
+  <text x="80" y="572" font-family="ui-monospace,monospace" font-size="13" fill="#CBD5E1">  "confidence": 0.0-1.0,</text>
+  <text x="80" y="596" font-family="ui-monospace,monospace" font-size="13" fill="#CBD5E1">  "snapshot": { id, contentHash, ... },</text>
+  <text x="80" y="620" font-family="ui-monospace,monospace" font-size="13" fill="#CBD5E1">  "claimStatus": "ACTIVE" | ...,</text>
+  <text x="80" y="644" font-family="ui-monospace,monospace" font-size="13" fill="#94A3B8">  "metadata": { "tool": "..." }</text>
+  <text x="80" y="680" font-family="system-ui,sans-serif" font-size="12" fill="#64748B">Read tools never write. Controlled write: brain_snapshot action=rebuild under .agentdoctor/project-brain/ only.</text>
 </svg>

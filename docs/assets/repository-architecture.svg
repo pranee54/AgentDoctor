@@ -3,10 +3,10 @@
   <desc id="desc">Important AgentDoctor source directories</desc>
   <rect width="1000" height="720" fill="#07111F"/>
   <rect x="28" y="28" width="944" height="664" rx="14" fill="none" stroke="#1E293B"/>
-  <text x="52" y="72" font-family="ui-sans-serif, system-ui, sans-serif" font-size="24" font-weight="700" fill="#F8FAFC">Repository layout</text>
-  <text x="52" y="100" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" fill="#94A3B8">Verified top-level product directories</text>
+  <text x="52" y="72" font-family="system-ui,sans-serif" font-size="24" font-weight="700" fill="#F8FAFC">Repository layout</text>
+  <text x="52" y="100" font-family="system-ui,sans-serif" font-size="14" fill="#94A3B8">Verified top-level product directories</text>
 
-  <g font-family="ui-monospace, Menlo, monospace" font-size="14" fill="#CBD5E1">
+  <g font-family="ui-monospace,monospace" font-size="14" fill="#CBD5E1">
     <text x="80" y="160" fill="#F8FAFC" font-weight="700">AgentDoctor/</text>
     <text x="100" y="192">+- src/</text>
     <text x="120" y="220" fill="#94A3B8">|  +- cli/                 # scan, fix, verify, brain-mcp</text>
@@ -24,5 +24,5 @@
     <text x="100" y="560">+- action.yml               # GitHub Action (Safety CI)</text>
   </g>
 
-  <text x="80" y="620" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" fill="#64748B">Local-only (not product source): .agentdoctor/  .cursor/</text>
+  <text x="80" y="620" font-family="system-ui,sans-serif" font-size="12" fill="#64748B">Local-only (not product source): .agentdoctor/  .cursor/</text>
 </svg>

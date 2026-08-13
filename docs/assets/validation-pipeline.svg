@@ -1,52 +1,47 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520" role="img" aria-labelledby="title desc">
   <title id="title">Validation pipeline</title>
   <desc id="desc">From unit tests through understanding, Project Brain, MCP, agent validation, CI, and release</desc>
-  <defs>
-    <marker id="pipe" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
-      <path d="M0,0 L7,3.5 L0,7 Z" fill="#06B6D4"/>
-    </marker>
-  </defs>
   <rect width="1200" height="520" fill="#07111F"/>
   <rect x="28" y="28" width="1144" height="464" rx="14" fill="none" stroke="#1E293B"/>
-  <text x="52" y="72" font-family="ui-sans-serif, system-ui, sans-serif" font-size="24" font-weight="700" fill="#F8FAFC">Validation pipeline</text>
-  <text x="52" y="100" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" fill="#94A3B8">Commands from package.json scripts</text>
+  <text x="52" y="72" font-family="system-ui,sans-serif" font-size="24" font-weight="700" fill="#F8FAFC">Validation pipeline</text>
+  <text x="52" y="100" font-family="system-ui,sans-serif" font-size="14" fill="#94A3B8">Commands from package.json scripts</text>
 
-  <g font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="600" fill="#F8FAFC">
+  <g font-family="system-ui,sans-serif" font-size="12" font-weight="600" fill="#F8FAFC">
     <rect x="52" y="140" width="110" height="70" rx="8" fill="#0F1B2D" stroke="#2563EB"/>
     <text x="107" y="170" text-anchor="middle">Source</text>
     <text x="107" y="190" text-anchor="middle" font-size="10" fill="#94A3B8" font-weight="500">src/</text>
-
-    <line x1="162" y1="175" x2="188" y2="175" stroke="#06B6D4" stroke-width="2" marker-end="url(#pipe)"/>
+    <line x1="162" y1="175" x2="180" y2="175" stroke="#06B6D4" stroke-width="2"/>
+    <polygon points="188,175 180,169 180,181" fill="#06B6D4"/>
 
     <rect x="196" y="140" width="110" height="70" rx="8" fill="#0F1B2D" stroke="#334155"/>
     <text x="251" y="170" text-anchor="middle">Unit tests</text>
     <text x="251" y="190" text-anchor="middle" font-size="10" fill="#94A3B8" font-weight="500">npm test</text>
-
-    <line x1="306" y1="175" x2="332" y2="175" stroke="#06B6D4" stroke-width="2" marker-end="url(#pipe)"/>
+    <line x1="306" y1="175" x2="324" y2="175" stroke="#06B6D4" stroke-width="2"/>
+    <polygon points="332,175 324,169 324,181" fill="#06B6D4"/>
 
     <rect x="340" y="140" width="130" height="70" rx="8" fill="#0F1B2D" stroke="#7C3AED"/>
     <text x="405" y="165" text-anchor="middle">Understanding</text>
     <text x="405" y="190" text-anchor="middle" font-size="10" fill="#94A3B8" font-weight="500">test:understanding</text>
-
-    <line x1="470" y1="175" x2="496" y2="175" stroke="#06B6D4" stroke-width="2" marker-end="url(#pipe)"/>
+    <line x1="470" y1="175" x2="488" y2="175" stroke="#06B6D4" stroke-width="2"/>
+    <polygon points="496,175 488,169 488,181" fill="#06B6D4"/>
 
     <rect x="504" y="140" width="130" height="70" rx="8" fill="#0F1B2D" stroke="#7C3AED"/>
     <text x="569" y="165" text-anchor="middle">Project Brain</text>
     <text x="569" y="190" text-anchor="middle" font-size="10" fill="#94A3B8" font-weight="500">validate:project-brain</text>
-
-    <line x1="634" y1="175" x2="660" y2="175" stroke="#06B6D4" stroke-width="2" marker-end="url(#pipe)"/>
+    <line x1="634" y1="175" x2="652" y2="175" stroke="#06B6D4" stroke-width="2"/>
+    <polygon points="660,175 652,169 652,181" fill="#06B6D4"/>
 
     <rect x="668" y="140" width="110" height="70" rx="8" fill="#0F1B2D" stroke="#06B6D4"/>
     <text x="723" y="170" text-anchor="middle">MCP tests</text>
     <text x="723" y="190" text-anchor="middle" font-size="10" fill="#94A3B8" font-weight="500">test:mcp</text>
-
-    <line x1="778" y1="175" x2="804" y2="175" stroke="#06B6D4" stroke-width="2" marker-end="url(#pipe)"/>
+    <line x1="778" y1="175" x2="796" y2="175" stroke="#06B6D4" stroke-width="2"/>
+    <polygon points="804,175 796,169 796,181" fill="#06B6D4"/>
 
     <rect x="812" y="140" width="140" height="70" rx="8" fill="#0F1B2D" stroke="#06B6D4"/>
     <text x="882" y="165" text-anchor="middle">Agent validation</text>
     <text x="882" y="190" text-anchor="middle" font-size="10" fill="#94A3B8" font-weight="500">validate:mcp-agent</text>
-
-    <line x1="952" y1="175" x2="978" y2="175" stroke="#06B6D4" stroke-width="2" marker-end="url(#pipe)"/>
+    <line x1="952" y1="175" x2="970" y2="175" stroke="#06B6D4" stroke-width="2"/>
+    <polygon points="978,175 970,169 970,181" fill="#06B6D4"/>
 
     <rect x="986" y="140" width="160" height="70" rx="8" fill="#0F1B2D" stroke="#10B981"/>
     <text x="1066" y="165" text-anchor="middle">CI / CodeQL</text>
@@ -54,8 +49,8 @@
   </g>
 
   <rect x="52" y="260" width="1096" height="190" rx="12" fill="#0B1628" stroke="#1E293B"/>
-  <text x="80" y="300" font-family="ui-sans-serif, system-ui, sans-serif" font-size="15" font-weight="700" fill="#F8FAFC">Primary gates</text>
-  <g font-family="ui-monospace, Menlo, monospace" font-size="13" fill="#CBD5E1">
+  <text x="80" y="300" font-family="system-ui,sans-serif" font-size="15" font-weight="700" fill="#F8FAFC">Primary gates</text>
+  <g font-family="ui-monospace,monospace" font-size="13" fill="#CBD5E1">
     <text x="80" y="340">npm run verify                 # typecheck, lint, format, unit, build</text>
     <text x="80" y="368">npm run verify:understanding   # Brain / understanding unit surface</text>
     <text x="80" y="396">npm run verify:mcp             # MCP protocol + STDIO client tests</text>
