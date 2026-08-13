@@ -307,10 +307,10 @@ For maximum supply-chain pinning, pin a full commit SHA of this repository. Do n
 
 ### CLI version default (intentional)
 
-| Surface | Value |
-| ------- | ----- |
-| Action release tag | `v1.1.0` (this repository’s Action metadata) |
-| Action input `version` **default** | **`1.0.0`** |
+| Surface                            | Value                                        |
+| ---------------------------------- | -------------------------------------------- |
+| Action release tag                 | `v1.1.0` (this repository’s Action metadata) |
+| Action input `version` **default** | **`1.0.0`**                                  |
 
 The `v1.1.0` Action release still defaults to the published AgentDoctor **CLI `1.0.0`** for compatibility. That is intentional.
 
@@ -446,34 +446,34 @@ steps:
 
 From [`action.yml`](action.yml):
 
-| Input | Required | Default | Description |
-| ----- | -------- | ------- | ----------- |
-| `path` | no | `.` | Repository-relative directory to scan. |
-| `version` | no | `1.0.0` | Published AgentDoctor npm version or dist-tag (`latest` \| `beta`), or `workspace` to run the checked-out repository’s built CLI at `dist/cli/index.js`. |
-| `output-file` | no | `agentdoctor-report.json` | Repository-relative path for the JSON report. |
-| `minimum-score` | no | _(empty)_ | Fail when overall readiness score is below this integer (0–100). Empty skips the gate. |
-| `fail-on-severity` | no | _(empty)_ | Fail when any finding has this severity or higher (`critical` \| `warning` \| `info`). Empty skips the gate. |
-| `fail-on-rule` | no | _(empty)_ | Comma-separated rule IDs that fail CI when present (e.g. `security/env-file-exposure`). |
-| `fail-on-new` | no | _(empty)_ | When `verify-baseline` is set, fail on new findings vs the baseline. Defaults to true whenever `verify-baseline` is non-empty unless set to `false`. |
-| `verify-baseline` | no | _(empty)_ | Repository-relative path to a prior scan JSON baseline. When set, runs `agentdoctor verify` instead of scan. |
-| `json-output` | no | `true` | Write a JSON report to `output-file` (`true`/`false`). |
-| `summary` | no | `false` | Write a GitHub Actions job step summary (requires CLI with `--summary` support). |
-| `annotations` | no | `false` | Emit GitHub Actions annotations for findings (requires CLI with `--annotations` support). |
+| Input              | Required | Default                   | Description                                                                                                                                              |
+| ------------------ | -------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `path`             | no       | `.`                       | Repository-relative directory to scan.                                                                                                                   |
+| `version`          | no       | `1.0.0`                   | Published AgentDoctor npm version or dist-tag (`latest` \| `beta`), or `workspace` to run the checked-out repository’s built CLI at `dist/cli/index.js`. |
+| `output-file`      | no       | `agentdoctor-report.json` | Repository-relative path for the JSON report.                                                                                                            |
+| `minimum-score`    | no       | _(empty)_                 | Fail when overall readiness score is below this integer (0–100). Empty skips the gate.                                                                   |
+| `fail-on-severity` | no       | _(empty)_                 | Fail when any finding has this severity or higher (`critical` \| `warning` \| `info`). Empty skips the gate.                                             |
+| `fail-on-rule`     | no       | _(empty)_                 | Comma-separated rule IDs that fail CI when present (e.g. `security/env-file-exposure`).                                                                  |
+| `fail-on-new`      | no       | _(empty)_                 | When `verify-baseline` is set, fail on new findings vs the baseline. Defaults to true whenever `verify-baseline` is non-empty unless set to `false`.     |
+| `verify-baseline`  | no       | _(empty)_                 | Repository-relative path to a prior scan JSON baseline. When set, runs `agentdoctor verify` instead of scan.                                             |
+| `json-output`      | no       | `true`                    | Write a JSON report to `output-file` (`true`/`false`).                                                                                                   |
+| `summary`          | no       | `false`                   | Write a GitHub Actions job step summary (requires CLI with `--summary` support).                                                                         |
+| `annotations`      | no       | `false`                   | Emit GitHub Actions annotations for findings (requires CLI with `--annotations` support).                                                                |
 
 ### Outputs
 
-| Output | Description |
-| ------ | ----------- |
-| `report-path` | Absolute path to the generated JSON report (empty when `json-output` is false). |
-| `outcome` | `success` \| `policy-failure` \| `configuration-error` \| `internal-failure` |
-| `overall-score` | Overall readiness score from the scan/verify result when available. |
+| Output          | Description                                                                     |
+| --------------- | ------------------------------------------------------------------------------- |
+| `report-path`   | Absolute path to the generated JSON report (empty when `json-output` is false). |
+| `outcome`       | `success` \| `policy-failure` \| `configuration-error` \| `internal-failure`    |
+| `overall-score` | Overall readiness score from the scan/verify result when available.             |
 
-| `outcome` value | Meaning |
-| --------------- | ------- |
-| `success` | Scan/verify completed without a failing policy gate. |
-| `policy-failure` | A configured policy gate failed (exit `1`). |
+| `outcome` value       | Meaning                                               |
+| --------------------- | ----------------------------------------------------- |
+| `success`             | Scan/verify completed without a failing policy gate.  |
+| `policy-failure`      | A configured policy gate failed (exit `1`).           |
 | `configuration-error` | Invalid Action/CLI configuration or usage (exit `2`). |
-| `internal-failure` | Unexpected failure during execution. |
+| `internal-failure`    | Unexpected failure during execution.                  |
 
 Exit-code details: [docs/exit-codes.md](docs/exit-codes.md). Scoring: [docs/scoring.md](docs/scoring.md).
 
@@ -496,11 +496,11 @@ Related: [SECURITY.md](SECURITY.md)
 
 ### Action versioning
 
-| Recommendation | Value |
-| -------------- | ----- |
-| Preferred tag | `uses: pranee54/AgentDoctor@v1.1.0` |
-| Stronger pin | Full commit SHA of this repository |
-| Avoid | `@main` |
+| Recommendation | Value                               |
+| -------------- | ----------------------------------- |
+| Preferred tag  | `uses: pranee54/AgentDoctor@v1.1.0` |
+| Stronger pin   | Full commit SHA of this repository  |
+| Avoid          | `@main`                             |
 
 The existing `v1.1.0` product tag is the Action metadata consumers should pin today. Changing the Action’s default CLI `version` input is a separate, explicit decision and is **not** done in this documentation update.
 
