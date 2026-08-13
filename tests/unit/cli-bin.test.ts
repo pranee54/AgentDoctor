@@ -9,7 +9,6 @@ import { afterEach, beforeAll, describe, expect, it } from "vitest";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(here, "../..");
-const npmBin = process.platform === "win32" ? "npm.cmd" : "npm";
 
 const tempDirs: string[] = [];
 
@@ -19,15 +18,51 @@ async function tempDir(prefix: string): Promise<string> {
   return dir;
 }
 
+/** Resolve npm's JS CLI next to the running Node binary (avoids Windows .cmd spawn). */
+function resolveNpmCliJs(): string {
+  const candidates = [
+    path.join(path.dirname(process.execPath), "node_modules", "npm", "bin", "npm-cli.js"),
+    path.join(
+      path.dirname(process.execPath),
+      "..",
+      "lib",
+      "node_modules",
+      "npm",
+      "bin",
+      "npm-cli.js",
+    ),
+  ];
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+  throw new Error(
+    `Unable to locate npm-cli.js beside Node at ${process.execPath}. Tried:\n${candidates.join("\n")}`,
+  );
+}
+
+function spawnMessage(result: SpawnSyncReturns<string>): string {
+  const parts = [
+    result.error ? String(result.error) : "",
+    result.stderr || "",
+    result.stdout || "",
+  ].filter(Boolean);
+  return parts.join("\n") || "(no spawn output)";
+}
+
 function runNpm(args: string[], options: SpawnSyncOptions = {}): SpawnSyncReturns<string> {
-  return spawnSync(npmBin, args, {
+  return spawnSync(process.execPath, [resolveNpmCliJs(), ...args], {
     encoding: "utf8",
     windowsHide: true,
     ...options,
   }) as SpawnSyncReturns<string>;
 }
 
-/** Run a package bin shim portably (Unix shebang shim or Windows .cmd). */
+/**
+ * Run a package bin portably.
+ * Never spawn .cmd/.bat directly on Windows — CreateProcess fails without a shell.
+ */
 function runPackageBin(
   binPath: string,
   args: string[],
@@ -39,12 +74,22 @@ function runPackageBin(
     ...options,
   };
   if (process.platform === "win32") {
-    const cmdShim = `${binPath}.cmd`;
-    if (fs.existsSync(cmdShim)) {
-      return spawnSync(cmdShim, args, opts) as SpawnSyncReturns<string>;
+    if (fs.existsSync(binPath)) {
+      return spawnSync(process.execPath, [binPath, ...args], opts) as SpawnSyncReturns<string>;
     }
-    // ensure-cli-bin writes a JS shebang shim; invoke via node on Windows.
-    return spawnSync(process.execPath, [binPath, ...args], opts) as SpawnSyncReturns<string>;
+    const pkgCli = path.join(
+      path.dirname(binPath),
+      "..",
+      "@praneeth_54",
+      "agentdoctor",
+      "dist",
+      "cli",
+      "index.js",
+    );
+    if (fs.existsSync(pkgCli)) {
+      return spawnSync(process.execPath, [pkgCli, ...args], opts) as SpawnSyncReturns<string>;
+    }
+    throw new Error(`Unable to resolve package CLI for bin ${binPath}`);
   }
   return spawnSync(binPath, args, opts) as SpawnSyncReturns<string>;
 }
@@ -58,7 +103,7 @@ afterEach(async () => {
 describe("local CLI bin reliability", () => {
   beforeAll(() => {
     const build = runNpm(["run", "build"], { cwd: repoRoot });
-    expect(build.status, build.stderr || build.stdout).toBe(0);
+    expect(build.status, spawnMessage(build)).toBe(0);
   });
 
   it("links agentdoctor into node_modules/.bin after ensure-cli-bin", () => {
@@ -67,14 +112,16 @@ describe("local CLI bin reliability", () => {
       encoding: "utf8",
       windowsHide: true,
     });
-    expect(result.status).toBe(0);
+    expect(result.status, spawnMessage(result as SpawnSyncReturns<string>)).toBe(0);
     const binPath = path.join(repoRoot, "node_modules", ".bin", "agentdoctor");
-    expect(runPackageBin(binPath, ["--version"]).stdout.trim()).toMatch(/\d+\.\d+\.\d+/);
+    const version = runPackageBin(binPath, ["--version"]);
+    expect(version.status, spawnMessage(version)).toBe(0);
+    expect(version.stdout.trim()).toMatch(/\d+\.\d+\.\d+/);
   });
 
   it("runs packed tarball CLI from an empty temporary directory", async () => {
     const pack = runNpm(["pack", "--silent"], { cwd: repoRoot });
-    expect(pack.status).toBe(0);
+    expect(pack.status, spawnMessage(pack)).toBe(0);
     const tarballName = pack.stdout.trim().split("\n").pop();
     expect(tarballName).toBeTruthy();
     const tarballPath = path.join(repoRoot, tarballName!);
@@ -82,10 +129,10 @@ describe("local CLI bin reliability", () => {
 
     const work = await tempDir("agentdoctor-pack-");
     const install = runNpm(["install", tarballPath, "--no-save"], { cwd: work });
-    expect(install.status).toBe(0);
+    expect(install.status, spawnMessage(install)).toBe(0);
     const bin = path.join(work, "node_modules", ".bin", "agentdoctor");
     const version = runPackageBin(bin, ["--version"], { cwd: work });
-    expect(version.status).toBe(0);
+    expect(version.status, spawnMessage(version)).toBe(0);
     expect(version.stdout.trim()).toMatch(/\d+\.\d+\.\d+/);
   });
 });
