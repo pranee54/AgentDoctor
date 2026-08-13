@@ -49,14 +49,14 @@
     <line x1="952" y1="175" x2="978" y2="175" stroke="#06B6D4" stroke-width="2" marker-end="url(#pipe)"/>
 
     <rect x="986" y="140" width="160" height="70" rx="8" fill="#0F1B2D" stroke="#10B981"/>
-    <text x="1066" y="165" text-anchor="middle">CI | CodeQL</text>
-    <text x="1066" y="190" text-anchor="middle" font-size="10" fill="#94A3B8" font-weight="500">verify  release</text>
+    <text x="1066" y="165" text-anchor="middle">CI / CodeQL</text>
+    <text x="1066" y="190" text-anchor="middle" font-size="10" fill="#94A3B8" font-weight="500">verify to release</text>
   </g>
 
   <rect x="52" y="260" width="1096" height="190" rx="12" fill="#0B1628" stroke="#1E293B"/>
   <text x="80" y="300" font-family="ui-sans-serif, system-ui, sans-serif" font-size="15" font-weight="700" fill="#F8FAFC">Primary gates</text>
   <g font-family="ui-monospace, Menlo, monospace" font-size="13" fill="#CBD5E1">
-    <text x="80" y="340">npm run verify                 # typecheck | lint | format | unit | build</text>
+    <text x="80" y="340">npm run verify                 # typecheck, lint, format, unit, build</text>
     <text x="80" y="368">npm run verify:understanding   # Brain / understanding unit surface</text>
     <text x="80" y="396">npm run verify:mcp             # MCP protocol + STDIO client tests</text>
     <text x="80" y="424">npm run verify:project-brain   # understanding + project-brain validation + benchmark</text>

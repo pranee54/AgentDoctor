@@ -360,7 +360,15 @@ GitHub Action default `version` input remains `1.0.0` unless you pin `1.1.0`.
 
 ## Roadmap
 
-From [ROADMAP.md](ROADMAP.md): scoring follow-ups; additional agent adapters; richer MCP config analysis without executing servers; optional opt-in telemetry and clearly separated key-gated AI-assisted analysis longer term. Non-goals: replacing coding agents, LLM gateway, complete security certification.
+From [ROADMAP.md](ROADMAP.md):
+
+| Status         | Focus                                                                             |
+| -------------- | --------------------------------------------------------------------------------- |
+| 🟢 Shipped     | Safety `1.0.x`; Project Brain → MCP → Agent (`1.1.0`)                             |
+| 🟡 Planned     | Agent Context layer; change-aware / reliable agent context; Brain Delta workflows |
+| 🔵 Exploratory | CI/PR Brain analysis; team-scale intelligence; additional MCP transports          |
+
+Non-goals: chatbot / RAG memory, autonomous coding agent, vulnerability-scanner replacement, fabricated ownership.
 
 ---
 

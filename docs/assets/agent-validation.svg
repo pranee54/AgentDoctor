@@ -9,7 +9,7 @@
   <rect width="1100" height="800" fill="#07111F"/>
   <rect x="28" y="28" width="1044" height="744" rx="14" fill="none" stroke="#1E293B"/>
   <text x="52" y="72" font-family="ui-sans-serif, system-ui, sans-serif" font-size="24" font-weight="700" fill="#F8FAFC">Real Agent Validation</text>
-  <text x="52" y="100" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" fill="#94A3B8">validation/mcp-agent | fixture understanding-dependencies-project</text>
+  <text x="52" y="100" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" fill="#94A3B8">validation/mcp-agent - fixture understanding-dependencies-project</text>
 
   <g font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" font-weight="600" fill="#F8FAFC">
     <rect x="380" y="130" width="340" height="44" rx="8" fill="#0F1B2D" stroke="#10B981"/><text x="550" y="157" text-anchor="middle">Cursor Agent</text>
@@ -38,5 +38,5 @@
   </g>
 
   <rect x="52" y="680" width="996" height="60" rx="10" fill="#0B1628" stroke="#334155"/>
-  <text x="72" y="716" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" fill="#CBD5E1">Honest limit: authenticated LLM Q1Q7 grading can be BLOCKED without agent login  MCP contract still PASS.</text>
+  <text x="72" y="716" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" fill="#CBD5E1">Honest limit: authenticated LLM Q1-Q7 grading can be BLOCKED without agent login - MCP contract still PASS.</text>
 </svg>
