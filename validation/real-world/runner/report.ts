@@ -157,11 +157,18 @@ export function writeArtifacts(report: ValidationReport): {
   return { reportPath, regressionPath, historyPath, resultsDir, scientificPath };
 }
 
-function appendHistoryIndex(entry: HistoryEntry): void {
-  const indexPath = path.join(getLabRoot(), "history", "index.json");
+/** Append to history/index.json without existsSync→read TOCTOU. */
+export function appendHistoryIndex(
+  entry: HistoryEntry,
+  indexPath: string = path.join(getLabRoot(), "history", "index.json"),
+): void {
   let index: HistoryEntry[] = [];
-  if (fs.existsSync(indexPath)) {
+  try {
     index = JSON.parse(fs.readFileSync(indexPath, "utf8")) as HistoryEntry[];
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+      throw error;
+    }
   }
   index.push(entry);
   fs.writeFileSync(indexPath, `${JSON.stringify(index, null, 2)}\n`);
