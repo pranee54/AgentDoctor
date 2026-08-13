@@ -291,6 +291,32 @@ agentdoctor doctor
 
 ---
 
+## Try it yourself
+
+1. **Install:** `npx @praneeth_54/agentdoctor@1.1.0 --help`
+2. **Run Brain MCP:** `agentdoctor brain-mcp --root /ABSOLUTE/PATH/TO/YOUR/PROJECT`
+3. **Connect MCP:** copy [examples/mcp/cursor.mcp.json](examples/mcp/cursor.mcp.json) (or Claude / Codex siblings) with absolute paths
+4. **First query:** call `brain_overview`
+5. **Demo:** [docs/demo/first-5-minutes.md](docs/demo/first-5-minutes.md)
+
+### Built for developers who care about repository understanding
+
+| Link                                                                           | Purpose                        |
+| ------------------------------------------------------------------------------ | ------------------------------ |
+| [docs/quickstart.md](docs/quickstart.md)                                       | 5-minute path to MCP           |
+| [docs/demo/first-5-minutes.md](docs/demo/first-5-minutes.md)                   | Practical walkthrough          |
+| [docs/demo/architecture-walkthrough.md](docs/demo/architecture-walkthrough.md) | Architecture for evaluators    |
+| [docs/why-agentdoctor.md](docs/why-agentdoctor.md)                             | Why this exists                |
+| [docs/engineering-lessons.md](docs/engineering-lessons.md)                     | Real 1.1.0 engineering lessons |
+| [CONTRIBUTING.md](CONTRIBUTING.md)                                             | Dev setup + gates              |
+| [docs/community/good-first-issues.md](docs/community/good-first-issues.md)     | Starter contributions          |
+| [ROADMAP.md](ROADMAP.md)                                                       | Shipped vs planned             |
+| [docs/mcp/brain-mcp.md](docs/mcp/brain-mcp.md)                                 | MCP contract                   |
+
+Primary ask: run AgentDoctor on a repository you know well. If the Brain is wrong or incomplete, [file a Brain-quality issue](.github/ISSUE_TEMPLATE/brain-quality.md).
+
+---
+
 ## MCP Quick Start
 
 Configs: [examples/mcp/](examples/mcp/). Use placeholders — never commit machine paths.
@@ -346,15 +372,19 @@ GitHub Action default `version` input remains `1.0.0` unless you pin `1.1.0`.
 
 ## Documentation
 
-| Doc                                                          | Contents                    |
-| ------------------------------------------------------------ | --------------------------- |
-| [docs/project-brain.md](docs/project-brain.md)               | Project Brain model         |
-| [docs/mcp/brain-mcp.md](docs/mcp/brain-mcp.md)               | MCP contract                |
-| [docs/demo/brain-mcp-demo.md](docs/demo/brain-mcp-demo.md)   | Demo narrative              |
-| [docs/release-notes-v1.1.0.md](docs/release-notes-v1.1.0.md) | 1.1.0 notes                 |
-| [SECURITY.md](SECURITY.md)                                   | Vulnerability reporting     |
-| [ROADMAP.md](ROADMAP.md)                                     | Near / medium / longer term |
-| [docs/README.md](docs/README.md)                             | Full index                  |
+| Doc                                                          | Contents                  |
+| ------------------------------------------------------------ | ------------------------- |
+| [docs/quickstart.md](docs/quickstart.md)                     | Developer quickstart      |
+| [docs/project-brain.md](docs/project-brain.md)               | Project Brain model       |
+| [docs/mcp/brain-mcp.md](docs/mcp/brain-mcp.md)               | MCP contract              |
+| [docs/demo/brain-mcp-demo.md](docs/demo/brain-mcp-demo.md)   | Fixture-backed MCP demo   |
+| [docs/demo/first-5-minutes.md](docs/demo/first-5-minutes.md) | 5-minute walkthrough      |
+| [docs/why-agentdoctor.md](docs/why-agentdoctor.md)           | Product rationale         |
+| [docs/engineering-lessons.md](docs/engineering-lessons.md)   | 1.1.0 engineering lessons |
+| [docs/release-notes-v1.1.0.md](docs/release-notes-v1.1.0.md) | 1.1.0 notes               |
+| [SECURITY.md](SECURITY.md)                                   | Vulnerability reporting   |
+| [ROADMAP.md](ROADMAP.md)                                     | Shipped vs planned        |
+| [docs/README.md](docs/README.md)                             | Full index                |
 
 ---
 
@@ -365,6 +395,7 @@ From [ROADMAP.md](ROADMAP.md):
 | Status         | Focus                                                                             |
 | -------------- | --------------------------------------------------------------------------------- |
 | 🟢 Shipped     | Safety `1.0.x`; Project Brain → MCP → Agent (`1.1.0`)                             |
+| 🟡 Next        | Developer adoption: feedback, Brain quality, docs/ecosystem (not a new Brain API) |
 | 🟡 Planned     | Agent Context layer; change-aware / reliable agent context; Brain Delta workflows |
 | 🔵 Exploratory | CI/PR Brain analysis; team-scale intelligence; additional MCP transports          |
 

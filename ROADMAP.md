@@ -27,6 +27,7 @@ This document is milestone-based. It does **not** promise calendar dates.
 | P0       | Safety Scan → Fix → Verify → CI                                                   | 🟢 Shipped (`1.0.x`) |
 | P0       | Project Brain stability (claims, evidence, confidence, UNKNOWN, snapshots/deltas) | 🟢 Shipped (`1.1.0`) |
 | P0       | Brain MCP reliability (STDIO, 10 tools, provenance, security controls)            | 🟢 Shipped (`1.1.0`) |
+| P0       | Developer adoption (quickstart, demos, Brain-quality feedback loop)               | 🟡 Next (process)    |
 | P1       | Agent Context layer (task-relevant context packaging)                             | 🟡 Planned           |
 | P1       | Context freshness / stale-context detection                                       | 🟡 Planned           |
 | P1       | Change-aware agent context (Brain Delta evolution)                                | 🟡 Planned           |
@@ -99,9 +100,25 @@ Docs: [docs/project-brain.md](docs/project-brain.md) · [docs/mcp/brain-mcp.md](
 
 ---
 
-## NEXT — Agent Context Layer — 🟡 Planned
+## NEXT — Developer adoption — 🟡 Next (process, not a product feature)
 
-**Not implemented.** Direction only.
+**Not a new Brain/MCP capability.** After `1.1.0`, the immediate goal is external developers discovering, installing, connecting MCP, and filing Brain-quality feedback.
+
+In-repo materials (documentation only):
+
+- [docs/quickstart.md](docs/quickstart.md)
+- [docs/demo/first-5-minutes.md](docs/demo/first-5-minutes.md)
+- [docs/community/good-first-issues.md](docs/community/good-first-issues.md)
+- [docs/community/first-10-users.md](docs/community/first-10-users.md)
+- [CONTRIBUTING.md](CONTRIBUTING.md)
+
+Success metric: serious testers running Brain MCP on repositories they know — not star counts.
+
+---
+
+## FUTURE — Agent Context Layer — 🟡 Planned
+
+**Not implemented.** Product direction only.
 
 Move from exposing repository facts through MCP toward providing **higher-level, task-relevant context** to coding agents — the smallest useful context backed by the Brain.
 
