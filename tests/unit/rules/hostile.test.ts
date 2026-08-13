@@ -24,9 +24,16 @@ describe("hostile repository input", () => {
   it("sanitizes ANSI escape sequences in filenames in terminal output", async () => {
     const root = await tempRepo();
     await fs.writeFile(path.join(root, "package.json"), "{}\n");
-    await fs.writeFile(path.join(root, "CLAUDE.md"), "See `docs/missing.md`\n");
-    const nasty = `evil\u001b[31mname.md`;
+    // Win32 rejects ESC (\u001b) in filenames. Keep the POSIX ANSI-in-basename
+    // fixture unchanged; on Windows plant ESC in instruction text that surfaces
+    // in findings so sanitizeTerminalText still strips control chars from output.
+    const win32 = process.platform === "win32";
+    const nasty = win32 ? "evil_[31mname.md" : "evil\u001b[31mname.md";
     await fs.writeFile(path.join(root, nasty), "x");
+    await fs.writeFile(
+      path.join(root, "CLAUDE.md"),
+      win32 ? "See `docs/missing.md` and `evil\u001b[31mname.md`\n" : "See `docs/missing.md`\n",
+    );
 
     const result = await scan({ cwd: root });
     const output = renderTerminalReport(result);
