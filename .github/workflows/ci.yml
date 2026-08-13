@@ -384,6 +384,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build
+        run: npm run build
+
       - name: Understanding unit tests
         run: npm run test:understanding
 
