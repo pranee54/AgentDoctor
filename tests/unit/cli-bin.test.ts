@@ -59,9 +59,18 @@ function runNpm(args: string[], options: SpawnSyncOptions = {}): SpawnSyncReturn
   }) as SpawnSyncReturns<string>;
 }
 
+function isPosixShellBinShim(filePath: string): boolean {
+  try {
+    const head = fs.readFileSync(filePath, "utf8").slice(0, 240);
+    return head.includes("basedir=$(") || /#!\s*\/(?:usr\/)?bin\/(?:env\s+)?(?:ba)?sh/.test(head);
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Run a package bin portably.
- * Never spawn .cmd/.bat directly on Windows — CreateProcess fails without a shell.
+ * Never spawn .cmd/.bat or POSIX sh shims with Node on Windows.
  */
 function runPackageBin(
   binPath: string,
@@ -74,9 +83,6 @@ function runPackageBin(
     ...options,
   };
   if (process.platform === "win32") {
-    if (fs.existsSync(binPath)) {
-      return spawnSync(process.execPath, [binPath, ...args], opts) as SpawnSyncReturns<string>;
-    }
     const pkgCli = path.join(
       path.dirname(binPath),
       "..",
@@ -86,8 +92,13 @@ function runPackageBin(
       "cli",
       "index.js",
     );
+    // Prefer the real package entry (npm pack install) over the POSIX .bin shim.
     if (fs.existsSync(pkgCli)) {
       return spawnSync(process.execPath, [pkgCli, ...args], opts) as SpawnSyncReturns<string>;
+    }
+    // ensure-cli-bin writes a JS shim; skip npm's shell wrapper if present.
+    if (fs.existsSync(binPath) && !isPosixShellBinShim(binPath)) {
+      return spawnSync(process.execPath, [binPath, ...args], opts) as SpawnSyncReturns<string>;
     }
     throw new Error(`Unable to resolve package CLI for bin ${binPath}`);
   }
