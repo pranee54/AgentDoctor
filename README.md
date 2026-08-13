@@ -13,7 +13,7 @@ AgentDoctor analyzes a repository, builds a structured **Project Brain** (claims
 [![Node](https://img.shields.io/node/v/@praneeth_54/agentdoctor)](https://nodejs.org)
 [![License](https://img.shields.io/github/license/pranee54/AgentDoctor)](LICENSE)
 
-[Documentation](docs/README.md) · [Project Brain](docs/project-brain.md) · [MCP](docs/mcp/brain-mcp.md) · [Demo](docs/demo/brain-mcp-demo.md) · [Security](SECURITY.md) · [Roadmap](ROADMAP.md)
+[Documentation](docs/README.md) · [Project Brain](docs/project-brain.md) · [MCP](docs/mcp/brain-mcp.md) · [GitHub Action](#github-action) · [Demo](docs/demo/brain-mcp-demo.md) · [Security](SECURITY.md) · [Roadmap](ROADMAP.md)
 
 ```text
 Repository
@@ -291,6 +291,221 @@ agentdoctor doctor
 
 ---
 
+## GitHub Action
+
+AgentDoctor can run repository-level AI coding-agent configuration audits inside GitHub Actions and enforce CI policy gates.
+
+This Action is the **Safety / CI** surface (`action.yml`): Scan → policy gates → JSON report. It does **not** expose Project Brain or MCP. For Brain/MCP, use the CLI and [docs/mcp/brain-mcp.md](docs/mcp/brain-mcp.md).
+
+Recommended pin:
+
+```yaml
+uses: pranee54/AgentDoctor@v1.1.0
+```
+
+For maximum supply-chain pinning, pin a full commit SHA of this repository. Do not use `@main`.
+
+### CLI version default (intentional)
+
+| Surface | Value |
+| ------- | ----- |
+| Action release tag | `v1.1.0` (this repository’s Action metadata) |
+| Action input `version` **default** | **`1.0.0`** |
+
+The `v1.1.0` Action release still defaults to the published AgentDoctor **CLI `1.0.0`** for compatibility. That is intentional.
+
+- Omit `version` (or set `version: "1.0.0"`) → install `@praneeth_54/agentdoctor@1.0.0`
+- Set `version: "1.1.0"` explicitly when you want the newer CLI in CI
+- `version: workspace` runs this repo’s built `dist/cli/index.js` (maintainers / local CI after `npm run build`)
+- `latest` / `beta` dist-tags are also accepted
+
+Project Brain and MCP are **not** started by this Action even when `version: "1.1.0"`. The Action still runs Safety scan/verify only.
+
+The Action is report-only until you set a policy input (`minimum-score`, `fail-on-severity`, `fail-on-rule`, or `fail-on-new` with `verify-baseline`).
+
+### Examples
+
+**1. Basic scan** (report-only; default CLI `1.0.0`):
+
+```yaml
+permissions:
+  contents: read
+
+steps:
+  - uses: actions/checkout@v4
+
+  - name: Audit coding-agent configuration
+    id: agentdoctor
+    uses: pranee54/AgentDoctor@v1.1.0
+    with:
+      path: .
+```
+
+**2. Minimum readiness score:**
+
+```yaml
+- uses: pranee54/AgentDoctor@v1.1.0
+  with:
+    path: .
+    minimum-score: "70"
+```
+
+**3. Severity gate:**
+
+```yaml
+- uses: pranee54/AgentDoctor@v1.1.0
+  with:
+    path: .
+    fail-on-severity: critical
+```
+
+**4. Rule gate:**
+
+```yaml
+- uses: pranee54/AgentDoctor@v1.1.0
+  with:
+    path: .
+    fail-on-rule: security/env-file-exposure
+```
+
+**5. Baseline verification:**
+
+```yaml
+- uses: pranee54/AgentDoctor@v1.1.0
+  with:
+    path: .
+    verify-baseline: agentdoctor-report.json
+    fail-on-new: "true"
+```
+
+**6. JSON report** (default `json-output: "true"`; customize path):
+
+```yaml
+- uses: pranee54/AgentDoctor@v1.1.0
+  id: agentdoctor
+  with:
+    path: .
+    json-output: "true"
+    output-file: agentdoctor-report.json
+
+- uses: actions/upload-artifact@v4
+  with:
+    name: agentdoctor-report
+    path: ${{ steps.agentdoctor.outputs.report-path }}
+```
+
+**7. GitHub summary:**
+
+```yaml
+- uses: pranee54/AgentDoctor@v1.1.0
+  with:
+    path: .
+    summary: "true"
+```
+
+**8. GitHub annotations:**
+
+```yaml
+- uses: pranee54/AgentDoctor@v1.1.0
+  with:
+    path: .
+    annotations: "true"
+```
+
+**Combined policy example** (explicit newer CLI):
+
+```yaml
+permissions:
+  contents: read
+
+steps:
+  - uses: actions/checkout@v4
+
+  - name: Audit coding-agent configuration
+    id: agentdoctor
+    uses: pranee54/AgentDoctor@v1.1.0
+    with:
+      path: .
+      version: "1.1.0"
+      output-file: agentdoctor-report.json
+      json-output: "true"
+      minimum-score: "70"
+      fail-on-severity: critical
+      summary: "true"
+      annotations: "true"
+
+  - name: Upload AgentDoctor report
+    if: always()
+    uses: actions/upload-artifact@v4
+    with:
+      name: agentdoctor-report
+      path: ${{ steps.agentdoctor.outputs.report-path }}
+```
+
+### Inputs
+
+From [`action.yml`](action.yml):
+
+| Input | Required | Default | Description |
+| ----- | -------- | ------- | ----------- |
+| `path` | no | `.` | Repository-relative directory to scan. |
+| `version` | no | `1.0.0` | Published AgentDoctor npm version or dist-tag (`latest` \| `beta`), or `workspace` to run the checked-out repository’s built CLI at `dist/cli/index.js`. |
+| `output-file` | no | `agentdoctor-report.json` | Repository-relative path for the JSON report. |
+| `minimum-score` | no | _(empty)_ | Fail when overall readiness score is below this integer (0–100). Empty skips the gate. |
+| `fail-on-severity` | no | _(empty)_ | Fail when any finding has this severity or higher (`critical` \| `warning` \| `info`). Empty skips the gate. |
+| `fail-on-rule` | no | _(empty)_ | Comma-separated rule IDs that fail CI when present (e.g. `security/env-file-exposure`). |
+| `fail-on-new` | no | _(empty)_ | When `verify-baseline` is set, fail on new findings vs the baseline. Defaults to true whenever `verify-baseline` is non-empty unless set to `false`. |
+| `verify-baseline` | no | _(empty)_ | Repository-relative path to a prior scan JSON baseline. When set, runs `agentdoctor verify` instead of scan. |
+| `json-output` | no | `true` | Write a JSON report to `output-file` (`true`/`false`). |
+| `summary` | no | `false` | Write a GitHub Actions job step summary (requires CLI with `--summary` support). |
+| `annotations` | no | `false` | Emit GitHub Actions annotations for findings (requires CLI with `--annotations` support). |
+
+### Outputs
+
+| Output | Description |
+| ------ | ----------- |
+| `report-path` | Absolute path to the generated JSON report (empty when `json-output` is false). |
+| `outcome` | `success` \| `policy-failure` \| `configuration-error` \| `internal-failure` |
+| `overall-score` | Overall readiness score from the scan/verify result when available. |
+
+| `outcome` value | Meaning |
+| --------------- | ------- |
+| `success` | Scan/verify completed without a failing policy gate. |
+| `policy-failure` | A configured policy gate failed (exit `1`). |
+| `configuration-error` | Invalid Action/CLI configuration or usage (exit `2`). |
+| `internal-failure` | Unexpected failure during execution. |
+
+Exit-code details: [docs/exit-codes.md](docs/exit-codes.md). Scoring: [docs/scoring.md](docs/scoring.md).
+
+### Action security notes
+
+Controls implemented in `action.yml`:
+
+- Paths must stay inside `GITHUB_WORKSPACE` (`realpath` + containment checks)
+- Traversal and parent-escape attempts are rejected
+- Symlink escapes for `output-file` parents / final file and for `verify-baseline` are rejected
+- Newlines in Action path inputs are rejected
+- `output-file` must resolve to a regular file path inside the workspace (not a directory or symlink)
+- `verify-baseline` must exist, realpath back into the workspace, and remain a file
+- `version` must match an exact npm semver, `latest`/`beta`, or `workspace`
+- No Action-level credential inputs
+
+Boundary (honest): the Action executes AgentDoctor against repository contents (treated as untrusted) and, except for `version: workspace`, may invoke `npm exec` against the public npm registry. This is not a claim of universal security.
+
+Related: [SECURITY.md](SECURITY.md)
+
+### Action versioning
+
+| Recommendation | Value |
+| -------------- | ----- |
+| Preferred tag | `uses: pranee54/AgentDoctor@v1.1.0` |
+| Stronger pin | Full commit SHA of this repository |
+| Avoid | `@main` |
+
+The existing `v1.1.0` product tag is the Action metadata consumers should pin today. Changing the Action’s default CLI `version` input is a separate, explicit decision and is **not** done in this documentation update.
+
+---
+
 ## Try it yourself
 
 1. **Install:** `npx @praneeth_54/agentdoctor@1.1.0 --help`
@@ -366,7 +581,7 @@ Shipped: Project Brain packaging, `brain-mcp`, ten provenance tools, snapshots/d
 
 [docs/release-notes-v1.1.0.md](docs/release-notes-v1.1.0.md) · [CHANGELOG.md](CHANGELOG.md)
 
-GitHub Action default `version` input remains `1.0.0` unless you pin `1.1.0`.
+GitHub Action usage and the intentional CLI `version` default (`1.0.0`): [GitHub Action](#github-action).
 
 ---
 
