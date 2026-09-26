@@ -7,11 +7,64 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.0] — 2026-09-26
+
+Public release of the **AgentDoctor 3.0 local core**: project intelligence, doctors,
+student/agent workflows, MCP, dashboard, evidence/proof, and honest EXTERNAL
+boundaries. AI providers remain **opt-in**. Correctness is never claimed.
+
+Limitations: [docs/LIMITATIONS.md](docs/LIMITATIONS.md).
+Release prep: [docs/FINAL_PRE_RELEASE_CHECK.md](docs/FINAL_PRE_RELEASE_CHECK.md).
+
+### Highlights
+
+- **Project intelligence** — discovery, DNA, Brain, software map, hybrid search,
+  dependency/lockfile analysis, architecture contracts, git/change impact.
+- **Project Chat** — deterministic `ask` / `chat` with truth labels
+  (`VERIFIED` | `INFERRED` | `UNKNOWN` | `EXTERNAL`); optional AI when configured.
+- **Coding agent** — plan → human approval → path-safe tools → verify; no
+  unrestricted shell; `ENGINEERING_CORRECTNESS_NOT_CLAIMED` preserved.
+- **Student workflows** — `learn`, viva, docs, Build With Me (explain → plan →
+  approve → apply → verify).
+- **Security & approval** — Security Doctor (static), secret redaction, forensic
+  read-only mode, MCP approval tokens + planHash (bare `approved:true` rejected).
+- **Evidence & verification** — change analysis, evidence bundles, change proof
+  (hash integrity; engineering correctness not claimed).
+- **MCP** — combined server with **38** tools (project, intelligence, agent,
+  assurance); path/workspace escape blocked.
+- **Dashboard** — embedded local UI + APIs (status, DNA, graph, search, security,
+  twin, what-if, forensic, chat).
+- **Digital Twin / What-If** — local refreshable twin snapshot; graph-derived
+  impact with uncertainty (not certainty).
+- **Doctors** — API, Database, Event, Security, Privacy, Incident, Deployment
+  (file/static evidence); live runtime / IdP / brokers remain **EXTERNAL**.
+- **Evaluation Lab** — fixture-driven eval including prompt-injection detect-only.
+- **Self-diagnosis** — product self-check surfaces.
+
+### Providers (local)
+
+- Implemented: `none` | `mock` | `openai-compatible` | `ollama`.
+- Native Anthropic / Gemini SDKs: **not implemented** (fail closed via `none`).
+
+### Limitations (not unfinished stubs)
+
+- Live cloud/DB/K8s/APM runtime intelligence: **EXTERNAL**.
+- Neural embeddings / enterprise IdP-SSO: **EXTERNAL**.
+- Full compiler-grade AST/call binding for every language: not claimed.
+- Not an OS sandbox / EDR; not a replacement for commercial SAST/SCA.
+- Proof asserts hash integrity — not absolute engineering correctness.
+
+### Docs / packaging
+
+- Rebuilt public README; public docs under `docs/`; audits in `docs/internal/`.
+- npm package contents: `dist`, `README.md`, `LICENSE`, `CHANGELOG.md`.
+- GitHub Action default package pin: **3.0.0**.
+
 ## [2.1.0] — 2026-09-23
 
 Optional Project AI Agent line on top of 2.0.1 assurance. AI remains **opt-in**.
-Canonical release notes: [docs/RELEASE_2_1_0.md](docs/RELEASE_2_1_0.md).
-Checklist: [docs/RELEASE_CHECKLIST_2_1_0.md](docs/RELEASE_CHECKLIST_2_1_0.md).
+Historical notes: [docs/internal/RELEASE_2_1_0.md](docs/internal/RELEASE_2_1_0.md).
+Checklist: [docs/internal/RELEASE_CHECKLIST_2_1_0.md](docs/internal/RELEASE_CHECKLIST_2_1_0.md).
 
 #### Project Intelligence
 
@@ -520,7 +573,8 @@ First public beta.
 - Not a complete secret scanner
 - Git “tracked secret” detection deferred
 
-[Unreleased]: https://github.com/pranee54/AgentDoctor/compare/v2.1.0...HEAD
+[Unreleased]: https://github.com/pranee54/AgentDoctor/compare/v3.0.0...HEAD
+[3.0.0]: https://github.com/pranee54/AgentDoctor/compare/v2.1.0...v3.0.0
 [2.1.0]: https://github.com/pranee54/AgentDoctor/compare/v2.0.1...v2.1.0
 [2.0.1]: https://github.com/pranee54/AgentDoctor/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/pranee54/AgentDoctor/compare/v1.1.1...v2.0.0

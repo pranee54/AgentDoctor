@@ -60,16 +60,21 @@ class Box {}
     expect(result.imports.some((i) => i.specifier.includes("App"))).toBe(true);
   }, 30_000);
 
-  it("does not fake Go AST when go toolchain missing or extractor absent", async () => {
+  it("uses lightweight Go line scanner (calls partial, not go/ast)", async () => {
     const result = await goAdapter.parse("main.go", "package main\nfunc main() {}");
-    expect(result.ok).toBe(false);
-    expect(result.capabilities.parse).toBe("unsupported");
+    expect(result.ok).toBe(true);
+    expect(result.capabilities.parse).toBe("supported");
+    expect(result.capabilities.calls).toBe("partial");
+    expect(result.limitations.join(" ")).toMatch(/lightweight|go\/ast/i);
   }, 30_000);
 
-  it("does not fake Java AST", async () => {
-    const result = await parseSourceFile("Main.java", "class Main {}");
-    expect(result.ok).toBe(false);
-    expect(result.capabilities.parse).toBe("unsupported");
-    expect(result.limitations.join(" ")).toMatch(/not bundled|external parser/i);
+  it("parses Java with lightweight scanner (not full javaparser)", async () => {
+    const result = await parseSourceFile(
+      "Main.java",
+      "package app;\nimport java.util.List;\nclass Main { void run() {} }\n",
+    );
+    expect(result.ok).toBe(true);
+    expect(result.capabilities.parse).toBe("supported");
+    expect(result.limitations.join(" ")).toMatch(/EXTERNAL|lightweight/i);
   });
 });

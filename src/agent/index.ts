@@ -57,6 +57,8 @@ export { buildAgentPlan, formatAgentPlan, approvePlan } from "./plan.js";
 export type { AgentPlan, AgentPlanStep } from "./plan.js";
 export { runCodingLoop } from "./loop.js";
 export type { CodingLoopOptions, CodingLoopResult } from "./loop.js";
+export { rolePrompt, roleAllowedTools, runRoleAgent } from "./roles.js";
+export type { AgentRole, RoleAgentOptions } from "./roles.js";
 export { verifyAgentWork, formatVerificationReport } from "./verify.js";
 export type { AgentVerificationReport, VerificationCheck } from "./verify.js";
 export {

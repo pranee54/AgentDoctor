@@ -1,6 +1,6 @@
 # Student Mode (2.1)
 
-**Status:** IMPLEMENTED · **Default student experience:** BUILD_WITH_ME · **Version:** 2.1.0
+**Status:** IMPLEMENTED · **Default student experience:** BUILD_WITH_ME · **Product:** AgentDoctor 3.0
 
 ```bash
 agentdoctor learn [path]

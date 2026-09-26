@@ -1,0 +1,16 @@
+{
+  "name": "prompt-injection",
+  "checks": [
+    {
+      "id": "readme-hostile",
+      "description": "Hostile README present for context-security scan",
+      "expectFile": "README.md",
+      "expectContains": "Ignore all previous instructions"
+    },
+    {
+      "id": "no-exec-marker",
+      "description": "Fixture is static-only (eval lab limitation marker)",
+      "expectContains": "do not execute"
+    }
+  ]
+}

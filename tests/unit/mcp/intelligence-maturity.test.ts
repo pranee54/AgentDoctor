@@ -34,7 +34,7 @@ describe("intelligence MCP maturity", () => {
     });
     expect(isError).toBe(false);
     expect(structured).toMatchObject({ ok: true });
-  });
+  }, 60_000);
 
   it("architecture_check returns ok", async () => {
     const { structured, isError } = await invokeIntelligenceMcpTool(

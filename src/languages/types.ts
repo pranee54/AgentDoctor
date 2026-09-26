@@ -16,7 +16,14 @@ export type LanguageId =
   | "unknown";
 
 export type AdapterCapability =
-  "parse" | "symbols" | "definitions" | "references" | "imports" | "calls" | "diagnostics";
+  | "parse"
+  | "symbols"
+  | "definitions"
+  | "references"
+  | "imports"
+  | "calls"
+  | "diagnostics"
+  | "types";
 
 export interface LanguageSymbol {
   id: string;
@@ -39,11 +46,13 @@ export interface LanguageCall {
   evidence: "ast" | "unsupported";
 }
 
+export type AdapterCapabilityLevel = "supported" | "unsupported" | "partial";
+
 export interface ParseResult {
   language: LanguageId;
   file: string;
   ok: boolean;
-  capabilities: Partial<Record<AdapterCapability, "supported" | "unsupported">>;
+  capabilities: Partial<Record<AdapterCapability, AdapterCapabilityLevel>>;
   symbols: LanguageSymbol[];
   imports: LanguageImport[];
   calls: LanguageCall[];
@@ -54,7 +63,7 @@ export interface ParseResult {
 export interface LanguageAdapter {
   id: LanguageId;
   extensions: string[];
-  capabilities(): Partial<Record<AdapterCapability, "supported" | "unsupported">>;
+  capabilities(): Partial<Record<AdapterCapability, AdapterCapabilityLevel>>;
   parse(filePath: string, source: string): Promise<ParseResult>;
 }
 

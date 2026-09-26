@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 
 import { invokeAgentMcpTool, listAgentMcpTools } from "../../../src/mcp/agent/registry.js";
 import { ChatMemory } from "../../../src/agent/chat/memory.js";
+import { issueApprovalGrant, hashFileWritePlan } from "../../../src/product/approval/session.js";
 
 async function tempProject(): Promise<string> {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), "ad-m8-"));
@@ -34,6 +35,56 @@ describe("M8 agent MCP tools", () => {
       const structured = result.structured as { error?: { code?: string } };
       expect(structured.error?.code).toBe("path_escape");
     }
+  });
+
+  it("rejects bare approved=true without approvalToken", async () => {
+    const root = await tempProject();
+    const denied = await invokeAgentMcpTool(root, "file_create", {
+      path: "src/x.ts",
+      content: "x",
+      approved: true,
+    });
+    expect(denied.isError).toBe(true);
+    const structured = denied.structured as { error?: { message?: string } };
+    expect(structured.error?.message).toMatch(/approval token|Trusted approval/i);
+  });
+
+  it("applies file_create with trusted approvalToken", async () => {
+    const root = await tempProject();
+    const content = "export const x = 1;\n";
+    const planHash = hashFileWritePlan("file_create", "src/x.ts", content);
+    const grant = await issueApprovalGrant({
+      root,
+      action: "file_create",
+      resources: ["src/x.ts"],
+      risk: "MEDIUM",
+      planHash,
+    });
+    const ok = await invokeAgentMcpTool(root, "file_create", {
+      path: "src/x.ts",
+      content,
+      approvalToken: grant.token,
+    });
+    expect(ok.isError).toBe(false);
+    expect(await fs.readFile(path.join(root, "src", "x.ts"), "utf8")).toContain("x = 1");
+  });
+
+  it("rejects content change after approval (planHash binding)", async () => {
+    const root = await tempProject();
+    const planHash = hashFileWritePlan("file_create", "src/x.ts", "original\n");
+    const grant = await issueApprovalGrant({
+      root,
+      action: "file_create",
+      resources: ["src/x.ts"],
+      risk: "MEDIUM",
+      planHash,
+    });
+    const tampered = await invokeAgentMcpTool(root, "file_create", {
+      path: "src/x.ts",
+      content: "tampered\n",
+      approvalToken: grant.token,
+    });
+    expect(tampered.isError).toBe(true);
   });
 
   it("requires approved=true for file_create", async () => {

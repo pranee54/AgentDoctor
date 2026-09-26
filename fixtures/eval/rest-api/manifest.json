@@ -1,0 +1,6 @@
+{
+  "name": "rest-api",
+  "checks": [
+    { "id": "server", "description": "Express server file", "expectFile": "src/server.js" }
+  ]
+}

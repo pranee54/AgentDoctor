@@ -9,6 +9,7 @@ import { getToolSpec } from "./tools/registry.js";
 import { verifyAgentWork, type AgentVerificationReport } from "./verify.js";
 import { modeAllowsMutation, type AgentMode } from "./modes.js";
 import type { WorkspaceModel } from "../workspace/index.js";
+import { appendChangeLedgerEntry } from "../product/ledger/change-ledger.js";
 
 export interface CodingLoopOptions {
   root: string;
@@ -31,6 +32,8 @@ export interface CodingLoopOptions {
   mode?: AgentMode;
   /** Optional workspace isolation context */
   workspace?: WorkspaceModel | null;
+  /** When set, only these tools may run (role agents / restricted turns) */
+  allowedTools?: AgentToolName[];
 }
 
 export interface CodingLoopResult {
@@ -154,6 +157,22 @@ export async function runCodingLoop(options: CodingLoopOptions): Promise<CodingL
     };
 
     const runOne = async (call: AgentToolCall): Promise<AgentToolResult> => {
+      if (options.allowedTools && !options.allowedTools.includes(call.name)) {
+        const denied: AgentToolResult = {
+          callId: call.id,
+          name: call.name,
+          ok: false,
+          data: null,
+          risk: "LOW",
+          durationMs: 0,
+          error: {
+            code: "role_forbidden",
+            message: `Tool ${call.name} is not allowed for this role/session allowlist`,
+          },
+        };
+        toolResults.push(denied);
+        return denied;
+      }
       const spec = getToolSpec(call.name);
       const pendingWrite = spec?.category === "write";
       toolCalls += 1;
@@ -279,6 +298,21 @@ export async function runCodingLoop(options: CodingLoopOptions): Promise<CodingL
     }
 
     machine.transition(AgentState.COMPLETED, "coding loop done");
+
+    if (filesChanged.length > 0) {
+      try {
+        await appendChangeLedgerEntry(options.root, {
+          task: options.goal,
+          plan: plan.goal,
+          approval: "approvedByHuman",
+          files: [...new Set(filesChanged)],
+          note: "coding-loop:completed",
+        });
+      } catch {
+        // best-effort — never fail the loop on ledger persistence
+      }
+    }
+
     const text = verification
       ? verification.summaryText
       : [

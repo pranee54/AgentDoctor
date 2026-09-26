@@ -1,0 +1,7 @@
+{
+  "name": "monorepo-lite",
+  "checks": [
+    { "id": "root-pkg", "description": "Root package.json", "expectFile": "package.json" },
+    { "id": "pkg-a", "description": "Package A", "expectFile": "packages/a/package.json" }
+  ]
+}

@@ -2,14 +2,14 @@
 
 ## Supported versions
 
-| Version | Supported |
-| ------- | --------- |
-| 1.1.x   | ✓         |
-| 1.0.x   | ✓         |
-| 0.3.x   | ✓         |
-| 0.2.x   | ✓         |
-| 0.1.x   | ✓         |
-| < 0.1.0 | ✗         |
+| Version | Supported                                    |
+| ------- | -------------------------------------------- |
+| 3.0.x   | ✓                                            |
+| 2.1.x   | ✓                                            |
+| 2.0.x   | ✓                                            |
+| 1.1.x   | ✓                                            |
+| 1.0.x   | ✓                                            |
+| < 1.0.0 | best-effort / security reports still welcome |
 
 ## Reporting a vulnerability
 

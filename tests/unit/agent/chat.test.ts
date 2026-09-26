@@ -126,7 +126,7 @@ describe("prompt injection channels", () => {
 });
 
 describe("ChatService", () => {
-  it("returns provider-none message without calling a real model", async () => {
+  it("falls back to deterministic answers when provider is none", async () => {
     const root = await tempProject("ad-chat-none-");
     try {
       const chat = new ChatService({
@@ -134,10 +134,11 @@ describe("ChatService", () => {
         provider: new NoneModelProvider(),
         persistAudit: false,
       });
-      const res = await chat.ask("Explain my project");
-      expect(res.status).toBe("provider-none");
-      expect(res.message).toContain("AI chat is not configured");
-      expect(res.message).toContain(CHAT_PROVIDER_NONE_MESSAGE.split("\n")[0]!);
+      const res = await chat.ask("Explain my project architecture");
+      expect(res.status).toBe("ok");
+      expect(res.provider).toBe("deterministic");
+      expect(res.message).toMatch(/Deterministic project answer/i);
+      expect(res.message).not.toContain(CHAT_PROVIDER_NONE_MESSAGE.split("\n")[0]!);
     } finally {
       await fs.rm(root, { recursive: true, force: true });
     }
@@ -232,16 +233,16 @@ describe("CLI ask/chat", () => {
     }
   }, 60_000);
 
-  it("ask with none provider returns usage error", async () => {
+  it("ask with none provider uses deterministic project answers", async () => {
     const root = await tempProject("ad-ask-none-");
     const prev = process.env.AGENTDOCTOR_AI_PROVIDER;
     process.env.AGENTDOCTOR_AI_PROVIDER = "none";
     try {
       const code = await runAskCommand({
-        question: "Explain",
+        question: "Explain project architecture and dependencies",
         root,
       });
-      expect(code).toBe(EXIT_CODES.USAGE_ERROR);
+      expect(code).toBe(EXIT_CODES.SUCCESS);
     } finally {
       if (prev === undefined) delete process.env.AGENTDOCTOR_AI_PROVIDER;
       else process.env.AGENTDOCTOR_AI_PROVIDER = prev;

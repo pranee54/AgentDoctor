@@ -31,6 +31,11 @@ tmp/
 # Gradle caches (never commit)
 **/.gradle/
 
+# Eclipse Buildship / JDT metadata (fixtures are markers, not Gradle projects)
+**/.project
+**/.classpath
+**/.settings/
+
 # Generated Software Understanding validation reports
 validation/software-understanding/reports/*
 !validation/software-understanding/reports/.gitkeep

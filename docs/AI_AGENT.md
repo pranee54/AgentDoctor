@@ -1,6 +1,6 @@
 # AgentDoctor AI Agent (2.1 development)
 
-**Status:** IMPLEMENTED · **Version:** 2.1.0 · **Release notes:** [RELEASE_2_1_0.md](./RELEASE_2_1_0.md)
+**Status:** IMPLEMENTED · **Product:** AgentDoctor 3.0 · See [LIMITATIONS.md](LIMITATIONS.md)
 
 ## Architecture
 

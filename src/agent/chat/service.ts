@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
 
 import {
-  AI_PROVIDER_REQUIRED_MESSAGE,
   createModelProvider,
   loadAiConfig,
   publicAiConfig,
@@ -27,6 +26,7 @@ import {
 } from "./project-summary.js";
 import { buildChatTurnResponse, formatChatResponseForCli } from "./response.js";
 import type { ChatServiceOptions, ChatTurnResponse } from "./types.js";
+import { answerDeterministicProjectQuestion } from "./deterministic.js";
 
 export const CHAT_PROVIDER_NONE_MESSAGE = `AI chat is not configured.
 
@@ -129,20 +129,13 @@ export class ChatService {
     });
 
     if (this.provider.id === "none") {
-      const response: ChatTurnResponse = {
+      const response = await answerDeterministicProjectQuestion({
+        root: this.root,
+        question: safeUser,
         sessionId: this.sessionId,
-        message: CHAT_PROVIDER_NONE_MESSAGE,
-        truthClaims: [],
-        citations: [],
-        provider: "none",
-        model: "none",
-        status: "provider-none",
-        error: AI_PROVIDER_REQUIRED_MESSAGE,
-        contextPaths: [],
-        contextTruncated: false,
-        limitations: [],
-      };
-      await this.audit("error", "CHAT_FAILED", { reason: "provider-none" });
+      });
+      this.memory.addAssistant(response.message, response.contextPaths);
+      await this.audit("prompt", "CHAT_DETERMINISTIC", { status: response.status });
       return response;
     }
 

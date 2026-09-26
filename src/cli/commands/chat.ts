@@ -1,11 +1,7 @@
 import readline from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
 
-import {
-  ChatService,
-  CHAT_PROVIDER_NONE_MESSAGE,
-  formatChatResponseForCli,
-} from "../../agent/chat/index.js";
+import { ChatService, formatChatResponseForCli } from "../../agent/chat/index.js";
 import { MockModelProvider, createModelProvider, loadAiConfig } from "../../ai/index.js";
 import { EXIT_CODES, type ExitCode } from "../../types/index.js";
 import { resolveRepoRoot } from "../../utils/path.js";
@@ -122,9 +118,9 @@ export async function runChatCommand(options: {
   });
 
   if (provider.id === "none" && !options.useMock) {
-    process.stdout.write(`${CHAT_PROVIDER_NONE_MESSAGE}\n`);
-    await chat.end();
-    return EXIT_CODES.USAGE_ERROR;
+    process.stdout.write(
+      "Deterministic project chat (no LLM). Architecture, auth, and dependency questions use local analyzers.\n\n",
+    );
   }
 
   const scripted = options.scriptedInputs ? [...options.scriptedInputs] : undefined;

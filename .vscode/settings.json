@@ -10,5 +10,56 @@
   "files.trimTrailingWhitespace": true,
   "[markdown]": {
     "files.trimTrailingWhitespace": false
-  }
+  },
+
+  "files.exclude": {
+    "validation/real-world/repositories/checkouts": true
+  },
+  "files.watcherExclude": {
+    "**/validation/real-world/repositories/checkouts/**": true,
+    "**/node_modules/**": true,
+    "**/dist/**": true,
+    "**/.gradle/**": true,
+    "**/coverage/**": true,
+    "**/test-results/**": true
+  },
+  "search.exclude": {
+    "**/validation/real-world/repositories/checkouts": true,
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/.gradle": true,
+    "**/coverage": true,
+    "**/test-results": true
+  },
+
+  "java.import.exclusions": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/coverage/**",
+    "**/test-results/**",
+    "**/validation/real-world/repositories/checkouts/**",
+    "**/fixtures/**",
+    "**/AgentDoctorOS/**",
+    "**/.private/**",
+    "**/.gradle/**"
+  ],
+  "java.project.importOnFirstTimeStartup": "disabled",
+  "java.configuration.updateBuildConfiguration": "disabled",
+  "java.autobuild.enabled": false,
+  "java.import.gradle.enabled": false,
+  "java.import.maven.enabled": false,
+  "java.import.gradle.wrapper.enabled": false,
+  "gradle.nestedProjects": false,
+  "java.project.resourceFilters": [
+    "node_modules",
+    ".git",
+    "dist",
+    "coverage",
+    "test-results",
+    "fixtures",
+    "validation/real-world/repositories/checkouts",
+    ".gradle",
+    "AgentDoctorOS",
+    ".private"
+  ]
 }

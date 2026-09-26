@@ -24,6 +24,7 @@ import { inferTestArgv, runAgentCommand } from "./run.js";
 import { evaluateApproval } from "../approvals.js";
 import { modeBlocksToolCategory, type AgentMode } from "../modes.js";
 import { assertWorkspacePathAccess, type WorkspaceModel } from "../../workspace/index.js";
+import { assertForensicReadOnly } from "../../product/forensic/mode.js";
 
 function asRecord(args: Record<string, unknown>): Record<string, unknown> {
   return args;
@@ -50,6 +51,8 @@ export async function executeAgentTool(
     mode?: AgentMode;
     /** Optional multi-root workspace isolation context */
     workspace?: WorkspaceModel | null;
+    /** Forensic mode — refuse all mutations */
+    forensicMode?: boolean;
   },
 ): Promise<AgentToolResult> {
   const started = Date.now();
@@ -78,6 +81,17 @@ export async function executeAgentTool(
 
   if (!spec) return fail("unknown_tool", `Unknown tool: ${call.name}`);
 
+  const forensic = options?.forensicMode === true || process.env.AGENTDOCTOR_FORENSIC_MODE === "1";
+  if (forensic && (spec.category === "write" || spec.category === "execute")) {
+    try {
+      assertForensicReadOnly(true);
+    } catch (error) {
+      return fail(
+        "forensic_read_only",
+        error instanceof Error ? error.message : "Forensic mode refuses write operations",
+      );
+    }
+  }
   if (modeBlocksToolCategory(options?.mode, spec.category)) {
     return fail(
       "mode_forbidden",

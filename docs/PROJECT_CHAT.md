@@ -22,3 +22,7 @@ Repository content is wrapped as PROJECT_DATA (untrusted). Prompt injection in R
 Loopback dashboard includes Project Chat (`POST /api/chat`) — ask-only, no file writes.
 
 **Fail-closed:** when `AGENTDOCTOR_AI_PROVIDER` resolves to `none`, `/api/chat` returns `provider-none` (HTTP 503). Silent Mock fallback is disabled. Use `AGENTDOCTOR_AI_PROVIDER=mock` (or openai-compatible) explicitly.
+
+## Institutional memory (related)
+
+`queryMemory(root, query)` merges Brain, decision ledger, change ledger, and DNA (substring ranking). **Maturity:** PARTIAL — not semantic search; see `docs/PROJECT_BRAIN.md`.

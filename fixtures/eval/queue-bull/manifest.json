@@ -1,0 +1,4 @@
+{
+  "name": "queue-bull",
+  "checks": [{ "id": "worker", "description": "Queue worker", "expectFile": "src/worker.js" }]
+}

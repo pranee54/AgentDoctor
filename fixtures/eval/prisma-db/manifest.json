@@ -1,0 +1,4 @@
+{
+  "name": "prisma-db",
+  "checks": [{ "id": "schema", "description": "Prisma schema", "expectFile": "schema.prisma" }]
+}

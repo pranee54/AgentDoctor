@@ -1,0 +1,6 @@
+{
+  "name": "infra-compose",
+  "checks": [
+    { "id": "compose", "description": "docker-compose.yml", "expectFile": "docker-compose.yml" }
+  ]
+}

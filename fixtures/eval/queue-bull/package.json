@@ -1,0 +1,1 @@
+{ "name": "eval-queue-bull", "private": true, "dependencies": { "bull": "^4.12.0" } }

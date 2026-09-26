@@ -12,6 +12,7 @@ import {
   resolveImportSpecifier,
   type ImportConfidence,
 } from "../resolve/imports.js";
+import { enrichGraphWithLanguageAdapters } from "../../product/graph/enrich-languages.js";
 
 function evidenceForConfidence(confidence: ImportConfidence): "verified" | "inferred" | "unknown" {
   if (confidence === "EXACT") return "verified";
@@ -23,6 +24,36 @@ export type GraphBuilderMode = "regex" | "typescript-ast" | "auto";
 
 export function nodeId(kind: string, key: string): string {
   return `${kind}:${createHash("sha1").update(key).digest("hex").slice(0, 12)}`;
+}
+
+async function applyLanguageEnrichment<
+  T extends RepositoryGraph & { builder: GraphBuilderMode; astFilesParsed: number },
+>(graph: T, root: string): Promise<T> {
+  try {
+    const { graph: enriched, stats } = await enrichGraphWithLanguageAdapters(graph, root);
+    const extra =
+      stats.filesParsed > 0
+        ? [
+            `Language adapters enriched graph (+${stats.nodesAdded} nodes, +${stats.edgesAdded} edges, ${stats.filesParsed} files parsed)`,
+          ]
+        : stats.filesAttempted > 0
+          ? ["Language adapter enrichment: no supported parses in sampled .py/.php/.go files"]
+          : [];
+    return {
+      ...enriched,
+      builder: graph.builder,
+      astFilesParsed: graph.astFilesParsed,
+      limitations: [...enriched.limitations, ...extra],
+    } as T;
+  } catch (error) {
+    return {
+      ...graph,
+      limitations: [
+        ...graph.limitations,
+        `Language adapter enrichment failed (${error instanceof Error ? error.message : String(error)})`,
+      ],
+    } as T;
+  }
 }
 
 export async function listTsFiles(root: string, limit = 400): Promise<string[]> {
@@ -65,22 +96,25 @@ export async function buildIntelligenceGraph(options: {
   const mode = options.mode ?? "auto";
   if (mode === "regex") {
     const g = await buildRepositoryGraph(root);
-    return { ...g, builder: "regex", astFilesParsed: 0 };
+    return applyLanguageEnrichment({ ...g, builder: "regex", astFilesParsed: 0 }, root);
   }
 
   try {
     const files = await listTsFiles(root);
     if (files.length === 0) {
       const g = await buildRepositoryGraph(root);
-      return {
-        ...g,
-        builder: "regex",
-        astFilesParsed: 0,
-        limitations: [
-          ...g.limitations,
-          "No TypeScript sources found for AST builder; used regex fallback",
-        ],
-      };
+      return applyLanguageEnrichment(
+        {
+          ...g,
+          builder: "regex",
+          astFilesParsed: 0,
+          limitations: [
+            ...g.limitations,
+            "No TypeScript sources found for AST builder; used regex fallback",
+          ],
+        },
+        root,
+      );
     }
 
     const program = ts.createProgram({
@@ -248,31 +282,37 @@ export async function buildIntelligenceGraph(options: {
     nodes.sort((a, b) => a.id.localeCompare(b.id));
     edges.sort((a, b) => a.id.localeCompare(b.id));
 
-    return {
+    return applyLanguageEnrichment(
+      {
+        root,
+        generatedAt: new Date().toISOString(),
+        nodes,
+        edges,
+        builder: "typescript-ast",
+        astFilesParsed: files.length,
+        limitations: [
+          "TypeScript AST builder uses the TypeScript compiler API for .ts/.tsx only",
+          "Cross-file call resolution is identifier-based (not full type-checker binding)",
+          "Import edges use EXACT|RESOLVED|INFERRED confidence; UNRESOLVED never invents file targets",
+          "Additional .py/.php/.go nodes may be merged via language adapters when supported",
+          `analysisVersion=${CONTRACTS_VERSION}`,
+        ],
+      },
       root,
-      generatedAt: new Date().toISOString(),
-      nodes,
-      edges,
-      builder: "typescript-ast",
-      astFilesParsed: files.length,
-      limitations: [
-        "TypeScript AST builder uses the TypeScript compiler API for .ts/.tsx only",
-        "Cross-file call resolution is identifier-based (not full type-checker binding)",
-        "Import edges use EXACT|RESOLVED|INFERRED confidence; UNRESOLVED never invents file targets",
-        "Non-TypeScript languages fall back to regex graph when requested via auto+empty TS set",
-        `analysisVersion=${CONTRACTS_VERSION}`,
-      ],
-    };
+    );
   } catch (error) {
     const g = await buildRepositoryGraph(root);
-    return {
-      ...g,
-      builder: "regex",
-      astFilesParsed: 0,
-      limitations: [
-        ...g.limitations,
-        `TypeScript AST builder failed; regex fallback used (${error instanceof Error ? error.message : String(error)})`,
-      ],
-    };
+    return applyLanguageEnrichment(
+      {
+        ...g,
+        builder: "regex",
+        astFilesParsed: 0,
+        limitations: [
+          ...g.limitations,
+          `TypeScript AST builder failed; regex fallback used (${error instanceof Error ? error.message : String(error)})`,
+        ],
+      },
+      root,
+    );
   }
 }

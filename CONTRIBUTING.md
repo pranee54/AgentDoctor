@@ -12,7 +12,7 @@ Thanks for helping improve **AgentDoctor** — engineering intelligence and safe
 | Agent interfaces        | Brain MCP, combined MCP, adapters, CLI, local dashboard            |
 | Verification            | `npm run verify`, packed smoke, CI Action                          |
 
-Canonical product docs: [docs/2.0/README.md](docs/2.0/README.md) · [README.md](README.md) · [ROADMAP.md](ROADMAP.md)
+Canonical product docs: [docs/README.md](docs/README.md) · [README.md](README.md)
 
 ## Development setup
 

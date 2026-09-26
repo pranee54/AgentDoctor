@@ -1,0 +1,4 @@
+{
+  "name": "python-flask",
+  "checks": [{ "id": "app", "description": "Flask app", "expectFile": "app.py" }]
+}

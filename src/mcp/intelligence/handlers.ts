@@ -16,6 +16,9 @@ import { redactSecrets } from "../../platform/security/redact.js";
 import { resolveRepoRoot } from "../../utils/path.js";
 import { CONTRACTS_VERSION } from "../../contracts/index.js";
 import { assertSafeRepoTarget } from "./path-safety.js";
+import { buildProjectDna } from "../../product/dna/build.js";
+import { buildSoftwareMap } from "../../product/map/software-map.js";
+import { analyzeWhatIf } from "../../product/whatif/engine.js";
 
 function requireString(args: Record<string, unknown>, key: string): string | null {
   const value = args[key];
@@ -436,4 +439,34 @@ export async function handleGraphQueryTool(
       ...graph.limitations,
     ],
   });
+}
+
+export async function handleProjectDnaTool(rootInput: string): Promise<unknown> {
+  const root = resolveRepoRoot(rootInput);
+  const dna = await buildProjectDna(root);
+  return redactDeep({ ok: true, dna, limitations: dna.limitations });
+}
+
+export async function handleSoftwareMapTool(rootInput: string): Promise<unknown> {
+  const root = resolveRepoRoot(rootInput);
+  const map = await buildSoftwareMap(root);
+  return redactDeep({ ok: true, map, limitations: map.limitations });
+}
+
+export async function handleWhatIfTool(
+  rootInput: string,
+  args: Record<string, unknown>,
+): Promise<unknown> {
+  const root = resolveRepoRoot(rootInput);
+  const target = requireString(args, "target");
+  if (!target) {
+    return invalidArgument("target required (repo-relative path or symbol)");
+  }
+  try {
+    assertSafeRepoTarget(root, target);
+  } catch {
+    return pathEscape();
+  }
+  const report = await analyzeWhatIf(root, target);
+  return redactDeep({ ok: true, report, limitations: report.limitations });
 }

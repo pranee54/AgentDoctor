@@ -53,6 +53,9 @@ import { runWorkspaceCommand } from "./commands/workspace.js";
 import { runAskCommand, runChatCommand } from "./commands/chat.js";
 import { runAgentCommand, runPlanCommand } from "./commands/agent.js";
 import { runLearnCommand } from "./commands/learn.js";
+import { runProductCommand } from "./commands/product.js";
+import { runStartCommand, runDnaCommand } from "./commands/start.js";
+import type { AgentRole } from "../agent/roles.js";
 import { collectOpsHealth } from "../ops/health.js";
 import { listSessions, loadSession } from "../platform/sessions/store.js";
 import { exportReports } from "../platform/reports/export.js";
@@ -1530,6 +1533,10 @@ export function createProgram(): Command {
     .option("--list-tools", "List available agent tools", false)
     .option("--tool <name>", "Run a single tool by name")
     .option("--goal <text>", "Build a change plan for this goal")
+    .option(
+      "--role <role>",
+      "Specialized role for plan/apply (planner, coder, tester, reviewer, security, …)",
+    )
     .option("--approve", "Record explicit human approval", false)
     .option("--apply", "Apply approved changes (requires --approve)", false)
     .option("--apply-ops <json>", "JSON array of {name, arguments} tool ops for --apply")
@@ -1543,6 +1550,7 @@ export function createProgram(): Command {
           listTools?: boolean;
           tool?: string;
           goal?: string;
+          role?: string;
           approve?: boolean;
           apply?: boolean;
           applyOps?: string;
@@ -1556,6 +1564,7 @@ export function createProgram(): Command {
           listTools: Boolean(options.listTools),
           ...(options.tool !== undefined ? { tool: options.tool } : {}),
           ...(options.goal !== undefined ? { goal: options.goal } : {}),
+          ...(options.role !== undefined ? { role: options.role as AgentRole } : {}),
           approve: Boolean(options.approve),
           apply: Boolean(options.apply),
           ...(options.applyOps !== undefined ? { applyOpsJson: options.applyOps } : {}),
@@ -1887,6 +1896,202 @@ export function createProgram(): Command {
     .action(async (rule: string) => {
       const code = await runExplainCommand(rule);
       process.exitCode = code;
+    });
+
+  function bindProductCommand(
+    name: string,
+    description: string,
+    action: Parameters<typeof runProductCommand>[0]["action"],
+  ): void {
+    program
+      .command(name)
+      .description(description)
+      .argument("[path]", "Repository path")
+      .option("--json", "Emit JSON report", false)
+      .action(async (pathArg: string | undefined, _options, command: Command) => {
+        const options = command.optsWithGlobals() as { json?: boolean };
+        process.exitCode = await runProductCommand({
+          action,
+          root: resolveTargetArgument(pathArg),
+          json: Boolean(options.json),
+        });
+      });
+  }
+
+  program
+    .command("start")
+    .description(
+      "Safe project discovery: detect project root, build Project DNA, initialize Project Brain",
+    )
+    .argument("[path]", "Optional project path (default: cwd)")
+    .option("--list", "List candidates without initializing", false)
+    .option("--select <path>", "Explicitly select a project root")
+    .option("--max-entries <n>", "Refuse scans larger than this entry budget", "25000")
+    .option("--no-init-brain", "Skip Project Brain store initialization")
+    .option("--rebuild-brain", "Compile Project Brain after init", false)
+    .option("--json", "Emit JSON", false)
+    .action(
+      async (
+        pathArg: string | undefined,
+        options: {
+          list?: boolean;
+          select?: string;
+          maxEntries?: string;
+          initBrain?: boolean;
+          rebuildBrain?: boolean;
+          json?: boolean;
+        },
+      ) => {
+        process.exitCode = await runStartCommand({
+          ...(pathArg !== undefined ? { root: resolveTargetArgument(pathArg) } : {}),
+          listOnly: Boolean(options.list),
+          ...(options.select !== undefined ? { select: options.select } : {}),
+          maxEntries: Number(options.maxEntries ?? 25000),
+          initBrain: options.initBrain !== false,
+          rebuildBrain: Boolean(options.rebuildBrain),
+          json: Boolean(options.json),
+        });
+      },
+    );
+
+  program
+    .command("dna")
+    .description("Build deterministic Project DNA fingerprint")
+    .argument("[path]", "Repository path")
+    .option("--persist", "Write .agentdoctor/dna/project-dna.json", false)
+    .option("--json", "Emit JSON", false)
+    .action(async (pathArg: string | undefined, options: { persist?: boolean; json?: boolean }) => {
+      process.exitCode = await runDnaCommand({
+        root: resolveTargetArgument(pathArg),
+        persist: Boolean(options.persist),
+        json: Boolean(options.json),
+      });
+    });
+
+  bindProductCommand(
+    "requirements",
+    "Trace requirements from markdown docs (evidence-backed)",
+    "requirements",
+  );
+  bindProductCommand("api", "Discover HTTP route patterns (regex evidence)", "api");
+  bindProductCommand("database", "Discover schema objects from migrations/SQL/Prisma", "database");
+  bindProductCommand("events", "Detect queues, workers, cron, and event markers", "events");
+  bindProductCommand(
+    "dependency",
+    "Analyze direct dependencies and workspace duplicates",
+    "dependency",
+  );
+  bindProductCommand("deps", "Alias for dependency", "dependency");
+  bindProductCommand(
+    "health-code",
+    "Aggregate code health indicators with evidence",
+    "health-code",
+  );
+  bindProductCommand("code-health", "Alias for health-code", "health-code");
+  bindProductCommand("map", "Build navigable software map from project layout", "map");
+  bindProductCommand("decisions", "Load ADR files and decision ledger", "decisions");
+  bindProductCommand("forensic", "Read-only forensic analysis (git + ledgers + brain)", "forensic");
+  bindProductCommand("twin", "Software digital twin snapshot", "twin");
+  bindProductCommand("eval-lab", "Run evaluation lab fixture checks", "eval-lab");
+  bindProductCommand("self-check", "Self-diagnosis of AgentDoctor installation", "self-check");
+  bindProductCommand("infra", "Detect Docker/K8s/Terraform/CI artifacts", "infra");
+  bindProductCommand("incident", "Build incident timeline hypotheses", "incident");
+  bindProductCommand(
+    "security-doctor",
+    "Security heuristics: secrets, auth markers, dangerous patterns",
+    "security-doctor",
+  );
+  bindProductCommand(
+    "test-brain",
+    "Test Brain: test-impact plus graph file↔test mapping",
+    "test-brain",
+  );
+  bindProductCommand(
+    "privacy-doctor",
+    "PII-ish pattern scan (not legal compliance)",
+    "privacy-doctor",
+  );
+  bindProductCommand(
+    "tech-debt",
+    "Technical debt roadmap (TODO/FIXME, architecture, tests)",
+    "tech-debt",
+  );
+  bindProductCommand("features", "Feature intelligence (flows + API links)", "features");
+  bindProductCommand("evolution", "Software evolution timeline from git + ledger", "evolution");
+  bindProductCommand("org", "Load organization model (.agentdoctor/org)", "org");
+
+  program
+    .command("memory")
+    .description("Query institutional memory (brain + ledgers)")
+    .argument("<query>", "Memory query")
+    .argument("[path]", "Repository path")
+    .option("--json", "Emit JSON report", false)
+    .action(async (query: string, pathArg: string | undefined, _options, command: Command) => {
+      const options = command.optsWithGlobals() as { json?: boolean };
+      process.exitCode = await runProductCommand({
+        action: "memory",
+        query,
+        root: resolveTargetArgument(pathArg),
+        json: Boolean(options.json),
+      });
+    });
+
+  program
+    .command("search")
+    .description("Search symbols and concepts (brain + bounded file scan)")
+    .argument("<query>", "Search query")
+    .argument("[path]", "Repository path")
+    .option("--json", "Emit JSON report", false)
+    .action(async (query: string, pathArg: string | undefined, _options, command: Command) => {
+      const options = command.optsWithGlobals() as { json?: boolean };
+      process.exitCode = await runProductCommand({
+        action: "search",
+        query,
+        root: resolveTargetArgument(pathArg),
+        json: Boolean(options.json),
+      });
+    });
+
+  program
+    .command("role-agent")
+    .description("Run the coding loop with a specialized agent role")
+    .argument("[path]", "Repository path")
+    .requiredOption("--role <role>", "Agent role (planner, coder, tester, reviewer, security, …)")
+    .requiredOption("--goal <text>", "Goal for the role agent")
+    .option("--approve", "Record human approval for writes", false)
+    .option("--apply", "Apply changes (requires --approve)", false)
+    .option("--json", "Emit JSON", false)
+    .action(
+      async (
+        pathArg: string | undefined,
+        options: { role: string; goal: string; approve?: boolean; apply?: boolean; json?: boolean },
+      ) => {
+        process.exitCode = await runProductCommand({
+          action: "role-agent",
+          root: resolveTargetArgument(pathArg),
+          role: options.role as AgentRole,
+          goal: options.goal,
+          approve: Boolean(options.approve),
+          apply: Boolean(options.apply),
+          json: Boolean(options.json),
+        });
+      },
+    );
+
+  program
+    .command("what-if")
+    .description("Graph-backed change impact for a file or symbol")
+    .argument("<target>", "File path or symbol")
+    .argument("[path]", "Repository path")
+    .option("--json", "Emit JSON report", false)
+    .action(async (target: string, pathArg: string | undefined, _options, command: Command) => {
+      const options = command.optsWithGlobals() as { json?: boolean };
+      process.exitCode = await runProductCommand({
+        action: "what-if",
+        root: resolveTargetArgument(pathArg),
+        target,
+        json: Boolean(options.json),
+      });
     });
 
   program

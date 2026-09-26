@@ -1,0 +1,20 @@
+# Cursor indexing — public product surface
+node_modules/
+dist/
+coverage/
+test-results/
+.gradle/
+.agentdoctor/
+.private/
+AgentDoctorOS/
+.cursor/
+*.tgz
+
+validation/real-world/repositories/checkouts/
+validation/**/reports/
+validation/**/results/
+validation/**/history/
+validation/**/regressions/
+
+docs/internal/
+docs/archive/

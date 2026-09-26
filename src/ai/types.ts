@@ -4,7 +4,7 @@
  */
 
 export type AiProviderId =
-  "none" | "mock" | "openai-compatible" | "ollama" | "anthropic" | "gemini";
+  "none" | "deterministic" | "mock" | "openai-compatible" | "ollama" | "anthropic" | "gemini";
 
 export type ChatRole = "system" | "user" | "assistant" | "tool";
 

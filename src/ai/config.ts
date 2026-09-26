@@ -16,6 +16,7 @@ export interface AiConfig {
 
 const DEFAULT_MODELS: Record<AiProviderId, string> = {
   none: "none",
+  deterministic: "local-analyzers",
   mock: "mock",
   "openai-compatible": "gpt-4o-mini",
   ollama: "llama3.2",

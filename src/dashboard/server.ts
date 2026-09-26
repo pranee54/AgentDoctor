@@ -27,6 +27,25 @@ import { createModelProvider, loadAiConfig } from "../ai/index.js";
 import type { ModelProvider } from "../ai/types.js";
 import { ChatService } from "../agent/chat/service.js";
 import { formatChatResponseForCli } from "../agent/chat/response.js";
+import { buildProjectDna } from "../product/dna/build.js";
+import { buildSoftwareMap } from "../product/map/software-map.js";
+import { buildSoftwareDigitalTwin } from "../product/twin/store.js";
+import { analyzeCodeHealth } from "../product/health/code-health.js";
+import { traceRequirements } from "../product/requirements/trace.js";
+import { analyzeApiSurface } from "../product/api/doctor.js";
+import { analyzeDatabaseSchema } from "../product/database/doctor.js";
+import { analyzeEvents } from "../product/events/doctor.js";
+import { analyzeDependencies } from "../product/deps/analyze.js";
+import { analyzeSecuritySurface } from "../product/security/doctor.js";
+import { searchSymbolsAndConcepts } from "../product/search/software-search.js";
+import { analyzeWhatIf } from "../product/whatif/engine.js";
+import { runForensicAnalysis } from "../product/forensic/mode.js";
+import { buildIncidentHypotheses } from "../product/ops/incident.js";
+import { analyzeInfra } from "../product/ops/infra.js";
+import { analyzeFeatureIntelligence } from "../product/features/intelligence.js";
+import { buildSoftwareEvolutionTimeline } from "../product/evolution/timeline.js";
+import { queryMemory } from "../product/memory/institutional.js";
+import { loadDecisionLedger } from "../product/decisions/ledger.js";
 
 function safeJsonError(error: unknown): string {
   const raw = error instanceof Error ? error.message : String(error);
@@ -128,40 +147,104 @@ function htmlPage(): string {
   </header>
   <main>
     <nav aria-label="Views" style="display:flex;flex-wrap:wrap;gap:0.75rem;font-size:0.9rem">
-      <a href="#overview">Overview</a>
-      <a href="#scan">Safety scan</a>
-      <a href="#platform">Platform</a>
-      <a href="#brain">Brain</a>
+      <a href="#home">Home</a>
+      <a href="#dna">DNA</a>
       <a href="#graph">Graph</a>
-      <a href="#knowledge">Knowledge</a>
-      <a href="#chat">Project Chat</a>
-      <a href="#meta">Audit / baselines</a>
+      <a href="#chat">Chat</a>
+      <a href="#security">Security</a>
+      <a href="#twin">Twin</a>
+      <a href="#requirements">Requirements</a>
+      <a href="#map">Map</a>
+      <a href="#features">Features</a>
+      <a href="#deps">Deps</a>
+      <a href="#search">Search</a>
+      <a href="#whatif">What-if</a>
+      <a href="#forensic">Forensic</a>
+      <a href="#incident">Incident</a>
+      <a href="#infra">Infra</a>
+      <a href="#evolution">Evolution</a>
+      <a href="#memory">Memory</a>
+      <a href="#decisions">Decisions</a>
+      <a href="#health">Health</a>
+      <a href="#agent">Doctors</a>
     </nav>
-    <section id="overview">
-      <h2>Overview</h2>
+    <section id="home" data-route="home">
+      <h2>Home</h2>
       <pre id="status" class="muted">Loading…</pre>
     </section>
-    <section id="scan">
-      <h2>Safety scan</h2>
-      <pre id="scanBody" class="muted">Loading…</pre>
+    <section id="dna" data-route="dna" hidden>
+      <h2>Project DNA</h2>
+      <pre id="dnaBody" class="muted">Loading…</pre>
     </section>
-    <section id="platform">
-      <h2>Platform snapshot (incl. test-impact)</h2>
-      <pre id="platformBody" class="muted">Loading…</pre>
-    </section>
-    <section id="brain">
-      <h2>Project Brain</h2>
-      <pre id="brainBody" class="muted">Loading…</pre>
-    </section>
-    <section id="graph">
-      <h2>Intelligence graph / git / C4</h2>
+    <section id="graph" data-route="graph" hidden>
+      <h2>Graph / Git / C4</h2>
       <pre id="graphBody" class="muted">Loading…</pre>
     </section>
-    <section id="knowledge">
-      <h2>Governed knowledge</h2>
-      <pre id="knowledgeBody" class="muted">Loading…</pre>
+    <section id="security" data-route="security" hidden>
+      <h2>Security doctor</h2>
+      <pre id="securityBody" class="muted">Loading…</pre>
     </section>
-    <section id="chat">
+    <section id="twin" data-route="twin" hidden>
+      <h2>Digital twin</h2>
+      <pre id="twinBody" class="muted">Loading…</pre>
+    </section>
+    <section id="requirements" data-route="requirements" hidden>
+      <h2>Requirements trace</h2>
+      <pre id="requirementsBody" class="muted">Loading…</pre>
+    </section>
+    <section id="map" data-route="map" hidden>
+      <h2>Software map</h2>
+      <pre id="mapBody" class="muted">Loading…</pre>
+    </section>
+    <section id="features" data-route="features" hidden>
+      <h2>Feature intelligence</h2>
+      <pre id="featuresBody" class="muted">Loading…</pre>
+    </section>
+    <section id="deps" data-route="deps" hidden>
+      <h2>Dependencies</h2>
+      <pre id="depsBody" class="muted">Loading…</pre>
+    </section>
+    <section id="search" data-route="search" hidden>
+      <h2>Software search</h2>
+      <pre id="searchBody" class="muted">Loading…</pre>
+    </section>
+    <section id="whatif" data-route="whatif" hidden>
+      <h2>What-if</h2>
+      <pre id="whatifBody" class="muted">Loading…</pre>
+    </section>
+    <section id="forensic" data-route="forensic" hidden>
+      <h2>Forensic</h2>
+      <pre id="forensicBody" class="muted">Loading…</pre>
+    </section>
+    <section id="incident" data-route="incident" hidden>
+      <h2>Incident</h2>
+      <pre id="incidentBody" class="muted">Loading…</pre>
+    </section>
+    <section id="infra" data-route="infra" hidden>
+      <h2>Infra</h2>
+      <pre id="infraBody" class="muted">Loading…</pre>
+    </section>
+    <section id="evolution" data-route="evolution" hidden>
+      <h2>Evolution</h2>
+      <pre id="evolutionBody" class="muted">Loading…</pre>
+    </section>
+    <section id="memory" data-route="memory" hidden>
+      <h2>Institutional memory</h2>
+      <pre id="memoryBody" class="muted">Loading…</pre>
+    </section>
+    <section id="decisions" data-route="decisions" hidden>
+      <h2>Decisions</h2>
+      <pre id="decisionsBody" class="muted">Loading…</pre>
+    </section>
+    <section id="health" data-route="health" hidden>
+      <h2>Code health</h2>
+      <pre id="healthBody" class="muted">Loading…</pre>
+    </section>
+    <section id="agent" data-route="agent" hidden>
+      <h2>Product doctors (API, DB, events)</h2>
+      <pre id="agentBody" class="muted">Loading…</pre>
+    </section>
+    <section id="chat" data-route="chat" hidden>
       <h2>Project Chat</h2>
       <p class="muted">Ask about this repository. Answers use evidence + truth labels. No file writes from this panel.</p>
       <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:1rem">
@@ -176,30 +259,70 @@ function htmlPage(): string {
         </div>
       </div>
     </section>
-    <section id="meta">
-      <h2>Safe Fix audit / baselines / sessions</h2>
-      <pre id="metaBody" class="muted">Loading…</pre>
-    </section>
   </main>
   <script>
-    async function load() {
-      const [status, scan, brain, meta, platform, graph, knowledge] = await Promise.all([
-        fetch('/api/status').then(r => r.json()),
-        fetch('/api/scan').then(r => r.json()),
-        fetch('/api/brain').then(r => r.json()),
-        fetch('/api/meta').then(r => r.json()),
-        fetch('/api/platform').then(r => r.json()),
-        fetch('/api/v2/graph').then(r => r.json()),
-        fetch('/api/v2/knowledge').then(r => r.json()),
-      ]);
-      document.getElementById('status').textContent = JSON.stringify(status, null, 2);
-      document.getElementById('scanBody').textContent = JSON.stringify(scan, null, 2);
-      document.getElementById('brainBody').textContent = JSON.stringify(brain, null, 2);
-      document.getElementById('metaBody').textContent = JSON.stringify(meta, null, 2);
-      document.getElementById('platformBody').textContent = JSON.stringify(platform, null, 2);
-      document.getElementById('graphBody').textContent = JSON.stringify(graph, null, 2);
-      document.getElementById('knowledgeBody').textContent = JSON.stringify(knowledge, null, 2);
+    const routes = ['home','dna','graph','chat','security','twin','requirements','map','features','deps','search','whatif','forensic','incident','infra','evolution','memory','decisions','health','agent'];
+    function showRoute(name) {
+      const r = routes.includes(name) ? name : 'home';
+      for (const el of document.querySelectorAll('[data-route]')) {
+        el.hidden = el.getAttribute('data-route') !== r;
+      }
+      location.hash = r;
     }
+    window.addEventListener('hashchange', () => showRoute((location.hash || '#home').slice(1)));
+    showRoute((location.hash || '#home').slice(1));
+
+    async function loadSection(route) {
+      const map = {
+        dna: [['dnaBody','/api/dna']],
+        graph: [['graphBody','/api/v2/graph']],
+        security: [['securityBody','/api/security']],
+        twin: [['twinBody','/api/twin']],
+        requirements: [['requirementsBody','/api/requirements']],
+        map: [['mapBody','/api/map']],
+        features: [['featuresBody','/api/features']],
+        deps: [['depsBody','/api/deps']],
+        search: [['searchBody','/api/search?q=main']],
+        whatif: [['whatifBody','/api/what-if?target=src']],
+        forensic: [['forensicBody','/api/forensic']],
+        incident: [['incidentBody','/api/incident']],
+        infra: [['infraBody','/api/infra']],
+        evolution: [['evolutionBody','/api/evolution']],
+        memory: [['memoryBody','/api/memory?q=change']],
+        decisions: [['decisionsBody','/api/decisions']],
+        health: [['healthBody','/api/health']],
+        agent: [['agentBody','/api/api-doctor']],
+      };
+      if (route === 'home') {
+        const [status, scan, brain, platform] = await Promise.all([
+          fetch('/api/status').then(r => r.json()),
+          fetch('/api/scan').then(r => r.json()),
+          fetch('/api/brain').then(r => r.json()),
+          fetch('/api/platform').then(r => r.json()),
+        ]);
+        document.getElementById('status').textContent = JSON.stringify({ status, scan, brain, platform }, null, 2);
+        return;
+      }
+      if (route === 'agent') {
+        const [api, db, events] = await Promise.all([
+          fetch('/api/api-doctor').then(r => r.json()),
+          fetch('/api/database').then(r => r.json()),
+          fetch('/api/events').then(r => r.json()),
+        ]);
+        document.getElementById('agentBody').textContent = JSON.stringify({ api, db, events }, null, 2);
+        return;
+      }
+      const loaders = map[route] || [];
+      for (const [elId, url] of loaders) {
+        const data = await fetch(url).then(r => r.json());
+        document.getElementById(elId).textContent = JSON.stringify(data, null, 2);
+      }
+    }
+    async function load() {
+      const route = (location.hash || '#home').slice(1) || 'home';
+      await loadSection(route);
+    }
+    window.addEventListener('hashchange', () => load().catch(err => console.error(err)));
     load().catch(err => {
       document.getElementById('status').textContent = String(err);
     });
@@ -284,15 +407,6 @@ export async function startDashboardServer(
           return;
         }
         const provider = options.chatProvider ?? createModelProvider(loadAiConfig());
-        if (provider.id === "none") {
-          sendJson(res, 503, {
-            error: "provider-none",
-            message:
-              "AI chat is not configured. Set AGENTDOCTOR_AI_PROVIDER to mock or an OpenAI-compatible provider. Silent mock fallback is disabled.",
-            status: "provider-none",
-          });
-          return;
-        }
         const chat = new ChatService({
           root,
           provider,
@@ -492,6 +606,93 @@ export async function startDashboardServer(
             version: r.version,
           })),
         });
+        return;
+      }
+      if (url.pathname === "/api/dna") {
+        sendJson(res, 200, await buildProjectDna(root));
+        return;
+      }
+      if (url.pathname === "/api/map") {
+        sendJson(res, 200, await buildSoftwareMap(root));
+        return;
+      }
+      if (url.pathname === "/api/twin") {
+        sendJson(res, 200, await buildSoftwareDigitalTwin(root));
+        return;
+      }
+      if (url.pathname === "/api/health-code") {
+        sendJson(res, 200, await analyzeCodeHealth(root));
+        return;
+      }
+      if (url.pathname === "/api/requirements") {
+        sendJson(res, 200, await traceRequirements(root));
+        return;
+      }
+      if (url.pathname === "/api/api-doctor") {
+        sendJson(res, 200, await analyzeApiSurface(root));
+        return;
+      }
+      if (url.pathname === "/api/database") {
+        sendJson(res, 200, await analyzeDatabaseSchema(root));
+        return;
+      }
+      if (url.pathname === "/api/events") {
+        sendJson(res, 200, await analyzeEvents(root));
+        return;
+      }
+      if (url.pathname === "/api/deps") {
+        sendJson(res, 200, await analyzeDependencies(root));
+        return;
+      }
+      if (url.pathname === "/api/security") {
+        sendJson(res, 200, await analyzeSecuritySurface(root));
+        return;
+      }
+      if (url.pathname === "/api/search") {
+        const q = url.searchParams.get("q") ?? "";
+        sendJson(res, 200, await searchSymbolsAndConcepts(root, q));
+        return;
+      }
+      if (url.pathname === "/api/what-if") {
+        const target = url.searchParams.get("target") ?? "";
+        if (!target.trim()) {
+          sendJson(res, 400, { error: "target query param required" });
+          return;
+        }
+        sendJson(res, 200, await analyzeWhatIf(root, target));
+        return;
+      }
+      if (url.pathname === "/api/forensic") {
+        sendJson(res, 200, await runForensicAnalysis(root));
+        return;
+      }
+      if (url.pathname === "/api/incident") {
+        sendJson(res, 200, await buildIncidentHypotheses(root));
+        return;
+      }
+      if (url.pathname === "/api/infra") {
+        sendJson(res, 200, await analyzeInfra(root));
+        return;
+      }
+      if (url.pathname === "/api/features") {
+        sendJson(res, 200, await analyzeFeatureIntelligence(root));
+        return;
+      }
+      if (url.pathname === "/api/evolution") {
+        sendJson(res, 200, await buildSoftwareEvolutionTimeline(root));
+        return;
+      }
+      if (url.pathname === "/api/memory") {
+        const q = url.searchParams.get("q") ?? "";
+        sendJson(res, 200, await queryMemory(root, q));
+        return;
+      }
+      if (url.pathname === "/api/decisions") {
+        sendJson(res, 200, await loadDecisionLedger(root));
+        return;
+      }
+      if (url.pathname === "/api/health") {
+        sendJson(res, 200, await analyzeCodeHealth(root));
         return;
       }
       if (url.pathname === "/api/v2/projects" || url.pathname === "/api/v2/workspaces") {

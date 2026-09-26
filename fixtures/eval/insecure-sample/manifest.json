@@ -1,0 +1,11 @@
+{
+  "name": "insecure-sample",
+  "checks": [
+    {
+      "id": "secret-marker",
+      "description": "Contains eval secret marker",
+      "expectFile": "config.js",
+      "expectContains": "sk-eval-insecure-sample-key-not-real"
+    }
+  ]
+}

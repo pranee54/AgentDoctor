@@ -10,6 +10,24 @@ import { invokeAgentMcpTool } from "../../../src/mcp/agent/registry.js";
 import { runCodingLoop } from "../../../src/agent/loop.js";
 import { ChatService } from "../../../src/agent/chat/service.js";
 import { PROJECT_CHAT_SYSTEM_PROMPT } from "../../../src/agent/chat/prompts.js";
+import { issueApprovalGrant, hashFileWritePlan } from "../../../src/product/approval/session.js";
+
+async function approveWrite(
+  root: string,
+  action: "file_create" | "file_edit",
+  resource: string,
+  content: string,
+): Promise<string> {
+  const planHash = hashFileWritePlan(action, resource, content);
+  const grant = await issueApprovalGrant({
+    root,
+    action,
+    resources: [resource],
+    risk: "MEDIUM",
+    planHash,
+  });
+  return grant.token;
+}
 
 async function tempProject(prefix: string): Promise<string> {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), prefix));
@@ -24,7 +42,7 @@ async function tempProject(prefix: string): Promise<string> {
 }
 
 describe("P2 fail-closed provider none", () => {
-  it("dashboard POST /api/chat + none => configuration error (no silent mock)", async () => {
+  it("dashboard POST /api/chat + none => deterministic local answer (no silent mock LLM)", async () => {
     const root = await tempProject("ad-p2-dash-");
     const server = await startDashboardServer({
       root,
@@ -36,13 +54,14 @@ describe("P2 fail-closed provider none", () => {
       const res = await fetch(`http://127.0.0.1:${server.port}/api/chat`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ question: "What is this project?" }),
+        body: JSON.stringify({ question: "What is this project architecture?" }),
       });
-      expect(res.status).toBe(503);
-      const body = (await res.json()) as { status?: string; error?: string; message?: string };
-      expect(body.status).toBe("provider-none");
-      expect(body.error).toBe("provider-none");
-      expect(JSON.stringify(body)).not.toMatch(/sk-|api[_-]?key\s*=/i);
+      expect(res.status).toBe(200);
+      const body = (await res.json()) as { status?: string; provider?: string; message?: string };
+      expect(body.status).toBe("ok");
+      expect(body.provider).toBe("deterministic");
+      expect(body.message).toMatch(/Deterministic project answer/i);
+      expect(body.message).not.toMatch(/sk-[A-Za-z0-9]{8,}/i);
     } finally {
       await server.close();
     }
@@ -71,17 +90,21 @@ describe("P2 fail-closed provider none", () => {
     }
   });
 
-  it("MCP project_ask + none => failure", async () => {
+  it("MCP project_ask + none => deterministic answer", async () => {
     const root = await tempProject("ad-p2-mcp-");
     const result = await invokeAgentMcpTool(
       root,
       "project_ask",
-      { question: "What is this?" },
+      { question: "What is this project architecture?" },
       { provider: new NoneModelProvider() },
     );
-    expect(result.isError).toBe(true);
-    const structured = result.structured as { error?: { code?: string } };
-    expect(structured.error?.code).toBe("provider_none");
+    expect(result.isError).toBe(false);
+    const structured = result.structured as {
+      ok?: boolean;
+      response?: { provider?: string; status?: string };
+    };
+    expect(structured.ok).toBe(true);
+    expect(structured.response?.provider).toBe("deterministic");
   });
 
   it("MCP project_ask + mock => works", async () => {
@@ -97,19 +120,21 @@ describe("P2 fail-closed provider none", () => {
 });
 
 describe("P7 MCP agent tool coverage", () => {
-  it("file_edit requires approval and applies when approved", async () => {
+  it("file_edit requires approval token and applies when granted", async () => {
     const root = await tempProject("ad-p7-edit-");
+    const content = "export const a = 2;\n";
     const denied = await invokeAgentMcpTool(root, "file_edit", {
       path: "src/a.ts",
-      content: "export const a = 2;\n",
-      approved: false,
+      content,
+      approved: true,
     });
     expect(denied.isError).toBe(true);
 
+    const token = await approveWrite(root, "file_edit", "src/a.ts", content);
     const ok = await invokeAgentMcpTool(root, "file_edit", {
       path: "src/a.ts",
-      content: "export const a = 2;\n",
-      approved: true,
+      content,
+      approvalToken: token,
     });
     expect(ok.isError).toBe(false);
     expect(await fs.readFile(path.join(root, "src", "a.ts"), "utf8")).toContain("= 2");
@@ -121,17 +146,21 @@ describe("P7 MCP agent tool coverage", () => {
     await fs.writeFile(path.join(outside, "secret.txt"), "OUT\n");
     await fs.symlink(outside, path.join(root, "leak"));
 
+    const travContent = "x";
+    const travToken = await approveWrite(root, "file_edit", "../../etc/passwd", travContent);
     const trav = await invokeAgentMcpTool(root, "file_edit", {
       path: "../../etc/passwd",
-      content: "x",
-      approved: true,
+      content: travContent,
+      approvalToken: travToken,
     });
     expect(trav.isError).toBe(true);
 
+    const symContent = "hacked";
+    const token2 = await approveWrite(root, "file_edit", "leak/secret.txt", symContent);
     const sym = await invokeAgentMcpTool(root, "file_edit", {
       path: "leak/secret.txt",
-      content: "hacked",
-      approved: true,
+      content: symContent,
+      approvalToken: token2,
     });
     expect(sym.isError).toBe(true);
     expect(await fs.readFile(path.join(outside, "secret.txt"), "utf8")).toBe("OUT\n");
@@ -139,10 +168,12 @@ describe("P7 MCP agent tool coverage", () => {
 
   it("change_verify returns structured verification without shell", async () => {
     const root = await tempProject("ad-p7-verify-");
+    const content = "export const a = 3;\n";
+    const token = await approveWrite(root, "file_edit", "src/a.ts", content);
     await invokeAgentMcpTool(root, "file_edit", {
       path: "src/a.ts",
-      content: "export const a = 3;\n",
-      approved: true,
+      content,
+      approvalToken: token,
     });
     const result = await invokeAgentMcpTool(root, "change_verify", {});
     expect(result.isError).toBe(false);

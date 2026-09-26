@@ -7,6 +7,14 @@ import { buildAgentPlan } from "../../agent/plan.js";
 import { executeAgentTool, newToolCall } from "../../agent/tools/index.js";
 import { retrieveProjectContext } from "../../agent/context/retrieve.js";
 import { summarizeProjectForChat } from "../../agent/chat/project-summary.js";
+import {
+  consumeApprovalGrant,
+  issueApprovalGrant,
+  hashPlanPayload,
+  hashFileWritePlan,
+} from "../../product/approval/session.js";
+import type { ApprovalRisk } from "../../product/approval/model.js";
+import { assertForensicReadOnly } from "../../product/forensic/mode.js";
 
 export const AGENT_MCP_TOOL_NAMES = [
   "project_context",
@@ -15,6 +23,7 @@ export const AGENT_MCP_TOOL_NAMES = [
   "file_read",
   "file_create",
   "file_edit",
+  "approval_issue",
   "agent_plan",
   "change_verify",
 ] as const;
@@ -66,30 +75,55 @@ export function listAgentMcpTools(): Tool[] {
     {
       name: "file_create",
       description:
-        "WRITE: Create file (requires approved=true). Path-safe; never shell. Model cannot self-approve.",
+        "WRITE: Create file. Requires approvalToken from issueApprovalGrant / CLI --approve. Bare approved=true is rejected.",
       inputSchema: {
         type: "object",
         properties: {
           path: { type: "string" },
           content: { type: "string" },
-          approved: { type: "boolean" },
+          approvalToken: { type: "string" },
+          approved: {
+            type: "boolean",
+            description: "Legacy flag — insufficient alone; approvalToken required",
+          },
         },
-        required: ["path", "content", "approved"],
+        required: ["path", "content", "approvalToken"],
         additionalProperties: false,
       },
     },
     {
       name: "file_edit",
-      description: "WRITE: Edit file (requires approved=true). Path-safe.",
+      description:
+        "WRITE: Edit file. Requires approvalToken from issueApprovalGrant / CLI --approve.",
       inputSchema: {
         type: "object",
         properties: {
           path: { type: "string" },
           content: { type: "string" },
           oldContent: { type: "string" },
-          approved: { type: "boolean" },
+          approvalToken: { type: "string" },
+          approved: {
+            type: "boolean",
+            description: "Legacy flag — insufficient alone; approvalToken required",
+          },
         },
-        required: ["path", "approved"],
+        required: ["path", "approvalToken"],
+        additionalProperties: false,
+      },
+    },
+    {
+      name: "approval_issue",
+      description:
+        "TRUSTED: Issue a short-lived approval grant for writes. Requires AGENTDOCTOR_MCP_TRUSTED_APPROVE=1 in the MCP server environment (not model-settable).",
+      inputSchema: {
+        type: "object",
+        properties: {
+          action: { type: "string" },
+          resources: { type: "array", items: { type: "string" } },
+          planHash: { type: "string" },
+          risk: { type: "string", enum: ["LOW", "MEDIUM", "HIGH", "CRITICAL"] },
+        },
+        required: ["action", "resources", "planHash"],
         additionalProperties: false,
       },
     },
@@ -141,19 +175,6 @@ export async function invokeAgentMcpTool(
           };
         }
         const provider = options?.provider ?? createModelProvider(loadAiConfig());
-        if (provider.id === "none") {
-          return {
-            structured: {
-              ok: false,
-              error: {
-                code: "provider_none",
-                message:
-                  "AI chat is not configured. Set AGENTDOCTOR_AI_PROVIDER=mock (or openai-compatible). Silent mock fallback is disabled.",
-              },
-            },
-            isError: true,
-          };
-        }
         const chat = new ChatService({
           root,
           provider,
@@ -163,7 +184,7 @@ export async function invokeAgentMcpTool(
           const response = await chat.ask(question);
           return {
             structured: { ok: response.status === "ok", response },
-            isError: response.status !== "ok",
+            isError: response.status !== "ok" && response.status !== "provider-none",
           };
         } finally {
           await chat.end();
@@ -184,11 +205,23 @@ export async function invokeAgentMcpTool(
         return { structured: result, isError: !result.ok };
       }
       case "file_create": {
-        if (args.approved !== true) {
+        assertForensicReadOnly(process.env.AGENTDOCTOR_FORENSIC_MODE === "1");
+        const token = typeof args.approvalToken === "string" ? args.approvalToken : undefined;
+        const pathArg = typeof args.path === "string" ? args.path : "";
+        const content = typeof args.content === "string" ? args.content : "";
+        const planHash = hashFileWritePlan("file_create", pathArg, content);
+        const gate = await consumeApprovalGrant({
+          root,
+          token,
+          action: "file_create",
+          resources: [pathArg],
+          requirePlanHash: planHash,
+        });
+        if (!gate.ok) {
           return {
             structured: {
               ok: false,
-              error: { code: "approval_required", message: "approved=true required" },
+              error: { code: "approval_required", message: gate.reason },
             },
             isError: true,
           };
@@ -201,11 +234,23 @@ export async function invokeAgentMcpTool(
         return { structured: result, isError: !result.ok };
       }
       case "file_edit": {
-        if (args.approved !== true) {
+        assertForensicReadOnly(process.env.AGENTDOCTOR_FORENSIC_MODE === "1");
+        const token = typeof args.approvalToken === "string" ? args.approvalToken : undefined;
+        const pathArg = typeof args.path === "string" ? args.path : "";
+        const content = typeof args.content === "string" ? args.content : "";
+        const planHash = hashFileWritePlan("file_edit", pathArg, content);
+        const gate = await consumeApprovalGrant({
+          root,
+          token,
+          action: "file_edit",
+          resources: [pathArg],
+          requirePlanHash: planHash,
+        });
+        if (!gate.ok) {
           return {
             structured: {
               ok: false,
-              error: { code: "approval_required", message: "approved=true required" },
+              error: { code: "approval_required", message: gate.reason },
             },
             isError: true,
           };
@@ -220,6 +265,55 @@ export async function invokeAgentMcpTool(
           { allowWrite: true, approvedByHuman: true },
         );
         return { structured: result, isError: !result.ok };
+      }
+      case "approval_issue": {
+        if (process.env.AGENTDOCTOR_MCP_TRUSTED_APPROVE !== "1") {
+          return {
+            structured: {
+              ok: false,
+              error: {
+                code: "trust_required",
+                message:
+                  "approval_issue requires AGENTDOCTOR_MCP_TRUSTED_APPROVE=1 in the MCP host environment",
+              },
+            },
+            isError: true,
+          };
+        }
+        const resources = Array.isArray(args.resources)
+          ? args.resources.filter((r): r is string => typeof r === "string")
+          : [];
+        const action = typeof args.action === "string" ? args.action : "file_edit";
+        const planHash =
+          typeof args.planHash === "string" && args.planHash.length >= 8
+            ? args.planHash
+            : hashPlanPayload(action);
+        const risk = (typeof args.risk === "string" ? args.risk : "MEDIUM") as ApprovalRisk;
+        try {
+          const grant = await issueApprovalGrant({
+            root,
+            action,
+            resources,
+            risk,
+            planHash,
+            actor: "mcp-trusted-host",
+          });
+          return {
+            structured: { ok: true, token: grant.token, expiresAt: grant.expiresAt, planHash },
+            isError: false,
+          };
+        } catch (error) {
+          return {
+            structured: {
+              ok: false,
+              error: {
+                code: "invalid_grant",
+                message: error instanceof Error ? error.message : String(error),
+              },
+            },
+            isError: true,
+          };
+        }
       }
       case "agent_plan": {
         const goal = typeof args.goal === "string" ? args.goal : "";

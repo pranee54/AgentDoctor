@@ -1,0 +1,4 @@
+{
+  "name": "php-laravel-lite",
+  "checks": [{ "id": "routes", "description": "Laravel routes file", "expectFile": "routes/web.php" }]
+}

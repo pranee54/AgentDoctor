@@ -1,41 +1,46 @@
 # AgentDoctor
 
-## Engineering assurance for AI coding agents.
+### The intelligence and assurance layer for software projects.
 
-Understand your codebase, assess the impact of changes, govern engineering knowledge, enforce safety policies, and attach inspectable evidence to AI-driven changes.
+**Understand your codebase. Build safely. Verify the result.**
+
+Ask questions about a real repository. Plan a change. Require approval. Edit under path-safe controls. Map tests and risk. Attach evidence. Prove integrity — without pretending the change is “correct.”
 
 [![npm](https://img.shields.io/npm/v/@praneeth_54/agentdoctor?label=npm)](https://www.npmjs.com/package/@praneeth_54/agentdoctor)
 [![CI](https://img.shields.io/github/actions/workflow/status/pranee54/AgentDoctor/ci.yml?branch=main&label=CI)](https://github.com/pranee54/AgentDoctor/actions/workflows/ci.yml)
 [![Node](https://img.shields.io/node/v/@praneeth_54/agentdoctor)](https://nodejs.org)
-[![License](https://img.shields.io/github/license/pranee54/AgentDoctor)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-**Published:** [`@praneeth_54/agentdoctor@2.1.0`](https://www.npmjs.com/package/@praneeth_54/agentdoctor)
-**Release notes:** [docs/RELEASE_2_1_0.md](docs/RELEASE_2_1_0.md) · Prior assurance cut: [docs/2.0.1/README.md](docs/2.0.1/README.md)
+**Published package:** [`@praneeth_54/agentdoctor`](https://www.npmjs.com/package/@praneeth_54/agentdoctor)
+**Current product:** **3.0** — project intelligence & assurance core (see [Verification](#verification))
 
-[Install](#install) · [Quickstart](#quickstart) · [Change assurance](#change-assurance) · [Project AI (2.1)](#project-ai-agent-21) · [Documentation](docs/2.0.1/README.md) · [MCP](#mcp) · [GitHub Action](#github-action) · [Architecture](#architecture)
+[Install](#install) · [5-minute quickstart](#five-minute-quickstart) · [What it can do](#what-can-it-do) · [Students](#for-students) · [MCP](#mcp) · [Security](#security-model) · [Limitations](#limitations) · [Docs](#documentation)
 
 ---
 
-## What AgentDoctor is
+## What is AgentDoctor?
 
-AgentDoctor sits between developers / AI coding agents and the repository’s engineering reality.
+AgentDoctor is a **project-aware intelligence and assurance platform**. It helps people understand, learn, plan, safely change, test, secure, verify, and remember software projects — whether the code was written by hand, with AI, or by a coding agent.
 
-AI agents can write code quickly. The harder engineering problem is knowing whether a change is **correct, safe, compatible, explainable, and consistent** with the rest of the repository.
+Most tools answer one slice of the problem:
 
-AgentDoctor collects repository signals — source structure, graphs, Git history, policies, knowledge, and verification evidence — so humans and agents can reason about changes with fewer unsupported assumptions.
+| Tool type         | Typical job           |
+| ----------------- | --------------------- |
+| Linters           | Style / static issues |
+| Test runners      | Execute tests         |
+| Code search       | Find text / symbols   |
+| Security scanners | Find vulnerabilities  |
+| AI coding agents  | Propose / apply edits |
 
-**Who it is for**
+AgentDoctor connects those concerns around **the project itself**. It builds local understanding of structure, relationships, dependencies, Git, tests, security signals, requirements, and evidence — then uses that understanding across:
 
-| Audience               | How AgentDoctor helps                                                         |
-| ---------------------- | ----------------------------------------------------------------------------- |
-| Manual developers      | Scan / fix / verify, change impact, evidence, architecture and policy checks  |
-| Students               | `learn` — explain project, viva, docs; **BUILD_WITH_ME** after approval       |
-| AI-assisted developers | Optional Project Chat (`ask` / `chat`) with evidence and truth labels         |
-| AI coding agents       | MCP + controlled tools; AgentDoctor owns context, execution, and verification |
+```text
+UNDERSTAND → ASK → PLAN → APPROVE → CHANGE → TEST → SECURE → VERIFY → PROVE
+```
 
-It is **not** a generic chatbot, IDE interceptor, or claim of full autonomy. Optional Project AI (2.1) is **opt-in** and still subject to approvals, path/runner controls, and verification. It does **not** guarantee correctness. It produces **evidence and controls** you can inspect.
+It is **not** “another chatbot,” a Cursor clone, a generic coding agent, or a claim of full autonomy.
 
-**Architecture (when AI is enabled):**
+**Invariant**
 
 ```text
 THE MODEL REASONS.
@@ -44,192 +49,230 @@ AGENTDOCTOR CONTROLS TOOLS.
 AGENTDOCTOR VERIFIES RESULTS.
 ```
 
-**Short description:** Engineering assurance for AI coding agents — repository intelligence, change evidence, safety controls, MCP tools, and an optional Project AI Agent.
+The model is **not** the source of truth. Repository evidence is.
 
 ---
 
-## Why AgentDoctor?
+## Why it exists
 
-Modern AI coding agents can:
+AI tools can write code quickly. Engineering still needs answers to:
 
-- read individual files
-- generate and edit code
-- run tests when asked
+- What is this project?
+- What depends on this module?
+- What breaks if I change it?
+- Which tests matter?
+- Is this change within policy / workspace bounds?
+- Did the requested change actually happen?
+- What evidence supports the result?
+- What remains UNKNOWN?
 
-Repository-level context is usually fragmented across:
+AgentDoctor exists for that loop — locally, inspectably, with explicit truth labels.
 
-| Signal             | Typical location               |
-| ------------------ | ------------------------------ |
-| Source structure   | AST / imports / modules        |
-| Dependencies       | manifests / lockfiles          |
-| History            | Git                            |
-| Architecture       | docs / conventions / inference |
-| Tests              | test trees / naming heuristics |
-| Policy             | CI rules / allowlists          |
-| Decisions          | ADRs / RFCs / tribal knowledge |
-| Secrets / exposure | config files / ignore rules    |
+---
 
-AgentDoctor brings those signals into one local toolchain around an AI-driven engineering change:
+## How it works
 
 ```text
-Developer / AI Agent
-        │
-        ▼
-   AgentDoctor
-        │
-┌───────────────────────────────┐
-│ Repository Intelligence       │
-│ AST / Graph / Git / Impact    │
-├───────────────────────────────┤
-│ Engineering Knowledge         │
-│ Brain / Decisions / Provenance│
-├───────────────────────────────┤
-│ Safety & Policy               │
-│ Scan / Fix / Enforce / Secrets│
-├───────────────────────────────┤
-│ Verification                  │
-│ Tests / Reports / Evidence    │
-└───────────────────────────────┘
-        │
-        ▼
-Safer, explainable engineering decisions
+                 User / Student / Developer / AI agent
+                                    │
+                                    ▼
+                              AgentDoctor
+                     (CLI · MCP · Dashboard)
+                                    │
+                                    ▼
+                        Project Understanding
+              ┌─────────────┬─────────────┬──────────────┐
+              │ Project Brain │ Code Graph │ Project DNA  │
+              │ Architecture  │ Deps/Git   │ Tests/Sec    │
+              │ Requirements  │ Search     │ Evidence     │
+              └─────────────┴─────────────┴──────────────┘
+                                    │
+                                    ▼
+                     Reasoning (optional LLM / deterministic)
+                                    │
+                                    ▼
+                         Controlled tools (path-safe)
+                                    │
+                                    ▼
+                    Verification · Evidence · Proof
 ```
 
 ---
 
-## Capability map
+## Who is it for?
 
-Status labels: **SUPPORTED** · **PARTIAL** · **EXPERIMENTAL** · **NOT YET SUPPORTED**
+### Students
 
-Details and evidence: [docs/2.0/overview/capabilities.md](docs/2.0/overview/capabilities.md) · [readiness matrix](docs/2.0/overview/readiness-matrix.md)
+College / B.Tech / final-year projects, inherited repos, viva prep, documentation.
 
-### Repository intelligence
-
-| Capability                                           | Status       |
-| ---------------------------------------------------- | ------------ |
-| TypeScript / JavaScript AST graph (+ regex fallback) | PARTIAL      |
-| Import / inferred call relationships                 | PARTIAL      |
-| Git hotspot / engineering intelligence               | PARTIAL      |
-| Change / test / refactor impact                      | PARTIAL      |
-| C4-style architecture views                          | EXPERIMENTAL |
-
-### Engineering knowledge
-
-| Capability                                                    | Status    |
-| ------------------------------------------------------------- | --------- |
-| Project Brain store + evidence-backed claims                  | SUPPORTED |
-| Repository Brain init / proposal review (never auto-approved) | PARTIAL   |
-| Governed knowledge + abstention on retrieve                   | PARTIAL   |
-| Provenance envelopes on Brain MCP tools                       | SUPPORTED |
-
-### Agent interfaces
-
-| Capability                                                                        | Status    |
-| --------------------------------------------------------------------------------- | --------- |
-| Brain MCP (`brain_*` tools, STDIO)                                                | SUPPORTED |
-| Combined MCP (Brain + intelligence tools)                                         | PARTIAL   |
-| Agent MCP (`project_ask`, path-safe file tools, plan, change verify) — 2.1        | PARTIAL   |
-| Optional Project Chat / coding agent CLI (`chat`, `ask`, `agent`, `learn`) — 2.1  | PARTIAL   |
-| Agent adapters (Cursor, Claude Code, Codex, Copilot, Windsurf, Gemini CLI, Aider) | SUPPORTED |
-| Local dashboard + `/api/v2/*` + ask-only `/api/chat` — 2.1                        | PARTIAL   |
-| Programmatic API (`scan`, Fix, Brain helpers)                                     | SUPPORTED |
-
-### Safety & governance
-
-| Capability                                               | Status                |
-| -------------------------------------------------------- | --------------------- |
-| Scan → Safe Fix → Verify                                 | SUPPORTED             |
-| Policy gates (`--min-score`, severity, rule, verify-new) | SUPPORTED             |
-| Evaluate-only policy / controlled enforcement runner     | PARTIAL               |
-| Secret scan (redacted findings) + export redaction       | PARTIAL               |
-| Path-safety for MCP / dashboard                          | PARTIAL               |
-| Local-dev team auth (scrypt)                             | PARTIAL — **not SSO** |
-
-### Verification
-
-| Capability                                              | Status                     |
-| ------------------------------------------------------- | -------------------------- |
-| Change assurance assessment + evidence bundles          | PARTIAL                    |
-| Evidence hash verify (`verified` = integrity only)      | SUPPORTED                  |
-| Unit / integration / MCP STDIO tests (`npm run verify`) | SUPPORTED                  |
-| Packed CLI clean-install smoke                          | SUPPORTED                  |
-| Reproducible AST perf harness                           | PARTIAL (synthetic sample) |
-
----
-
-## How AgentDoctor is different
-
-Most engineering tools optimize one layer: static analysis, search, docs generation, dashboards, security scanners, or AI chat.
-
-AgentDoctor is designed around the **lifecycle of an AI-driven change**:
-
-```text
-Repository
-    → Understand
-    → Impact
-    → Knowledge
-    → Policy
-    → Change
-    → Verification
-    → Evidence
+```bash
+agentdoctor start
+agentdoctor learn .
+agentdoctor learn . --viva
+agentdoctor learn . --docs
+agentdoctor ask "Explain authentication like a beginner." .
 ```
 
-That combination is the product direction. It does not mean every layer is equally mature — see the capability map and limitations.
+Use **Build With Me** only with explicit approval (`--approve`) before writes.
 
----
+### Developers
 
-## Architecture
+Inherited codebases, impact analysis, deps, architecture, change assurance.
 
-```text
-AgentDoctor
-│
-├── Repository Intelligence
-│   ├── AST (TS/JS)
-│   ├── Graph
-│   ├── Git
-│   └── Impact
-│
-├── Engineering Knowledge
-│   ├── Brain
-│   ├── Governance
-│   └── Provenance
-│
-├── Safety
-│   ├── Scanner
-│   ├── Safe Fix
-│   ├── Secrets
-│   └── Policies
-│
-├── Agent Interface
-│   ├── MCP (brain-mcp / mcp)
-│   ├── CLI
-│   ├── API / dashboard
-│   └── Adapters
-│
-└── Verification
-    ├── Tests
-    ├── Reports
-    └── Release validation
+```bash
+agentdoctor dna .
+agentdoctor graph .
+agentdoctor map .
+agentdoctor deps .
+agentdoctor search "login" .
+agentdoctor what-if src/auth.js .
+agentdoctor change analyze .
 ```
 
-Code layout: `src/{intelligence,knowledge,core,mcp,platform,enforcement,cli}/`
+### AI-assisted developers
 
-Canonical docs: [docs/2.0/overview/architecture.md](docs/2.0/overview/architecture.md)
+Works alongside Cursor, Claude Code, Codex, Copilot, Windsurf, Gemini CLI, Aider, and similar workflows as an **assurance / intelligence layer** (scan adapters + MCP) — not as a replacement IDE.
+
+```bash
+agentdoctor mcp --root /absolute/path/to/project
+agentdoctor plan "Add password reset" .
+agentdoctor agent --goal "…" --approve --apply --apply-ops '[...]' .
+```
+
+### Security / reviewers
+
+Secrets (redacted), technical security heuristics, forensic read-only mode, path/approval controls, evidence.
+
+```bash
+agentdoctor secrets .
+agentdoctor security-doctor .
+AGENTDOCTOR_FORENSIC_MODE=1 agentdoctor forensic .
+agentdoctor evidence verify <changeId> .
+```
+
+### Teams / owners
+
+Local project DNA, twin snapshots, decisions/ADRs, org catalog (local JSON — not enterprise SSO).
+
+```bash
+agentdoctor twin .
+agentdoctor decisions .
+agentdoctor org .
+agentdoctor dashboard .
+```
 
 ---
 
-## Engineering principles
+## What can it do?
 
-1. Evidence over assumptions
-2. Explicit limitations over inflated claims
-3. Safety before automation
-4. Repository context over isolated files
-5. Human approval for governed decisions
-6. Backwards compatibility where documented
-7. Reproducible verification
-8. Explainable agent actions
-9. Least privilege
-10. Secure defaults
+Status below = **complete at defined local scope** (see [docs/LIMITATIONS.md](docs/LIMITATIONS.md)). **EXTERNAL** means outside systems are required for that upgrade path.
+
+### Understand
+
+| Capability                       | CLI / surface        | Notes                          |
+| -------------------------------- | -------------------- | ------------------------------ |
+| Safe project discovery           | `start`              | Refuses home/Desktop dumps     |
+| Project DNA                      | `dna`, `start`       | Manifest / marker evidence     |
+| Code graph + AST                 | `graph`              | Strong TS/JS; host/line others |
+| Architecture / C4                | `architecture`, `c4` | Advisory unless you gate it    |
+| Dependencies + lockfiles         | `deps`               | VERIFIED when lock parsed      |
+| Software map / code health       | `map`, `health-code` | Layout + indicators            |
+| Project Brain                    | `brain`, MCP         | Local, deterministic           |
+| Requirements / API / DB / events | `requirements`, …    | File evidence; live = EXTERNAL |
+
+### Ask
+
+| Capability   | CLI / surface | Notes                                    |
+| ------------ | ------------- | ---------------------------------------- |
+| Project Chat | `ask`, `chat` | Deterministic without LLM; LLM optional  |
+| Truth labels | responses     | VERIFIED / INFERRED / UNKNOWN / EXTERNAL |
+| Search       | `search`, MCP | Lexical / TF-IDF; embeddings = EXTERNAL  |
+
+### Build
+
+| Capability        | CLI / surface         | Notes                                        |
+| ----------------- | --------------------- | -------------------------------------------- |
+| Plan              | `plan`                | No writes                                    |
+| Coding agent      | `agent`, `role-agent` | Writes need `--approve`                      |
+| MCP agent tools   | `mcp`                 | Token + planHash; bare `approved:true` fails |
+| Controlled runner | `run`, `policy`       | Shell off by default                         |
+
+### Test
+
+| Capability     | CLI / surface | Notes                                   |
+| -------------- | ------------- | --------------------------------------- |
+| Test Brain     | `test-brain`  | Mapping / impact — not mutation testing |
+| Impact         | `impact`      | Heuristic; coverage optional            |
+| Evaluation lab | `eval-lab`    | Fixture checks                          |
+
+### Secure
+
+| Capability         | CLI / surface      | Notes                                    |
+| ------------------ | ------------------ | ---------------------------------------- |
+| Secrets (redacted) | `secrets`          | Values never printed                     |
+| Security Doctor    | `security-doctor`  | Technical heuristics ≠ commercial SAST   |
+| Forensic mode      | `forensic` + env   | Read-only; blocks writes/exec            |
+| Path / workspace   | all write surfaces | Traversal / symlink escape blocked       |
+| Privacy Doctor     | `privacy-doctor`   | Technical PII-ish — not legal compliance |
+
+### Verify
+
+| Capability          | CLI / surface                        | Notes                               |
+| ------------------- | ------------------------------------ | ----------------------------------- |
+| Change analyze      | `change analyze`                     |                                     |
+| Evidence / proof    | `change verify`, `evidence`, `proof` | Integrity ≠ engineering correctness |
+| Scan → Fix → Verify | `scan`, `fix`, `verify`              | Agent-config safety                 |
+| Self-check          | `self-check`                         | Installation diagnosis              |
+
+### Learn
+
+| Capability          | CLI                                                |
+| ------------------- | -------------------------------------------------- |
+| Learn / viva / docs | `learn`, `--viva`, `--docs`                        |
+| Build With Me       | `learn --mode BUILD_WITH_ME --build "…" --approve` |
+
+### Remember / operate (local)
+
+| Capability            | CLI / surface            | Boundary                                         |
+| --------------------- | ------------------------ | ------------------------------------------------ |
+| Decisions / evolution | `decisions`, `evolution` | Local ledgers / git                              |
+| Digital Twin          | `twin`                   | Local snapshot — not live runtime twin           |
+| What-if               | `what-if`                | Graph impact — not certainty                     |
+| Infra markers         | `infra`                  | Compose/K8s/TF **files** — live cluster EXTERNAL |
+| Incident hypotheses   | `incident`               | Not auto-verified root cause; APM EXTERNAL       |
+| Org catalog           | `org`                    | Local JSON — IdP EXTERNAL                        |
+
+---
+
+## Not just a coding agent
+
+A coding agent can modify files. AgentDoctor is built for the full loop:
+
+```text
+UNDERSTAND → PLAN → APPROVE → CHANGE → TEST → SECURE → VERIFY → PROVE
+```
+
+**Don't just generate a change. Understand the project and verify the change.**
+
+Proof means **hash integrity over evidence**, with:
+
+`ENGINEERING_CORRECTNESS_NOT_CLAIMED`
+
+---
+
+## Workflow: “Add password reset”
+
+1. `agentdoctor start` — discover project, DNA, Brain
+2. `agentdoctor ask "How does authentication work?"` — evidence-backed / deterministic paths
+3. `agentdoctor search login` / `what-if src/auth.js` — related files & tests
+4. `agentdoctor plan "Add password reset"` — plan only; **no writes**
+5. Review risk; approve explicitly
+6. `agentdoctor agent --goal "Add password reset" --approve --apply --apply-ops '[…]'` — path-safe tools
+7. `agentdoctor change analyze` / `change verify` — assessment + evidence
+8. `agentdoctor proof` — integrity check
+9. Read **Verified / Not verified / UNKNOWN** — never treat integrity as product correctness
+
+Student path: `learn` → ask → viva → docs → Build With Me (with `--approve`).
 
 ---
 
@@ -238,12 +281,338 @@ Canonical docs: [docs/2.0/overview/architecture.md](docs/2.0/overview/architectu
 Requires **Node.js 20+**.
 
 ```bash
-npm install -g @praneeth_54/agentdoctor@2.1.0
-# or:
-npx @praneeth_54/agentdoctor@2.1.0 --help
+npm install -g @praneeth_54/agentdoctor@3.0.0
+agentdoctor --version   # 3.0.0
+agentdoctor --help
 ```
 
-From source:
+Or without global install:
+
+```bash
+npx @praneeth_54/agentdoctor@3.0.0 --help
+```
+
+---
+
+## Five-minute quickstart
+
+```bash
+# 1. Install
+npm install -g @praneeth_54/agentdoctor@3.0.0
+
+# 2. Enter YOUR project (not your home folder)
+cd /path/to/my-project
+
+# 3. Discover
+agentdoctor start
+
+# 4. Understand
+agentdoctor dna .
+agentdoctor graph .
+agentdoctor map .
+
+# 5. Ask (works without an LLM — deterministic analyzers)
+agentdoctor ask "Explain my project." .
+agentdoctor ask "How does authentication work?" .
+
+# 6. Inspect
+agentdoctor search "TODO" .
+agentdoctor deps .
+agentdoctor security-doctor .
+
+# 7. Plan a change (no writes)
+agentdoctor plan "Add a health check endpoint" .
+
+# 8. Apply only with explicit approval (example ops JSON; --goal required)
+agentdoctor agent --goal "Add a health check note" --approve --apply \
+  --apply-ops '[{"name":"create_file","arguments":{"path":"HEALTH.md","content":"# Health\n"}}]' .
+
+# 9. Verify change signals
+agentdoctor change analyze .
+agentdoctor changes .
+```
+
+Optional UI (loopback):
+
+```bash
+agentdoctor dashboard .
+# → http://127.0.0.1:<port>/
+```
+
+---
+
+## Command reference
+
+All commands below exist in the current CLI (`agentdoctor --help`). Prefer `--json` for scripts.
+
+<details>
+<summary><strong>Project & intelligence</strong></summary>
+
+| Command                                                     | Purpose                         |
+| ----------------------------------------------------------- | ------------------------------- |
+| `start [path]`                                              | Safe discovery, DNA, Brain init |
+| `dna [path]`                                                | Project DNA fingerprint         |
+| `graph [path]`                                              | Intelligence graph              |
+| `map [path]`                                                | Software map                    |
+| `deps` / `dependency`                                       | Dependencies + lockfiles        |
+| `search <query>`                                            | Symbol / concept search         |
+| `health` / `health-code`                                    | Git / code health               |
+| `requirements` / `api` / `database` / `events` / `features` | Lifecycle intelligence          |
+| `twin` / `what-if` / `forensic` / `evolution` / `memory`    | Twin, impact, forensic, memory  |
+| `infra` / `incident` / `org`                                | Local ops / org catalog         |
+
+</details>
+
+<details>
+<summary><strong>Chat, agent, learning</strong></summary>
+
+| Command                 | Purpose                                     | Safety                         |
+| ----------------------- | ------------------------------------------- | ------------------------------ |
+| `ask <question> [path]` | One-shot Project Chat                       | Deterministic if no provider   |
+| `chat [path]`           | Interactive chat                            | Needs provider for LLM mode    |
+| `plan <goal>`           | Plan only                                   | No file edits                  |
+| `agent`                 | Tools / apply                               | `--apply` requires `--approve` |
+| `role-agent`            | Role allowlists                             | Same approval gates            |
+| `learn`                 | Student explain / viva / docs / build modes | Writes need approval           |
+
+</details>
+
+<details>
+<summary><strong>Security, change, evidence</strong></summary>
+
+| Command                                          | Purpose                          |
+| ------------------------------------------------ | -------------------------------- |
+| `scan` / `fix` / `verify`                        | Agent-config Scan → Fix → Verify |
+| `secrets` / `security-doctor` / `privacy-doctor` | Secrets & technical doctors      |
+| `change analyze` / `change verify`               | Change assessment & evidence     |
+| `evidence` / `proof`                             | Inspect / integrity              |
+| `policy` / `run` / `enforce`                     | Controlled execution             |
+| `self-check` / `eval-lab` / `doctor`             | Self / eval / install health     |
+
+</details>
+
+<details>
+<summary><strong>Brain, MCP, dashboard, workspace</strong></summary>
+
+| Command                   | Purpose                                                     |
+| ------------------------- | ----------------------------------------------------------- |
+| `brain`                   | Project Brain CLI                                           |
+| `mcp --root <abs-or-rel>` | Combined Brain + intelligence + agent MCP (STDIO)           |
+| `brain-mcp`               | Brain-only MCP                                              |
+| `dashboard [path]`        | Local read-only SPA (loopback)                              |
+| `workspace`               | Multi-repo local isolation under `.agentdoctor/workspaces/` |
+
+</details>
+
+---
+
+## AI providers
+
+**AI is optional.** Core discovery, DNA, graph, scan/fix/verify, deps, search, security heuristics, evidence, and deterministic `ask` work **without** an API key.
+
+Implemented providers ([docs/MODEL_PROVIDERS.md](docs/MODEL_PROVIDERS.md)):
+
+| Provider                          | Role                             |
+| --------------------------------- | -------------------------------- |
+| `none`                            | Default fail-closed for LLM chat |
+| `deterministic` / local analyzers | Project Chat without LLM         |
+| `mock`                            | Tests / demos                    |
+| `openai-compatible`               | OpenAI-compatible HTTP API       |
+| `ollama`                          | Local Ollama-compatible HTTP     |
+
+Configure with `AGENTDOCTOR_AI_PROVIDER`, `AGENTDOCTOR_AI_API_KEY`, `AGENTDOCTOR_AI_BASE_URL`, `AGENTDOCTOR_AI_MODEL`.
+
+**Not implemented:** native Anthropic / Gemini clients (do not claim).
+
+---
+
+## MCP
+
+Connect AgentDoctor to AI coding workflows over STDIO:
+
+```bash
+agentdoctor mcp --root /absolute/path/to/project
+```
+
+Audited combined server exposes **38 tools** (Brain + intelligence + agent), including project DNA/context/ask, search, file read, planning, change analysis, and controlled writes.
+
+**Safety (verified):**
+
+- Path / workspace bounds; traversal rejected
+- Writes need trusted `approvalToken` + `planHash` + resource binding
+- Bare `approved: true` is **rejected**
+- `approval_issue` requires `AGENTDOCTOR_MCP_TRUSTED_APPROVE=1`
+- Secret redaction; no unrestricted shell tool
+- Forensic mode blocks write/execute
+
+Details: [docs/MCP.md](docs/MCP.md) · [docs/AGENT_APPROVALS.md](docs/AGENT_APPROVALS.md)
+
+---
+
+## Security model
+
+Repository content is **untrusted data** — never system policy.
+
+Controls include:
+
+- Central path safety (traversal, symlinks, workspace escape)
+- Approval-bound mutations (CLI `--approve` / MCP grants)
+- Controlled runner (`shell=false` by default)
+- Secret scanning with **redaction**
+- Forensic read-only mode (`AGENTDOCTOR_FORENSIC_MODE=1`)
+- Prompt-injection treated as data (eval fixture + chat framing)
+- Evidence / audit trails
+
+AgentDoctor does **not** claim to be “completely safe,” a legal compliance product, or a commercial SAST replacement.
+
+Policy: [SECURITY.md](SECURITY.md) · Model: [docs/SECURITY_MODEL.md](docs/SECURITY_MODEL.md)
+
+---
+
+## Truth model
+
+| Label        | Meaning                                   |
+| ------------ | ----------------------------------------- |
+| **VERIFIED** | Directly supported by repository evidence |
+| **INFERRED** | Derived from available signals            |
+| **UNKNOWN**  | Insufficient evidence                     |
+| **EXTERNAL** | Needs systems outside the local repo      |
+
+Honesty is a feature: the system should not invent files, line numbers, or root causes.
+
+---
+
+## Evidence and proof
+
+AgentDoctor answers: what changed, what was affected, what evidence exists, what was integrity-checked, and what remains uncertain.
+
+```bash
+agentdoctor change analyze .
+agentdoctor change verify .
+agentdoctor evidence inspect <changeId> .
+agentdoctor proof verify <changeId> .
+```
+
+**Proof = hash integrity over an evidence bundle.** It is **not** a formal proof of correctness.
+
+---
+
+## Architecture (modules)
+
+```text
+CLI / MCP / Dashboard
+        │
+        ▼
+Agent runtime · Project Chat · Student / roles
+        │
+        ▼
+Context retrieval · Truth labels
+        │
+        ▼
+Project Brain · Graph/AST · DNA · Git · Deps · Tests · Security · Twin
+        │
+        ▼
+Path-safe tools · Approvals · Controlled runner
+        │
+        ▼
+Change assessment · Evidence · Proof
+```
+
+Primary code: `src/cli`, `src/agent`, `src/product`, `src/intelligence`, `src/mcp`, `src/dashboard`, `src/core`, `src/assurance`, `src/security`.
+
+---
+
+## Technology stack
+
+Derived from `package.json` and source:
+
+| Area        | Technology                                        |
+| ----------- | ------------------------------------------------- |
+| Language    | TypeScript (ESM)                                  |
+| Runtime     | Node.js ≥ 20                                      |
+| CLI         | Commander                                         |
+| Tests       | Vitest                                            |
+| Build       | `tsc`                                             |
+| MCP         | `@modelcontextprotocol/sdk`                       |
+| Dashboard   | Local Node HTTP + embedded SPA                    |
+| AST (TS/JS) | TypeScript compiler API                           |
+| Packaging   | npm (`files`: `dist`, README, LICENSE, CHANGELOG) |
+| License     | MIT                                               |
+
+---
+
+## Verification
+
+**AgentDoctor 3.0** — local acceptance evidence:
+
+| Gate                                    | Result                                                   |
+| --------------------------------------- | -------------------------------------------------------- |
+| Formal / release / product acceptance   | **PASS** (maintainers: [docs/internal/](docs/internal/)) |
+| `npm run verify`                        | **627/627** tests, typecheck, lint, format, build        |
+| Clean `npm pack` install                | PASS                                                     |
+| MCP                                     | **38** tools; approval + path checks                     |
+| Dashboard / API                         | Real project JSON (not fake cards)                       |
+| Security / forensic / eval / self-check | PASS                                                     |
+| P0 / P1 blockers                        | **0**                                                    |
+
+Reproduce:
+
+```bash
+npm run verify
+```
+
+---
+
+## Limitations
+
+Honesty is part of the product. Read **[docs/LIMITATIONS.md](docs/LIMITATIONS.md)**.
+
+Notable boundaries:
+
+- Live Kubernetes / APM / enterprise IdP → **EXTERNAL**
+- Neural embeddings / commercial SAST → **EXTERNAL**
+- Full compiler-grade semantics for all languages → **EXTERNAL** where adapters are line scanners
+- Optional LLM providers → configure explicitly; core stays useful without them
+- Proof ≠ engineering correctness
+
+Post-acceptance ideas for later releases: maintainers see [docs/internal/POST_3_0_BACKLOG.md](docs/internal/POST_3_0_BACKLOG.md).
+
+---
+
+## Roadmap
+
+| Track                | Meaning                                                                           |
+| -------------------- | --------------------------------------------------------------------------------- |
+| **3.0.0 (released)** | Project intelligence, doctors, twin, what-if, forensic, eval, student/agent loops |
+| **Coming soon**      | Maturity, language depth, runtime adapters, DX — not promised ship dates          |
+
+---
+
+## Documentation
+
+Full index: **[docs/README.md](docs/README.md)**
+
+| Topic            | Link                                                                  |
+| ---------------- | --------------------------------------------------------------------- |
+| Product          | [docs/PRODUCT.md](docs/PRODUCT.md)                                    |
+| Project Chat     | [docs/PROJECT_CHAT.md](docs/PROJECT_CHAT.md)                          |
+| AI Agent         | [docs/AI_AGENT.md](docs/AI_AGENT.md)                                  |
+| Student mode     | [docs/STUDENT_MODE.md](docs/STUDENT_MODE.md)                          |
+| MCP              | [docs/MCP.md](docs/MCP.md)                                            |
+| Approvals        | [docs/AGENT_APPROVALS.md](docs/AGENT_APPROVALS.md)                    |
+| Security model   | [docs/SECURITY_MODEL.md](docs/SECURITY_MODEL.md)                      |
+| Evidence / Proof | [docs/EVIDENCE.md](docs/EVIDENCE.md) · [docs/PROOF.md](docs/PROOF.md) |
+| Project Brain    | [docs/PROJECT_BRAIN.md](docs/PROJECT_BRAIN.md)                        |
+| Limitations      | [docs/LIMITATIONS.md](docs/LIMITATIONS.md)                            |
+| Feature guides   | [docs/guides/features/](docs/guides/features/)                        |
+| Contributing     | [CONTRIBUTING.md](CONTRIBUTING.md)                                    |
+| Security policy  | [SECURITY.md](SECURITY.md)                                            |
+| Code of conduct  | [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)                              |
+| Changelog        | [CHANGELOG.md](CHANGELOG.md)                                          |
+
+---
+
+## Contributing
 
 ```bash
 git clone https://github.com/pranee54/AgentDoctor.git
@@ -252,194 +621,24 @@ npm install
 npm run verify
 ```
 
----
-
-## Quickstart
-
-```bash
-agentdoctor --version          # 2.1.0
-agentdoctor scan .
-agentdoctor scan . --json
-agentdoctor fix --dry-run
-agentdoctor verify --baseline agentdoctor-report.json
-
-# Repository Brain proposals (not auto-approved)
-agentdoctor init --name "My App" --domain "payments"
-agentdoctor brain proposals
-
-# Intelligence
-agentdoctor graph --mode auto --json
-agentdoctor impact --json
-agentdoctor c4 --json
-
-# Change assurance
-agentdoctor change analyze
-agentdoctor change verify
-agentdoctor change explain|diff|status
-agentdoctor evidence inspect <id>
-agentdoctor evidence verify <id>
-agentdoctor proof build|inspect|verify|export <id>
-
-# Architecture / policy / controlled run
-agentdoctor architecture init|check|explain
-agentdoctor policy check|explain --command "npm test"
-agentdoctor run explain --command "npm test"
-agentdoctor workspace create|add|list|status|remove
-
-# MCP (absolute --root required)
-agentdoctor brain-mcp --root /ABS/PATH/TO/REPO
-agentdoctor mcp --root /ABS/PATH/TO/REPO
-```
-
-### Project AI Agent (2.1 — optional; local RC)
-
-Requires an explicit provider (`AGENTDOCTOR_AI_PROVIDER=mock` or openai-compatible / ollama). Default `none` fails closed for chat.
-
-```bash
-agentdoctor ask "How does login work?" .
-agentdoctor chat .
-agentdoctor learn .
-agentdoctor learn --viva
-agentdoctor plan "Add registration"
-# Writes require --approve; model cannot self-approve
-agentdoctor agent --goal "Add registration" --approve --apply --apply-ops '[...]' .
-```
-
-Details: [docs/RELEASE_2_1_0.md](docs/RELEASE_2_1_0.md) · [docs/AI_AGENT.md](docs/AI_AGENT.md) · [docs/SECURITY_AGENT.md](docs/SECURITY_AGENT.md)
-
-CLI reference: [docs/2.0/guides/cli.md](docs/2.0/guides/cli.md) · Change assurance: [docs/2.0.1/change-assurance.md](docs/2.0.1/change-assurance.md)
-
----
-
-## Project AI Agent (2.1)
-
-Optional Project AI on top of the 2.0.1 assurance substrate. See [docs/RELEASE_2_1_0.md](docs/RELEASE_2_1_0.md).
-
-| Piece     | Behavior                                                                  |
-| --------- | ------------------------------------------------------------------------- |
-| Context   | Project evidence with truth labels; repository text is untrusted DATA     |
-| Tools     | Path-safe read/write; commands only via controlled runner (`shell=false`) |
-| Approvals | Human/caller `--approve` required for writes; LEARN mode cannot write     |
-| Verify    | Change / evidence / proof signals; `ENGINEERING_CORRECTNESS_NOT_CLAIMED`  |
-| Limits    | Tool calls, iterations, wall time, files modified, context size           |
-
-Limitations: not an OS sandbox; native Anthropic/Gemini SDKs not implemented; MCP `approved=true` is trusted-caller input (not cryptographic identity); correctness never guaranteed.
-
----
-
-## Change assurance
-
-Structured assessment, evidence bundles, and Change Proof **integrity** (not engineering correctness). Optional `--coverage` for coverage-backed / hybrid test impact. See [docs/2.0.1/FINAL_COMPLETION_AUDIT.md](docs/2.0.1/FINAL_COMPLETION_AUDIT.md).
-
-```bash
-agentdoctor change analyze              # ChangeAssessment (verificationStatus: not-run)
-agentdoctor change verify               # write .agentdoctor/evidence/<id>/ (evidence-produced)
-agentdoctor change explain|diff|status
-agentdoctor evidence inspect <id>       # list artifacts + manifest
-agentdoctor evidence verify <id>        # SHA-256 check; verified only if all hashes match
-agentdoctor proof inspect|verify <id>   # integrity; correctnessStatus always NOT_CLAIMED
-```
-
-`verified` means artifact integrity against the manifest — not that the change is correct or safe. Details: [docs/2.0.1/change-assurance.md](docs/2.0.1/change-assurance.md) · [docs/2.0.1/evidence.md](docs/2.0.1/evidence.md)
-
----
-
-## MCP
-
-AgentDoctor exposes local **STDIO** MCP servers (no API key).
-
-| Server       | Command                              | Tools                                                                                                                                                               |
-| ------------ | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Brain MCP    | `agentdoctor brain-mcp --root <abs>` | `brain_overview`, `brain_query`, `brain_explain`, `brain_trace`, `brain_claims`, `brain_evidence`, `brain_ownership`, `brain_risk`, `brain_delta`, `brain_snapshot` |
-| Combined MCP | `agentdoctor mcp --root <abs>`       | All `brain_*` tools **plus** intelligence tools below                                                                                                               |
-
-Intelligence tools (combined MCP):
-`repo_overview`, `codebase_search`, `symbol_lookup`, `dependency_lookup`, `call_graph_lookup`, `test_impact`, `refactor_impact`, `code_health`, `architecture_info`, `architecture_check`, `knowledge_retrieve`, `policy_evaluate`, `change_analyze`, `proof_inspect`, `evidence_inspect`, `graph_query`
-
-Guide: [docs/2.0/guides/mcp.md](docs/2.0/guides/mcp.md) · Deep Brain MCP: [docs/mcp/brain-mcp.md](docs/mcp/brain-mcp.md)
-
----
-
-## GitHub Action
-
-Use AgentDoctor Safety in CI for scan / verify gates. Default npm version input is **`2.1.0`**.
-
-```yaml
-- uses: pranee54/AgentDoctor@v2.1.0
-  with:
-    path: .
-    version: "2.1.0"
-    fail-on-severity: critical
-```
-
-For repository CI against the checked-out build: `version: workspace` (requires `dist/` from `npm run build`).
-
-Guide: [docs/2.0/guides/github-action.md](docs/2.0/guides/github-action.md) · Action metadata: [`action.yml`](action.yml)
-
-Marketplace listing: confirm in the GitHub UI if you need Marketplace discovery beyond the Action in this repository.
-
----
-
-## Security model
-
-| Control     | Behavior                                                                   |
-| ----------- | -------------------------------------------------------------------------- |
-| Path safety | MCP / dashboard reject traversal, encoded escapes, hostile URLs            |
-| Safe Fix    | Preflight targets; refuse symlink write-through / non-allowlisted paths    |
-| Secrets     | Opt-in scan; findings and exports redact sensitive patterns                |
-| Policy      | Evaluate-only by default (`executionResult: "not-executed"`)               |
-| Enforcement | Controlled runner blocks; does **not** claim IDE interception              |
-| Dashboard   | Loopback by default; non-loopback requires explicit opt-in                 |
-| Team auth   | Local-dev scrypt + optional OIDC JWT validation — **not** full browser SSO |
-
-Threat model: [docs/2.0/overview/security-threat-model.md](docs/2.0/overview/security-threat-model.md) · Trust boundaries: [docs/2.0/overview/trust-boundaries.md](docs/2.0/overview/trust-boundaries.md)
-
----
-
-## What AgentDoctor does not do
-
-- Full browser OAuth / production IdP login UX (JWT validation library path exists; redirect flow is experimental)
-- Complete multi-language AST (Java / Kotlin / Rust / Dart / Go extractors external or unsupported)
-- Coverage as universal ground truth without a coverage file / test map
-- IDE / agent process interception (external host APIs)
-- Production multi-tenant cloud / managed hosting in this package
-- Guaranteed autonomous command execution of “allowed” policies
-- Treating inferred C4 / heuristic impact as approved architecture truth
-- Shipping full `docs/2.0.1/` inside the npm tarball (Option B: README + GitHub docs)
-
-Full list: [docs/2.0.1/limitations.md](docs/2.0.1/limitations.md) · [docs/2.0/overview/known-limitations.md](docs/2.0/overview/known-limitations.md)
-
----
-
-## Roadmap note: Change Proof
-
-Change assessment, evidence, and proof **integrity** shipped in 2.0.1. `correctnessStatus` is always `ENGINEERING_CORRECTNESS_NOT_CLAIMED`. Broader compliance / team-scale proof UX remains planned.
-
-See [ROADMAP.md](ROADMAP.md) · [docs/2.0.1/limitations.md](docs/2.0.1/limitations.md) · [docs/2.0.1/FINAL_COMPLETION_AUDIT.md](docs/2.0.1/FINAL_COMPLETION_AUDIT.md).
-
----
-
-## Documentation map
-
-| Audience                               | Start here                                                                                                                |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| Product / 2.0.1                        | [docs/2.0.1/README.md](docs/2.0.1/README.md)                                                                              |
-| Product / 2.0                          | [docs/2.0/README.md](docs/2.0/README.md)                                                                                  |
-| Capabilities / readiness               | [capabilities](docs/2.0/overview/capabilities.md) · [readiness](docs/2.0/overview/readiness-matrix.md)                    |
-| Guides                                 | [docs/2.0/guides/](docs/2.0/guides/)                                                                                      |
-| Reference (rules, scoring, exit codes) | [docs/reference/](docs/reference/)                                                                                        |
-| Contributing                           | [CONTRIBUTING.md](CONTRIBUTING.md) · [docs/development/development.md](docs/development/development.md)                   |
-| Changelog                              | [CHANGELOG.md](CHANGELOG.md)                                                                                              |
-| Release evidence                       | [FINAL_RELEASE_AUDIT](docs/2.0.1/FINAL_RELEASE_AUDIT.md) · [FINAL_COMPLETION_AUDIT](docs/2.0.1/FINAL_COMPLETION_AUDIT.md) |
-
----
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md). Prefer evidence-backed PRs, honest status labels, and no inflated capability claims.
+See [CONTRIBUTING.md](CONTRIBUTING.md). Issues and PRs welcome via GitHub templates.
 
 ---
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+[MIT](LICENSE) © AgentDoctor Contributors
+
+---
+
+## GitHub discoverability (maintainers)
+
+Suggested repository description:
+
+> Project intelligence and assurance for software — understand, ask, plan, approve, change, test, secure, verify, and prove. Local-first. MCP-ready.
+
+Suggested topics: `software-engineering`, `developer-tools`, `code-intelligence`, `ai-agents`, `mcp`, `static-analysis`, `developer-experience`, `security`, `testing`, `typescript`
+
+---
+
+**Try it on a real project in five minutes.** If something is UNKNOWN, that is intentional — AgentDoctor should show the boundary, not invent certainty.

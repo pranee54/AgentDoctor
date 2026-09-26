@@ -17,6 +17,9 @@ import {
   handleRepoOverview,
   handleSymbolLookup,
   handleTestImpactTool,
+  handleProjectDnaTool,
+  handleSoftwareMapTool,
+  handleWhatIfTool,
 } from "./handlers.js";
 
 export const INTELLIGENCE_MCP_TOOL_NAMES = [
@@ -36,6 +39,9 @@ export const INTELLIGENCE_MCP_TOOL_NAMES = [
   "proof_inspect",
   "evidence_inspect",
   "graph_query",
+  "project_dna",
+  "software_map",
+  "what_if",
 ] as const;
 
 export type IntelligenceMcpToolName = (typeof INTELLIGENCE_MCP_TOOL_NAMES)[number];
@@ -198,6 +204,28 @@ export function listIntelligenceMcpTools(): Tool[] {
         additionalProperties: false,
       },
     },
+    {
+      name: "project_dna",
+      description:
+        "READ: Deterministic project DNA fingerprint (languages, frameworks, monorepo). No shell.",
+      inputSchema: emptyObjectSchema,
+    },
+    {
+      name: "software_map",
+      description: "READ: Navigable software map tree from discovery heuristics. No shell.",
+      inputSchema: emptyObjectSchema,
+    },
+    {
+      name: "what_if",
+      description:
+        "READ: What-if impact analysis for a repo-relative path or symbol (graph-backed). Path validated.",
+      inputSchema: {
+        type: "object",
+        properties: { target: { type: "string" } },
+        required: ["target"],
+        additionalProperties: false,
+      },
+    },
   ];
 }
 
@@ -240,6 +268,12 @@ export async function invokeIntelligenceMcpTool(
         return { structured: await handleEvidenceInspectTool(root, args), isError: false };
       case "graph_query":
         return { structured: await handleGraphQueryTool(root, args), isError: false };
+      case "project_dna":
+        return { structured: await handleProjectDnaTool(root), isError: false };
+      case "software_map":
+        return { structured: await handleSoftwareMapTool(root), isError: false };
+      case "what_if":
+        return { structured: await handleWhatIfTool(root, args), isError: false };
       default:
         return {
           structured: {

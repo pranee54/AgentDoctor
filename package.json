@@ -1,6 +1,6 @@
 {
   "name": "@praneeth_54/agentdoctor",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "description": "Engineering assurance for AI coding agents — repository intelligence, change evidence, safety controls, and MCP tools.",
   "type": "module",
   "bin": {

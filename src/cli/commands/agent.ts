@@ -1,6 +1,7 @@
 import { approvePlan, buildAgentPlan, formatAgentPlan } from "../../agent/plan.js";
 import { evaluateApproval, formatApprovalPrompt } from "../../agent/approvals.js";
 import { runCodingLoop } from "../../agent/loop.js";
+import { runRoleAgent, type AgentRole } from "../../agent/roles.js";
 import {
   executeAgentTool,
   getToolSpec,
@@ -63,6 +64,7 @@ export async function runAgentCommand(options: {
   applyOpsJson?: string;
   verify?: boolean;
   runTests?: boolean;
+  role?: AgentRole;
 }): Promise<ExitCode> {
   const root = resolveRepoRoot(options.root ?? process.cwd());
   const approvedByHuman = options.approve === true;
@@ -144,14 +146,24 @@ export async function runAgentCommand(options: {
         return EXIT_CODES.USAGE_ERROR;
       }
     }
-    const result = await runCodingLoop({
-      root,
-      goal: options.goal,
-      approvedByHuman: true,
-      ...(toolCalls ? { toolCalls } : {}),
-      verify: options.verify !== false,
-      runTests: options.runTests === true,
-    });
+    const result = options.role
+      ? await runRoleAgent({
+          role: options.role,
+          root,
+          goal: options.goal,
+          approvedByHuman: true,
+          ...(toolCalls ? { toolCalls } : {}),
+          verify: options.verify !== false,
+          runTests: options.runTests === true,
+        })
+      : await runCodingLoop({
+          root,
+          goal: options.goal,
+          approvedByHuman: true,
+          ...(toolCalls ? { toolCalls } : {}),
+          verify: options.verify !== false,
+          runTests: options.runTests === true,
+        });
     if (options.json) {
       process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
     } else {

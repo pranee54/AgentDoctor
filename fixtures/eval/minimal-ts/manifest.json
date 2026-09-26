@@ -1,0 +1,7 @@
+{
+  "name": "minimal-ts",
+  "checks": [
+    { "id": "package-json", "description": "Has package.json", "expectFile": "package.json" },
+    { "id": "entry", "description": "Has src/index.ts", "expectFile": "src/index.ts" }
+  ]
+}
