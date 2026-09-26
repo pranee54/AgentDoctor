@@ -62,10 +62,10 @@ Maintainer evidence also lives under `docs/internal/` (formal audits, acceptance
 ## Release (PENDING — do not run in this prep)
 
 - [x] version bump `2.1.0` → `3.0.0` (`package.json`, `src/constants.ts`, `action.yml`, CHANGELOG)
-- [ ] final release commit
-- [ ] `v3.0.0` tag
+- [x] final release commit
+- [x] `v3.0.0` tag
 - [ ] npm publish
-- [ ] GitHub release
+- [x] GitHub release
 - [ ] post-release clean install against published `3.0.0`
 - [ ] update README install pins from `@2.1.0` to `@3.0.0` at publish time
 
