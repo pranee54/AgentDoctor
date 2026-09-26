@@ -13,32 +13,32 @@
 
 ## Git
 
-| Item | Value |
-| ---- | ----- |
-| Branch | `main` |
-| Release commit | `c21faf1fbc4d56869b965783cebc5cf0f50ac834` (`release: AgentDoctor 3.0.0`) |
-| Annotated tag | `v3.0.0` (points to release commit) |
-| Remote push commit | **PASS** (`origin/main`) |
-| Remote push tag | **PASS** (`origin/v3.0.0`) |
+| Item               | Value                                                                     |
+| ------------------ | ------------------------------------------------------------------------- |
+| Branch             | `main`                                                                    |
+| Release commit     | `c21faf1fbc4d56869b965783cebc5cf0f50ac834` (`release: AgentDoctor 3.0.0`) |
+| Annotated tag      | `v3.0.0` (points to release commit)                                       |
+| Remote push commit | **PASS** (`origin/main`)                                                  |
+| Remote push tag    | **PASS** (`origin/v3.0.0`)                                                |
 
 ## GitHub release
 
-| Item | Value |
-| ---- | ----- |
-| Title | AgentDoctor 3.0.0 |
-| Tag | v3.0.0 |
-| Draft | false |
-| URL | https://github.com/pranee54/AgentDoctor/releases/tag/v3.0.0 |
-| Status | **CREATED** |
+| Item   | Value                                                       |
+| ------ | ----------------------------------------------------------- |
+| Title  | AgentDoctor 3.0.0                                           |
+| Tag    | v3.0.0                                                      |
+| Draft  | false                                                       |
+| URL    | https://github.com/pranee54/AgentDoctor/releases/tag/v3.0.0 |
+| Status | **CREATED**                                                 |
 
 ## npm
 
-| Step | Result |
-| ---- | ------ |
-| `npm whoami` | **FAIL** — `E401 Unauthorized` |
-| `npm publish --access public` | **FAIL** — `E404` PUT `@praneeth_54/agentdoctor` (typical when auth/scope publish rights are missing; npm often returns 404 instead of 401) |
-| `npm view … version` after attempt | **2.1.0** (unchanged) |
-| Public clean install of 3.0.0 | **NOT PERFORMED** (package not on registry) |
+| Step                               | Result                                                                                                                                      |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm whoami`                       | **FAIL** — `E401 Unauthorized`                                                                                                              |
+| `npm publish --access public`      | **FAIL** — `E404` PUT `@praneeth_54/agentdoctor` (typical when auth/scope publish rights are missing; npm often returns 404 instead of 401) |
+| `npm view … version` after attempt | **2.1.0** (unchanged)                                                                                                                       |
+| Public clean install of 3.0.0      | **NOT PERFORMED** (package not on registry)                                                                                                 |
 
 **Required human action:** authenticate as the package owner (`npm login` / valid automation token with publish rights for scope `@praneeth_54`), then run:
 
@@ -53,35 +53,35 @@ Do **not** bump to another version solely to retry. Publish **3.0.0** only.
 
 ## Tests / build
 
-| Gate | Result |
-| ---- | ------ |
-| typecheck | PASS |
-| lint | PASS |
-| format | PASS |
-| build | PASS |
-| tests | **627/627** |
+| Gate             | Result                               |
+| ---------------- | ------------------------------------ |
+| typecheck        | PASS                                 |
+| lint             | PASS                                 |
+| format           | PASS                                 |
+| build            | PASS                                 |
+| tests            | **627/627**                          |
 | `npm run verify` | PASS (re-run before publish attempt) |
 
 ## Package verification (local tarball)
 
-| Gate | Result |
-| ---- | ------ |
-| `npm pack` | PASS — `praneeth_54-agentdoctor-3.0.0.tgz` (~453 kB, 712 files) |
-| Contents | README, LICENSE, CHANGELOG, dist, package.json |
-| Secrets / private trees in tarball | NONE detected |
-| Clean install from tarball | PASS — `agentdoctor --version` → **3.0.0** |
+| Gate                               | Result                                                          |
+| ---------------------------------- | --------------------------------------------------------------- |
+| `npm pack`                         | PASS — `praneeth_54-agentdoctor-3.0.0.tgz` (~453 kB, 712 files) |
+| Contents                           | README, LICENSE, CHANGELOG, dist, package.json                  |
+| Secrets / private trees in tarball | NONE detected                                                   |
+| Clean install from tarball         | PASS — `agentdoctor --version` → **3.0.0**                      |
 
 ## CLI / product smoke (tarball)
 
-| Gate | Result |
-| ---- | ------ |
-| start | PASS |
-| ask | PASS |
-| learn --viva | PASS |
-| plan | PASS (awaiting-approval) |
-| agent --goal … --approve --apply | PASS + evidence/proof |
-| MCP tool count (dist registries) | **38** |
-| dashboard HTML + /api/status | PASS (HTTP 200) |
+| Gate                             | Result                   |
+| -------------------------------- | ------------------------ |
+| start                            | PASS                     |
+| ask                              | PASS                     |
+| learn --viva                     | PASS                     |
+| plan                             | PASS (awaiting-approval) |
+| agent --goal … --approve --apply | PASS + evidence/proof    |
+| MCP tool count (dist registries) | **38**                   |
+| dashboard HTML + /api/status     | PASS (HTTP 200)          |
 
 ## Security
 
@@ -111,10 +111,10 @@ See `docs/LIMITATIONS.md`.
 
 ## Gate summary
 
-| Surface | Status |
-| ------- | ------ |
-| Git commit + tag + push | PASS |
-| GitHub Release | PASS |
-| npm 3.0.0 published | **BLOCKED** (auth) |
-| Public npm clean install | **BLOCKED** |
-| Overall | **RELEASE BLOCKED / POST-RELEASE ISSUE** |
+| Surface                  | Status                                   |
+| ------------------------ | ---------------------------------------- |
+| Git commit + tag + push  | PASS                                     |
+| GitHub Release           | PASS                                     |
+| npm 3.0.0 published      | **BLOCKED** (auth)                       |
+| Public npm clean install | **BLOCKED**                              |
+| Overall                  | **RELEASE BLOCKED / POST-RELEASE ISSUE** |
