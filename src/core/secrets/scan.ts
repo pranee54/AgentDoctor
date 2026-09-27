@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
+import { decideDirectoryTraversal } from "../../project/ownership.js";
 import { readTextFile } from "../../utils/fs.js";
 import { resolveRepoRoot, toPosixRelative } from "../../utils/path.js";
 
@@ -123,6 +124,13 @@ async function walkFiles(root: string, dir: string, out: string[], limit: number
     const absolute = path.join(dir, entry.name);
     if (entry.isSymbolicLink()) continue;
     if (entry.isDirectory()) {
+      const relativeDir = toPosixRelative(root, absolute);
+      const traversal = await decideDirectoryTraversal({
+        projectRoot: root,
+        absoluteDir: absolute,
+        relativeDir,
+      });
+      if (!traversal.traverse) continue;
       await walkFiles(root, absolute, out, limit);
       continue;
     }

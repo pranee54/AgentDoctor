@@ -57,4 +57,63 @@ describe("dashboard product routes", () => {
       await fs.rm(root, { recursive: true, force: true });
     }
   });
+
+  it("serves Project Overview home HTML with canonical version", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "ad-dash-home-"));
+    try {
+      await fs.writeFile(
+        path.join(root, "package.json"),
+        JSON.stringify({ name: "dash-home", private: true }),
+        "utf8",
+      );
+      const server = await startDashboardServer({ root, port: 0 });
+      const html = await new Promise<string>((resolve, reject) => {
+        http
+          .get(`http://127.0.0.1:${server.port}/`, (res) => {
+            const chunks: Buffer[] = [];
+            res.on("data", (c) => chunks.push(Buffer.isBuffer(c) ? c : Buffer.from(c)));
+            res.on("end", () => resolve(Buffer.concat(chunks).toString("utf8")));
+          })
+          .on("error", reject);
+      });
+      expect(html).toContain("AgentDoctor");
+      expect(html).toContain("3.0.0");
+      expect(html).not.toContain("AgentDoctor 2.0");
+      expect(html).toContain("homeOverview");
+      expect(html).toContain("sidebarNav");
+      expect(html).toContain("pageRoot");
+      expect(html).toContain("btnCommand");
+      expect(html).toContain("OVERVIEW");
+      expect(html).toContain("Technical Details");
+      expect(html).toContain("Safety");
+      const status = (await getJson(server.port, "/api/status")) as {
+        ops?: { version?: string };
+      };
+      expect(status.ops?.version).toBe("3.0.0");
+      await server.close();
+    } finally {
+      await fs.rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it("serves what-if and whatif aliases", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "ad-dash-whatif-"));
+    try {
+      await fs.writeFile(
+        path.join(root, "package.json"),
+        JSON.stringify({ name: "dash-whatif", private: true }),
+        "utf8",
+      );
+      await fs.mkdir(path.join(root, "src"), { recursive: true });
+      await fs.writeFile(path.join(root, "src", "a.ts"), "export const a = 1;\n", "utf8");
+      const server = await startDashboardServer({ root, port: 0 });
+      const a = (await getJson(server.port, "/api/what-if?target=src")) as { target?: string };
+      const b = (await getJson(server.port, "/api/whatif?target=src")) as { target?: string };
+      expect(a.target).toBeTruthy();
+      expect(b.target).toBeTruthy();
+      await server.close();
+    } finally {
+      await fs.rm(root, { recursive: true, force: true });
+    }
+  });
 });

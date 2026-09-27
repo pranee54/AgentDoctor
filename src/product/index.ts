@@ -93,7 +93,11 @@ export type { InfraReport, InfraArtifact } from "./ops/infra.js";
 export { buildIncidentHypotheses } from "./ops/incident.js";
 export type { IncidentReport, IncidentTimelineItem } from "./ops/incident.js";
 
-export { discoverProjectRoots, resolveStartedProjectRoot } from "./discovery/roots.js";
+export {
+  discoverProjectRoots,
+  resolveStartedProjectRoot,
+  classifyBroadUserScanRoot,
+} from "./discovery/roots.js";
 export type {
   ProjectDiscoveryReport,
   ProjectCandidate,
@@ -171,3 +175,17 @@ export {
   hashFileWritePlan,
 } from "./approval/session.js";
 export type { ApprovalGrant, ConsumeApprovalResult } from "./approval/session.js";
+
+export {
+  classifyRelativePathOwnership,
+  decideDirectoryTraversal,
+  isNestedRepositoryRoot,
+  isProjectOwnedRelativePath,
+  isUnderNestedRepository,
+  assertProjectOwnedRepoPath,
+  ProjectOwnershipError,
+  OWNERSHIP_BOUNDARY_VERSION,
+  verifiedDecisionTruthMeaning,
+} from "../project/ownership.js";
+export type { ProjectOwnershipClass, DirectoryTraversalDecision } from "../project/ownership.js";
+export type { DecisionSourceKind } from "./decisions/ledger.js";

@@ -1,5 +1,5 @@
 import { EXIT_CODES, type ExitCode } from "../../types/index.js";
-import { resolveRepoRoot } from "../../utils/path.js";
+import { resolveCliProjectRoot } from "../safe-root.js";
 import { resolveTargetArgument } from "./scan.js";
 import {
   traceRequirements,
@@ -73,7 +73,12 @@ export async function runProductCommand(options: {
   approve?: boolean;
   apply?: boolean;
 }): Promise<ExitCode> {
-  const root = resolveRepoRoot(options.root ?? resolveTargetArgument(undefined));
+  const gated = await resolveCliProjectRoot(options.root ?? resolveTargetArgument(undefined));
+  if (!gated.ok) {
+    console.error(`Error: ${gated.message}`);
+    return gated.code;
+  }
+  const root = gated.root;
 
   try {
     let payload: unknown;
@@ -212,7 +217,12 @@ export async function runChangeLedgerListCommand(options: {
   root?: string;
   json?: boolean;
 }): Promise<ExitCode> {
-  const root = resolveRepoRoot(options.root ?? process.cwd());
+  const gated = await resolveCliProjectRoot(options.root);
+  if (!gated.ok) {
+    console.error(`Error: ${gated.message}`);
+    return gated.code;
+  }
+  const root = gated.root;
   const payload = await readChangeLedger(root);
   if (options.json) printJson(payload);
   else process.stdout.write(`Change ledger entries: ${payload.entries.length}\n`);

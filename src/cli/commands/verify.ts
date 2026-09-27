@@ -1,5 +1,6 @@
 import { evaluateVerifyPolicy, type PolicyOptions } from "../../core/policy/evaluate.js";
 import { verify } from "../../core/verify/verify.js";
+import { classifyBroadUserScanRoot } from "../../product/discovery/roots.js";
 import { emitGithubReports } from "../../reporters/github/emit.js";
 import { renderVerifyJsonReport } from "../../reporters/verify/json.js";
 import { renderVerifyTerminalReport } from "../../reporters/verify/terminal.js";
@@ -29,6 +30,12 @@ export async function runVerifyCommand(options: VerifyCommandOptions): Promise<E
 
   if (!(await isDirectory(target))) {
     console.error(`Error: not a directory: ${target}`);
+    return EXIT_CODES.USAGE_ERROR;
+  }
+
+  const broad = classifyBroadUserScanRoot(target);
+  if (broad.blocked) {
+    console.error(`Error: ${broad.reason}`);
     return EXIT_CODES.USAGE_ERROR;
   }
 

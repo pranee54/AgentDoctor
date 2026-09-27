@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 
 import { DEFAULT_IGNORE_DIRECTORIES, DEFAULT_MAX_FILE_SIZE_BYTES } from "../constants.js";
+import { classifyRelativePathOwnership, decideDirectoryTraversal } from "../project/ownership.js";
 import type { DiscoveredFile, DiscoveryResult } from "../types/index.js";
 import { isPathInsideRoot, toPosixRelative } from "../utils/path.js";
 import { isLogLikePath } from "./log-like.js";
@@ -80,6 +81,15 @@ export async function discoverFiles(options: DiscoverFilesOptions): Promise<Disc
           directoriesSkipped.push(relativePath);
           continue;
         }
+        const traversal = await decideDirectoryTraversal({
+          projectRoot: root,
+          absoluteDir: absolutePath,
+          relativeDir: relativePath,
+        });
+        if (!traversal.traverse) {
+          directoriesSkipped.push(`${relativePath} (${traversal.ownership})`);
+          continue;
+        }
         queue.push(absolutePath);
         continue;
       }
@@ -96,6 +106,9 @@ export async function discoverFiles(options: DiscoverFilesOptions): Promise<Disc
         // can flag the worst offenders instead of silently missing them.
         if (sizeBytes > maxFileSizeBytes && !isLogLikePath(relativePath)) {
           filesSkippedOversized += 1;
+          continue;
+        }
+        if (classifyRelativePathOwnership(relativePath) !== "project_owned") {
           continue;
         }
         files.push({

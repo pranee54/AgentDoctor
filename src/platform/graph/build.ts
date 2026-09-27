@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { createHash } from "node:crypto";
 
+import { decideDirectoryTraversal } from "../../project/ownership.js";
 import { readTextFile } from "../../utils/fs.js";
 import { resolveRepoRoot, toPosixRelative } from "../../utils/path.js";
 import type { GraphEdge, GraphNode, RepositoryGraph } from "../types.js";
@@ -56,6 +57,13 @@ async function walk(
     const absolute = path.join(dir, entry.name);
     if (entry.isSymbolicLink()) continue;
     if (entry.isDirectory()) {
+      const relativeDir = toPosixRelative(root, absolute);
+      const traversal = await decideDirectoryTraversal({
+        projectRoot: root,
+        absoluteDir: absolute,
+        relativeDir,
+      });
+      if (!traversal.traverse) continue;
       dirs.push(absolute);
       await walk(root, absolute, files, dirs, limit);
       continue;

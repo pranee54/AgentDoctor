@@ -1,6 +1,6 @@
 import type { ExitCode } from "../../types/index.js";
 import { EXIT_CODES } from "../../types/index.js";
-import { resolveRepoRoot } from "../../utils/path.js";
+import { resolveCliProjectRoot } from "../safe-root.js";
 import { runAgentDoctorMcpStdio } from "../../mcp/agentdoctor/server.js";
 
 /**
@@ -10,9 +10,13 @@ export async function runMcpCommand(options: {
   root: string;
   buildIfMissing?: boolean;
 }): Promise<ExitCode> {
-  const root = resolveRepoRoot(options.root);
+  const gated = await resolveCliProjectRoot(options.root);
+  if (!gated.ok) {
+    console.error(`Error: ${gated.message}`);
+    return gated.code;
+  }
   await runAgentDoctorMcpStdio({
-    root,
+    root: gated.root,
     buildIfMissing: options.buildIfMissing !== false,
   });
   return EXIT_CODES.SUCCESS;

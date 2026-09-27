@@ -10,7 +10,7 @@ import {
 } from "../../agent/tools/index.js";
 import type { AgentToolName } from "../../agent/tools/types.js";
 import { EXIT_CODES, type ExitCode } from "../../types/index.js";
-import { resolveRepoRoot } from "../../utils/path.js";
+import { resolveCliProjectRoot } from "../safe-root.js";
 import { colors } from "../../utils/colors.js";
 
 /**
@@ -22,7 +22,12 @@ export async function runPlanCommand(options: {
   json?: boolean;
   approve?: boolean;
 }): Promise<ExitCode> {
-  const root = resolveRepoRoot(options.root ?? process.cwd());
+  const gated = await resolveCliProjectRoot(options.root ?? process.cwd());
+  if (!gated.ok) {
+    console.error(`Error: ${gated.message}`);
+    return gated.code;
+  }
+  const root = gated.root;
   const plan = await buildAgentPlan({ root, goal: options.goal });
 
   if (options.approve) {
@@ -66,7 +71,12 @@ export async function runAgentCommand(options: {
   runTests?: boolean;
   role?: AgentRole;
 }): Promise<ExitCode> {
-  const root = resolveRepoRoot(options.root ?? process.cwd());
+  const gated = await resolveCliProjectRoot(options.root ?? process.cwd());
+  if (!gated.ok) {
+    console.error(`Error: ${gated.message}`);
+    return gated.code;
+  }
+  const root = gated.root;
   const approvedByHuman = options.approve === true;
 
   if (options.listTools) {

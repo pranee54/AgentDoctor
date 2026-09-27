@@ -7,6 +7,7 @@ import { atomicWriteTextFile, pathExists, readJsonFile } from "../../utils/fs.js
 import { resolveRepoRoot } from "../../utils/path.js";
 import type { SoftwareDigitalTwin } from "./digital-twin.js";
 import { buildSoftwareDigitalTwinSnapshot } from "./digital-twin.js";
+import { OWNERSHIP_BOUNDARY_VERSION } from "../../project/ownership.js";
 
 export interface TwinSnapshotMeta {
   root: string;
@@ -29,7 +30,10 @@ function snapshotPath(root: string): string {
 }
 
 function hashInputs(changedFiles: string[] | undefined): string {
-  const payload = (changedFiles ?? []).slice().sort().join("\n");
+  const payload = [
+    `ownership-boundary:${OWNERSHIP_BOUNDARY_VERSION}`,
+    ...(changedFiles ?? []).slice().sort(),
+  ].join("\n");
   return createHash("sha256").update(payload).digest("hex").slice(0, 16);
 }
 
@@ -41,6 +45,9 @@ export async function loadTwinSnapshot(rootInput: string): Promise<StoredTwinSna
   );
   if (!parsed.ok) return null;
   if (parsed.data.meta.root !== root) return null;
+  // Reject twins built under a prior ownership boundary (or any mismatched hash).
+  const expected = hashInputs(parsed.data.meta.changedFiles);
+  if (parsed.data.meta.invalidationHash !== expected) return null;
   return parsed.data;
 }
 

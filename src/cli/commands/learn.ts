@@ -2,7 +2,7 @@ import { MockModelProvider, createModelProvider, loadAiConfig } from "../../ai/i
 import { StudentService } from "../../agent/student.js";
 import { parseAgentMode, defaultStudentMode } from "../../agent/modes.js";
 import { EXIT_CODES, type ExitCode } from "../../types/index.js";
-import { resolveRepoRoot } from "../../utils/path.js";
+import { resolveCliProjectRoot } from "../safe-root.js";
 import type { AgentToolName } from "../../agent/tools/types.js";
 
 export async function runLearnCommand(options: {
@@ -16,7 +16,12 @@ export async function runLearnCommand(options: {
   json?: boolean;
   useMock?: boolean;
 }): Promise<ExitCode> {
-  const root = resolveRepoRoot(options.root ?? process.cwd());
+  const gated = await resolveCliProjectRoot(options.root ?? process.cwd());
+  if (!gated.ok) {
+    console.error(`Error: ${gated.message}`);
+    return gated.code;
+  }
+  const root = gated.root;
   const mode = parseAgentMode(options.mode) ?? defaultStudentMode();
   const provider = options.useMock ? new MockModelProvider() : createModelProvider(loadAiConfig());
 

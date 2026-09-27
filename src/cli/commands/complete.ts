@@ -1,5 +1,5 @@
 import { EXIT_CODES, type ExitCode } from "../../types/index.js";
-import { resolveRepoRoot } from "../../utils/path.js";
+import { resolveCliProjectRoot } from "../safe-root.js";
 import { runProjectInit } from "../../core/brain-product/init.js";
 import { buildIntelligenceGraph } from "../../intelligence/graph/build.js";
 import { analyzeGitIntelligence, deadCodeCategory } from "../../intelligence/git/analyze.js";
@@ -30,7 +30,12 @@ export async function runInitCommand(options: {
   name?: string;
   domain?: string;
 }): Promise<ExitCode> {
-  const root = resolveRepoRoot(options.root ?? process.cwd());
+  const gated = await resolveCliProjectRoot(options.root ?? process.cwd());
+  if (!gated.ok) {
+    console.error(`Error: ${gated.message}`);
+    return gated.code;
+  }
+  const root = gated.root;
   const result = await runProjectInit(root, {
     ...(options.name ? { projectName: options.name } : {}),
     ...(options.domain ? { businessDomain: options.domain } : {}),
@@ -60,7 +65,12 @@ export async function runV2SurfaceCommand(options: {
   mode?: string;
   symbol?: string;
 }): Promise<ExitCode> {
-  const root = resolveRepoRoot(options.root ?? process.cwd());
+  const gated = await resolveCliProjectRoot(options.root ?? process.cwd());
+  if (!gated.ok) {
+    console.error(`Error: ${gated.message}`);
+    return gated.code;
+  }
+  const root = gated.root;
   try {
     switch (options.action) {
       case "graph-ast": {

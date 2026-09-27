@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
+import { assertProjectOwnedRepoPath, ProjectOwnershipError } from "../../project/ownership.js";
 import { PathEscapeError, resolveSafeRepoPath } from "../../security/paths.js";
 import { atomicWriteTextFile } from "../../utils/fs.js";
 
@@ -50,15 +51,28 @@ function normalizeRel(rel: string): string {
   return rel.split(path.sep).join("/");
 }
 
+async function resolveOwnedWritePath(root: string, relativePath: string): Promise<string> {
+  const abs = resolveSafeRepoPath(root, relativePath);
+  try {
+    await assertProjectOwnedRepoPath(root, abs, relativePath);
+  } catch (error) {
+    if (error instanceof ProjectOwnershipError) {
+      throw new PathEscapeError(error.message);
+    }
+    throw error;
+  }
+  return abs;
+}
+
 /**
- * Path-safe create. Rejects existing files (use edit_file to overwrite).
+ * Path-safe + ownership-safe create. Rejects existing files (use edit_file to overwrite).
  */
 export async function createFileSafe(
   root: string,
   relativePath: string,
   content: string,
 ): Promise<FileDiffResult> {
-  const abs = resolveSafeRepoPath(root, relativePath);
+  const abs = await resolveOwnedWritePath(root, relativePath);
   const rel = normalizeRel(relativePath);
   try {
     await fs.access(abs);
@@ -93,7 +107,7 @@ export async function editFileSafe(
     replacement?: string;
   },
 ): Promise<FileDiffResult> {
-  const abs = resolveSafeRepoPath(root, relativePath);
+  const abs = await resolveOwnedWritePath(root, relativePath);
   const rel = normalizeRel(relativePath);
   const before = await fs.readFile(abs, "utf8");
   let after: string;
@@ -135,7 +149,7 @@ export async function editFileSafe(
 }
 
 export async function deleteFileSafe(root: string, relativePath: string): Promise<FileDiffResult> {
-  const abs = resolveSafeRepoPath(root, relativePath);
+  const abs = await resolveOwnedWritePath(root, relativePath);
   const rel = normalizeRel(relativePath);
   const before = await fs.readFile(abs, "utf8");
   await fs.unlink(abs);

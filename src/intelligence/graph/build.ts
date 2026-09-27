@@ -1,8 +1,8 @@
-import fs from "node:fs/promises";
 import path from "node:path";
 import { createHash } from "node:crypto";
 import ts from "typescript";
 
+import { discoverFiles } from "../../discovery/files.js";
 import { resolveRepoRoot, toPosixRelative } from "../../utils/path.js";
 import type { GraphEdge, GraphNode, RepositoryGraph } from "../../platform/types.js";
 import { buildRepositoryGraph } from "../../platform/graph/build.js";
@@ -57,31 +57,15 @@ async function applyLanguageEnrichment<
 }
 
 export async function listTsFiles(root: string, limit = 400): Promise<string[]> {
-  const out: string[] = [];
-  const skip = new Set(["node_modules", ".git", "dist", "coverage", ".agentdoctor", "vendor"]);
-  async function walk(dir: string): Promise<void> {
-    if (out.length >= limit) return;
-    let entries;
-    try {
-      entries = await fs.readdir(dir, { withFileTypes: true });
-    } catch {
-      return;
-    }
-    for (const e of entries) {
-      if (skip.has(e.name)) continue;
-      const abs = path.join(dir, e.name);
-      if (e.isSymbolicLink()) continue;
-      if (e.isDirectory()) {
-        await walk(abs);
-        continue;
-      }
-      if (/\.(ts|tsx|mts|cts)$/i.test(e.name) && !e.name.endsWith(".d.ts")) {
-        out.push(abs);
-      }
-    }
-  }
-  await walk(root);
-  return out.sort();
+  const discovered = await discoverFiles({ root });
+  return discovered.files
+    .filter((f) => {
+      const name = path.basename(f.relativePath);
+      return /\.(ts|tsx|mts|cts)$/i.test(name) && !name.endsWith(".d.ts");
+    })
+    .map((f) => f.absolutePath)
+    .sort()
+    .slice(0, limit);
 }
 
 /**

@@ -3,6 +3,7 @@ import path from "node:path";
 
 import { planContext } from "../../platform/tokens/plan.js";
 import { buildIntelligenceGraph } from "../../intelligence/graph/build.js";
+import { assertProjectOwnedRepoPath, ProjectOwnershipError } from "../../project/ownership.js";
 import { resolveRepoRoot } from "../../utils/path.js";
 import { resolveSafeRepoPath, PathEscapeError } from "../../security/paths.js";
 import type { ContextBundle, ContextCitation } from "./types.js";
@@ -26,7 +27,8 @@ function estimateTokens(text: string): number {
 /**
  * Retrieve a budgeted project context pack for the agent.
  * Reuses graph + planContext. Does not invent facts.
- * Hostile paths are rejected via resolveSafeRepoPath.
+ * Hostile paths are rejected via resolveSafeRepoPath + project ownership
+ * (containment alone must not promote .private / AgentDoctorOS / nested repos).
  */
 export async function retrieveProjectContext(
   options: RetrieveContextOptions,
@@ -80,6 +82,7 @@ export async function retrieveProjectContext(
   for (const rel of paths) {
     try {
       const abs = resolveSafeRepoPath(root, rel);
+      await assertProjectOwnedRepoPath(root, abs, rel);
       const text = await fs.readFile(abs, "utf8");
       const excerpt = text.slice(0, maxExcerpt);
       const citation: ContextCitation = {
@@ -99,6 +102,16 @@ export async function retrieveProjectContext(
           evidenceType: "metadata",
           confidence: "UNKNOWN",
           note: "path_escape: rejected",
+        });
+        continue;
+      }
+      if (error instanceof ProjectOwnershipError) {
+        citations.push({
+          source: "repository",
+          path: rel,
+          evidenceType: "metadata",
+          confidence: "UNKNOWN",
+          note: `ownership_denied: ${error.ownership}`,
         });
         continue;
       }
