@@ -77,7 +77,7 @@ describe("dashboard product routes", () => {
           .on("error", reject);
       });
       expect(html).toContain("AgentDoctor");
-      expect(html).toContain("3.0.2");
+      expect(html).toContain("3.0.3");
       expect(html).not.toContain("AgentDoctor 2.0");
       expect(html).toContain("homeOverview");
       expect(html).toContain("sidebarNav");
@@ -89,7 +89,7 @@ describe("dashboard product routes", () => {
       const status = (await getJson(server.port, "/api/status")) as {
         ops?: { version?: string };
       };
-      expect(status.ops?.version).toBe("3.0.2");
+      expect(status.ops?.version).toBe("3.0.3");
       await server.close();
     } finally {
       await fs.rm(root, { recursive: true, force: true });

@@ -66,7 +66,7 @@ describe("clean npm tarball install smoke", () => {
       shell: process.platform === "win32",
     });
     expect(ver.status).toBe(0);
-    expect(ver.stdout.trim()).toBe("3.0.2");
+    expect(ver.stdout.trim()).toBe("3.0.3");
 
     const help = spawnSync(bin, ["--help"], {
       encoding: "utf8",
