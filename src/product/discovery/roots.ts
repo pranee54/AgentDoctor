@@ -67,9 +67,20 @@ function normalizeHome(home: string): string {
   return path.resolve(home);
 }
 
+function pathsEqual(a: string, b: string): boolean {
+  const left = path.resolve(a);
+  const right = path.resolve(b);
+  return process.platform === "win32" ? left.toLowerCase() === right.toLowerCase() : left === right;
+}
+
 function isUnderHomeSubtree(abs: string, home: string, leaf: string): boolean {
   const target = path.resolve(home, leaf);
   const resolved = path.resolve(abs);
+  if (process.platform === "win32") {
+    const t = target.toLowerCase();
+    const r = resolved.toLowerCase();
+    return r === t || r.startsWith(t + "\\");
+  }
   return resolved === target || resolved.startsWith(target + path.sep);
 }
 
@@ -128,7 +139,7 @@ export function classifyBroadUserScanRoot(
   const home = normalizeHome(homeInput ?? os.homedir());
   const baselower = path.basename(cwd).toLowerCase();
   if (
-    cwd === home ||
+    pathsEqual(cwd, home) ||
     SUSPICIOUS_DIR_NAMES.has(baselower) ||
     isUnderHomeSubtree(cwd, home, "Desktop") ||
     isUnderHomeSubtree(cwd, home, "Downloads") ||
@@ -160,7 +171,6 @@ export async function discoverProjectRoots(
 
   const broad = classifyBroadUserScanRoot(cwd, home);
   if (broad.blocked) {
-    const estimatedEntries = await countEntriesShallow(cwd, Math.min(maxEntries, 5_000));
     return {
       cwd,
       home,
@@ -168,7 +178,8 @@ export async function discoverProjectRoots(
       selected: null,
       blocked: true,
       blockReason: broad.reason,
-      estimatedEntries,
+      // Do not walk the tree — counting home/Desktop can hang CI (esp. Windows).
+      estimatedEntries: 0,
       limitations,
     };
   }
@@ -194,7 +205,7 @@ export async function discoverProjectRoots(
     const resolved = path.resolve(dir);
     if (seen.has(resolved)) return;
     if (!(await isDirectory(resolved))) return;
-    if (resolved === home) return;
+    if (pathsEqual(resolved, home)) return;
     const markers = await markersAt(resolved);
     if (markers.length === 0) return;
     seen.add(resolved);
@@ -216,7 +227,7 @@ export async function discoverProjectRoots(
   // Walk up a few parents looking for markers (bounded).
   let parent = path.dirname(cwd);
   for (let i = 0; i < 4; i++) {
-    if (parent === home || parent === path.dirname(parent)) break;
+    if (pathsEqual(parent, home) || parent === path.dirname(parent)) break;
     await consider(parent, "parent directory with project markers");
     parent = path.dirname(parent);
   }
