@@ -9,11 +9,26 @@ import { retrieveProjectContext } from "../context/retrieve.js";
 import { buildChatTurnResponse } from "./response.js";
 
 const ARCH_RE =
-  /architecture|structure|module|layout|how.*(project|repo|codebase)|explain.*(project|repo|codebase|this)|what (is|does) (this|my) project|project overview|understand (my |this )?project/i;
+  /architecture|structure|module|layout|what (is|does) (this|my) project|project overview|understand (my |this )?project/i;
 const AUTH_RE = /auth|login|password|session|jwt|oauth/i;
 const DEPS_RE = /depend|package|lockfile|npm|yarn|pnpm/i;
-const START_RE = /where.*(start|entry|boot|main)|application start|entry\s*point/i;
 const DB_RE = /database|db\.|sql|prisma|query\(/i;
+
+/** ReDoS-safe: avoid `where.*…` / `how.*…` backtracking on uncontrolled chat input. */
+function isStartQuestion(q: string): boolean {
+  if (/application start|entry\s*point/i.test(q)) return true;
+  const lower = q.toLowerCase();
+  if (!lower.includes("where")) return false;
+  return /\b(start|entry|boot|main)\b/i.test(q);
+}
+
+function isArchitectureQuestion(q: string): boolean {
+  if (ARCH_RE.test(q)) return true;
+  const lower = q.toLowerCase();
+  if (lower.includes("how") && /(?:project|repo|codebase)/i.test(q)) return true;
+  if (lower.includes("explain") && /(?:project|repo|codebase|\bthis\b)/i.test(q)) return true;
+  return false;
+}
 
 export async function answerDeterministicProjectQuestion(options: {
   root: string;
@@ -76,7 +91,7 @@ export async function answerDeterministicProjectQuestion(options: {
     sections.push("");
   }
 
-  if (START_RE.test(q)) {
+  if (isStartQuestion(q)) {
     const startHits = context.citations
       .filter((c) => c.path && /(server|index|main|app)\.[jt]sx?$/i.test(c.path))
       .slice(0, 6);
@@ -157,7 +172,7 @@ export async function answerDeterministicProjectQuestion(options: {
     sections.push("");
   }
 
-  if (ARCH_RE.test(q)) {
+  if (isArchitectureQuestion(q)) {
     try {
       const graph = await buildIntelligenceGraph({ root, mode: "auto" });
       sections.push(
