@@ -1,12 +1,32 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import zlib from "node:zlib";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(here, "../../..");
+
+/** Portable .tgz listing — avoids Windows `tar -tzf` exit-2 flakes under shell. */
+function listTarGzEntries(tarballPath: string): string[] {
+  const data = zlib.gunzipSync(fs.readFileSync(tarballPath));
+  const names: string[] = [];
+  let offset = 0;
+  while (offset + 512 <= data.length) {
+    const header = data.subarray(offset, offset + 512);
+    if (header.every((b) => b === 0)) break;
+    const name = header.subarray(0, 100).toString("utf8").replace(/\0.*$/, "");
+    const prefix = header.subarray(345, 500).toString("utf8").replace(/\0.*$/, "");
+    const sizeOctal = header.subarray(124, 136).toString("utf8").replace(/\0.*$/, "").trim();
+    const size = Number.parseInt(sizeOctal, 8) || 0;
+    const full = prefix ? `${prefix}/${name}` : name;
+    if (full) names.push(full);
+    offset += 512 + Math.ceil(size / 512) * 512;
+  }
+  return names;
+}
 
 describe("clean npm tarball install smoke", () => {
   it("packs, installs into temp dir, and runs --version + help", () => {
@@ -56,14 +76,11 @@ describe("clean npm tarball install smoke", () => {
     expect(help.status).toBe(0);
     expect(help.stdout).toMatch(/Usage:/i);
 
-    const list = spawnSync("tar", ["-tzf", tarball], {
-      encoding: "utf8",
-      timeout: 60_000,
-      shell: process.platform === "win32",
-    });
-    expect(list.status).toBe(0);
-    expect(list.stdout).not.toMatch(/(^|\/)\.private\//);
-    expect(list.stdout).not.toMatch(/(^|\/)AgentDoctorOS\//);
+    const entries = listTarGzEntries(tarball);
+    expect(entries.length).toBeGreaterThan(10);
+    const listing = entries.join("\n");
+    expect(listing).not.toMatch(/(^|\/)\.private\//);
+    expect(listing).not.toMatch(/(^|\/)AgentDoctorOS\//);
 
     fs.rmSync(tmp, { recursive: true, force: true });
     fs.rmSync(packDir, { recursive: true, force: true });
