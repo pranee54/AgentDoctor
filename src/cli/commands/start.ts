@@ -43,7 +43,14 @@ export async function runStartCommand(options: {
     }
     process.stdout.write("Project candidates:\n");
     if (discovery.candidates.length === 0) {
-      process.stdout.write("  (none found — navigate into a project or pass a path)\n");
+      process.stdout.write(`  (none found under ${gated.root})\n`);
+      process.stdout.write(
+        "  Tip: open a project directory that contains source code or a manifest (package.json, composer.json, pyproject.toml, .git, …),\n",
+      );
+      process.stdout.write(`  or run: agentdoctor start ${gated.root}\n`);
+      process.stdout.write(
+        "  Related: agentdoctor dna .   # inspect what DNA sees in this folder\n",
+      );
       return EXIT_CODES.USAGE_ERROR;
     }
     for (const [i, c] of discovery.candidates.entries()) {
@@ -51,7 +58,9 @@ export async function runStartCommand(options: {
         `  [${i + 1}] ${c.root}\n      score=${c.score} markers=${c.markers.join(", ")} (${c.reason})\n`,
       );
     }
-    process.stdout.write("\nRe-run with --select <path> to initialize that project.\n");
+    process.stdout.write(
+      "\nMultiple projects detected — re-run with --select <path> (or pass an explicit path).\n",
+    );
     return EXIT_CODES.SUCCESS;
   }
 
@@ -70,8 +79,9 @@ export async function runStartCommand(options: {
   if (options.json) {
     printJson(payload);
   } else {
+    process.stdout.write(`✓ Project detected: ${dna.name}\n`);
+    process.stdout.write(`  Root: ${root}\n`);
     process.stdout.write(`AgentDoctor start\n`);
-    process.stdout.write(`  root: ${root}\n`);
     process.stdout.write(`  fingerprint: ${dna.fingerprint}\n`);
     process.stdout.write(`  type: ${dna.projectType}\n`);
     process.stdout.write(`  languages: ${dna.languages.join(", ") || "(none)"}\n`);
