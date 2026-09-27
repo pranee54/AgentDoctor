@@ -22,7 +22,6 @@ import { listKnowledge } from "../knowledge/store.js";
 import { CONTRACTS_VERSION } from "../contracts/index.js";
 import { collectOpsHealth } from "../ops/health.js";
 import { listPolicyPacks } from "../policy/packs.js";
-import { sanitizeForOutput } from "../utils/path.js";
 import { createModelProvider, loadAiConfig } from "../ai/index.js";
 import type { ModelProvider } from "../ai/types.js";
 import { ChatService } from "../agent/chat/service.js";
