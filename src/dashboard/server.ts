@@ -430,8 +430,11 @@ export async function startDashboardServer(
           const ownershipDenied =
             /ownership|escapes|path escape|PROJECT_OWNERSHIP/i.test(message) ||
             (error instanceof Error && error.name === "ProjectOwnershipError");
+          // Never return raw Error text to clients (CodeQL js/stack-trace-exposure).
           sendJson(res, ownershipDenied ? 400 : 500, {
-            error: ownershipDenied ? "path outside project ownership" : message,
+            error: ownershipDenied
+              ? "path outside project ownership"
+              : "what-if analysis failed",
           });
         }
         return;
