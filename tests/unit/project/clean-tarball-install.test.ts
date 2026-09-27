@@ -11,12 +11,18 @@ const repoRoot = path.resolve(here, "../../..");
 describe("clean npm tarball install smoke", () => {
   it("packs, installs into temp dir, and runs --version + help", () => {
     const packDir = fs.mkdtempSync(path.join(os.tmpdir(), "ad-pack-dest-"));
+    // Windows needs shell so `npm.cmd` resolves; pack can be slow under CI load.
     const pack = spawnSync("npm", ["pack", "--json", "--pack-destination", packDir], {
       cwd: repoRoot,
       encoding: "utf8",
-      timeout: 120_000,
+      timeout: 300_000,
+      shell: process.platform === "win32",
+      env: { ...process.env, NO_COLOR: "1" },
     });
-    expect(pack.status).toBe(0);
+    expect(
+      pack.status,
+      `npm pack failed: status=${pack.status} signal=${pack.signal} err=${pack.error?.message ?? ""}\n${pack.stderr}`,
+    ).toBe(0);
     const parsed = JSON.parse(pack.stdout) as Array<{ filename: string }>;
     const filename = parsed[0]?.filename;
     expect(filename).toMatch(/\.tgz$/);
@@ -29,19 +35,32 @@ describe("clean npm tarball install smoke", () => {
     const install = spawnSync("npm", ["install", tarball, "--prefix", tmp], {
       encoding: "utf8",
       timeout: 180_000,
+      shell: process.platform === "win32",
     });
     expect(install.status, install.stderr).toBe(0);
 
     const bin = path.join(tmp, "node_modules", ".bin", "agentdoctor");
-    const ver = spawnSync(bin, ["--version"], { encoding: "utf8", timeout: 15_000 });
+    const ver = spawnSync(bin, ["--version"], {
+      encoding: "utf8",
+      timeout: 15_000,
+      shell: process.platform === "win32",
+    });
     expect(ver.status).toBe(0);
     expect(ver.stdout.trim()).toBe("3.0.1");
 
-    const help = spawnSync(bin, ["--help"], { encoding: "utf8", timeout: 15_000 });
+    const help = spawnSync(bin, ["--help"], {
+      encoding: "utf8",
+      timeout: 15_000,
+      shell: process.platform === "win32",
+    });
     expect(help.status).toBe(0);
     expect(help.stdout).toMatch(/Usage:/i);
 
-    const list = spawnSync("tar", ["-tzf", tarball], { encoding: "utf8", timeout: 60_000 });
+    const list = spawnSync("tar", ["-tzf", tarball], {
+      encoding: "utf8",
+      timeout: 60_000,
+      shell: process.platform === "win32",
+    });
     expect(list.status).toBe(0);
     expect(list.stdout).not.toMatch(/(^|\/)\.private\//);
     expect(list.stdout).not.toMatch(/(^|\/)AgentDoctorOS\//);

@@ -8,5 +8,10 @@ export default defineConfig({
     exclude: ["tests/unit/understanding/**"],
     environment: "node",
     reporters: ["default"],
+    // forks + async CLI spawns avoid Vitest worker RPC starvation (onTaskUpdate).
+    pool: "forks",
+    testTimeout: 120_000,
+    hookTimeout: 60_000,
+    teardownTimeout: 60_000,
   },
 });

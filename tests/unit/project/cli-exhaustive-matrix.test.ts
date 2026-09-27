@@ -1,7 +1,8 @@
 /**
  * CLI matrix: enumerate commands from --help and probe home refusal + help exits.
  */
-import { spawnSync } from "node:child_process";
+import { spawn } from "node:child_process";
+import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -13,29 +14,57 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(here, "../../..");
 const cliPath = path.join(repoRoot, "dist/cli/index.js");
 
-function runCli(
+function assertCliBuilt(): void {
+  if (!fs.existsSync(cliPath)) {
+    throw new Error(
+      `Missing ${cliPath}. Run \`npm run build\` before CLI spawn tests (release/CI must build before test).`,
+    );
+  }
+}
+
+function runCliAsync(
   args: string[],
   timeoutMs = 15_000,
-): {
+): Promise<{
   status: number | null;
   stdout: string;
   stderr: string;
   ms: number;
   signal: string | null;
-} {
+}> {
   const started = Date.now();
-  const r = spawnSync(process.execPath, [cliPath, ...args], {
-    encoding: "utf8",
-    timeout: timeoutMs,
-    env: { ...process.env, NO_COLOR: "1" },
+  return new Promise((resolve) => {
+    const child = spawn(process.execPath, [cliPath, ...args], {
+      env: { ...process.env, NO_COLOR: "1" },
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    let stdout = "";
+    let stderr = "";
+    let settled = false;
+    const finish = (status: number | null, signal: string | null) => {
+      if (settled) return;
+      settled = true;
+      resolve({ status, stdout, stderr, ms: Date.now() - started, signal });
+    };
+    const timer = setTimeout(() => {
+      child.kill("SIGTERM");
+      finish(null, "SIGTERM");
+    }, timeoutMs);
+    child.stdout.on("data", (c) => {
+      stdout += String(c);
+    });
+    child.stderr.on("data", (c) => {
+      stderr += String(c);
+    });
+    child.on("error", () => {
+      clearTimeout(timer);
+      finish(null, "ERROR");
+    });
+    child.on("close", (code, signal) => {
+      clearTimeout(timer);
+      finish(code, signal);
+    });
   });
-  return {
-    status: r.status,
-    stdout: r.stdout ?? "",
-    stderr: r.stderr ?? "",
-    ms: Date.now() - started,
-    signal: r.signal,
-  };
 }
 
 /** Commander lists commands as `  name ...` — do not treat wrapped description words as commands. */
@@ -53,11 +82,12 @@ function parseTopLevelCommands(helpText: string): string[] {
 
 describe("CLI exhaustive matrix (help + home refusal)", () => {
   it("enumerates commands and verifies --help; home refused with non-zero exit", async () => {
-    const top = runCli(["--help"]);
+    assertCliBuilt();
+    const top = await runCliAsync(["--help"]);
     expect(top.status).toBe(0);
     expect(top.stdout).toMatch(/Usage:/i);
 
-    const version = runCli(["--version"]);
+    const version = await runCliAsync(["--version"]);
     expect(version.status).toBe(0);
     expect(version.stdout.trim()).toBe("3.0.1");
 
@@ -71,7 +101,7 @@ describe("CLI exhaustive matrix (help + home refusal)", () => {
     );
 
     for (const cmd of commands) {
-      const h = runCli([cmd, "--help"], 12_000);
+      const h = await runCliAsync([cmd, "--help"], 12_000);
       expect(h.signal, `${cmd} --help hung`).not.toBe("SIGTERM");
       expect(h.ms, `${cmd} --help hung`).toBeLessThan(12_000);
       expect(
@@ -94,7 +124,7 @@ describe("CLI exhaustive matrix (help + home refusal)", () => {
       ["security-doctor", home],
     ];
     for (const args of probes) {
-      const r = runCli(args, 8_000);
+      const r = await runCliAsync(args, 8_000);
       expect(r.ms, `${args.join(" ")} hung`).toBeLessThan(8_000);
       expect(r.status, `${args.join(" ")}: ${r.stderr}`).toBe(2);
       expect(`${r.stderr}\n${r.stdout}`).toMatch(/refus|home|Desktop|Documents|Downloads/i);

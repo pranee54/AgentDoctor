@@ -3,7 +3,7 @@
  * for every path-accepting intelligence leaf (owned / HOME / foreign / invalid).
  * Every spawn uses an explicit timeout (no hang class).
  */
-import { spawn, spawnSync } from "node:child_process";
+import { spawn } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -18,6 +18,14 @@ import { startAdversarialOpenAiServer } from "../../../src/ai/providers/adversar
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(here, "../../..");
 const cliPath = path.join(repoRoot, "dist/cli/index.js");
+
+function assertCliBuilt(): void {
+  if (!fs.existsSync(cliPath)) {
+    throw new Error(
+      `Missing ${cliPath}. Run \`npm run build\` before CLI spawn tests (release/CI must build before test).`,
+    );
+  }
+}
 
 /** Top-level commands from `agentdoctor --help` / program.ts (source-reconciled). */
 export const TOP_LEVEL_COMMANDS = [
@@ -120,29 +128,10 @@ const PATH_LEAVES: string[][] = [
   ["ask", "ping"],
 ];
 
-function runCli(
-  args: string[],
-  timeoutMs = 12_000,
-  env?: NodeJS.ProcessEnv,
-): { status: number | null; stdout: string; stderr: string; ms: number; signal: string | null } {
-  const started = Date.now();
-  const r = spawnSync(process.execPath, [cliPath, ...args], {
-    encoding: "utf8",
-    timeout: timeoutMs,
-    env: { ...process.env, NO_COLOR: "1", ...(env ?? {}) },
-  });
-  return {
-    status: r.status,
-    stdout: r.stdout ?? "",
-    stderr: r.stderr ?? "",
-    ms: Date.now() - started,
-    signal: r.signal,
-  };
-}
-
 /**
- * Async CLI spawn — required when the parent process hosts an HTTP provider
- * (spawnSync blocks the event loop and deadlocks the child's fetch).
+ * Async CLI spawn — preferred for long matrices so Vitest worker RPC stays alive
+ * (spawnSync blocks the event loop → onTaskUpdate timeouts). Also required when
+ * the parent hosts an HTTP provider (avoids fetch deadlock).
  */
 function runCliAsync(
   args: string[],
@@ -213,11 +202,12 @@ function writeHostileOwned(): { root: string; foreign: string } {
 }
 
 describe("CLI certification matrix", () => {
-  it("every top-level command --help terminates quickly with Usage", () => {
+  it("every top-level command --help terminates quickly with Usage", async () => {
+    assertCliBuilt();
     expect(TOP_LEVEL_COMMANDS.length).toBeGreaterThan(60);
     const failures: string[] = [];
     for (const cmd of TOP_LEVEL_COMMANDS) {
-      const r = runCli([cmd, "--help"], 8_000);
+      const r = await runCliAsync([cmd, "--help"], 8_000);
       if (r.signal === "SIGTERM" || r.ms >= 7_500) {
         failures.push(`${cmd}: hung (${r.ms}ms signal=${r.signal})`);
         continue;
@@ -230,7 +220,8 @@ describe("CLI certification matrix", () => {
     expect(failures, failures.join("\n")).toEqual([]);
   }, 600_000);
 
-  it("path leaves refuse $HOME quickly (exit 2) and accept owned project", () => {
+  it("path leaves refuse $HOME quickly (exit 2) and accept owned project", async () => {
+    assertCliBuilt();
     const home = os.homedir();
     const { root, foreign } = writeHostileOwned();
     const rows: Array<{ leaf: string; homeOk: boolean; ownedOk: boolean; foreignOk: boolean }> = [];
@@ -243,14 +234,14 @@ describe("CLI certification matrix", () => {
         leaf[0] === "ask" ? ["ask", "what is this project?", root] : [...leaf, root];
       const foreignArgs = leaf[0] === "ask" ? ["ask", "ping", foreign] : [...leaf, foreign];
 
-      const homeR = runCli(homeArgs, 8_000);
+      const homeR = await runCliAsync(homeArgs, 8_000);
       const homeOk =
         homeR.signal !== "SIGTERM" &&
         homeR.ms < 8_000 &&
         homeR.status === 2 &&
         /refus|home|Desktop|Documents|Downloads/i.test(`${homeR.stderr}\n${homeR.stdout}`);
 
-      const ownedR = runCli(ownedArgs, 45_000);
+      const ownedR = await runCliAsync(ownedArgs, 45_000);
       // Owned may succeed (0) or fail for missing provider/data — but must not hang or claim home refuse.
       const ownedOk =
         ownedR.signal !== "SIGTERM" &&
@@ -263,7 +254,7 @@ describe("CLI certification matrix", () => {
       // "selecting foreign as cwd" which is intentional project selection — ALLOW as ProjectB.
       // The security requirement is: when analyzing owned, foreign content must not contaminate.
       // So foreign-as-root is OK if it terminates; contamination tested elsewhere.
-      const foreignR = runCli(foreignArgs, 45_000);
+      const foreignR = await runCliAsync(foreignArgs, 45_000);
       const foreignOk = foreignR.signal !== "SIGTERM" && foreignR.ms < 45_000;
 
       rows.push({ leaf: label, homeOk, ownedOk, foreignOk });
@@ -273,11 +264,11 @@ describe("CLI certification matrix", () => {
     expect(bad, JSON.stringify(bad, null, 2)).toEqual([]);
 
     // Invalid path
-    const inv = runCli(["scan", "/tmp/ad-definitely-missing-xyz-999"], 8_000);
+    const inv = await runCliAsync(["scan", "/tmp/ad-definitely-missing-xyz-999"], 8_000);
     expect(inv.status).toBe(2);
 
     // Absolute foreign sibling as what-if target from owned root
-    const wi = runCli(["what-if", path.join(foreign, "src", "leak.ts"), root], 20_000);
+    const wi = await runCliAsync(["what-if", path.join(foreign, "src", "leak.ts"), root], 20_000);
     expect(wi.signal).not.toBe("SIGTERM");
     // should fail closed (ownership / escape) — non-zero
     expect(wi.status).not.toBe(0);
@@ -286,6 +277,7 @@ describe("CLI certification matrix", () => {
   }, 900_000);
 
   it("CLI ask entrypoint with adversarial local provider cannot read .private", async () => {
+    assertCliBuilt();
     const { root } = writeHostileOwned();
     const server = await startAdversarialOpenAiServer("read_private");
     const prev = { ...process.env };
