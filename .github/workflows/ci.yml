@@ -58,7 +58,14 @@ jobs:
         shell: bash
         run: |
           mkdir -p test-results
-          npm test -- --reporter=default --reporter=json --outputFile=test-results/results.json
+          # Windows: one fork, no file parallelism — avoids Vitest onTaskUpdate RPC
+          # timeouts after long CLI/pack suites (tests pass, job still fails).
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            npm test -- --pool=forks --no-file-parallelism --maxWorkers=1 \
+              --reporter=default --reporter=json --outputFile=test-results/results.json
+          else
+            npm test -- --reporter=default --reporter=json --outputFile=test-results/results.json
+          fi
 
       - name: Pack dry-run
         run: npm pack --dry-run

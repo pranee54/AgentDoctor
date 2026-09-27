@@ -46,12 +46,16 @@ import { analyzeFeatureIntelligence } from "../product/features/intelligence.js"
 import { buildSoftwareEvolutionTimeline } from "../product/evolution/timeline.js";
 import { queryMemory } from "../product/memory/institutional.js";
 import { loadDecisionLedger } from "../product/decisions/ledger.js";
+import { ProjectOwnershipError } from "../project/ownership.js";
+import { PathEscapeError } from "../security/paths.js";
 import { htmlPage } from "./page.js";
 
-function safeJsonError(error: unknown): string {
-  const raw = error instanceof Error ? error.message : String(error);
-  const { text } = redactSecrets(sanitizeForOutput(raw));
-  return text.slice(0, 240);
+/** HTTP-safe client error — never returns Error.message/stack (CodeQL js/stack-trace-exposure). */
+function clientErrorMessage(error: unknown): string {
+  if (error instanceof ProjectOwnershipError || error instanceof PathEscapeError) {
+    return "path outside project ownership";
+  }
+  return "internal error";
 }
 
 function pathnameLooksHostile(pathname: string): boolean {
@@ -426,15 +430,10 @@ export async function startDashboardServer(
         try {
           sendJson(res, 200, await analyzeWhatIf(root, target));
         } catch (error) {
-          const message = error instanceof Error ? error.message : String(error);
           const ownershipDenied =
-            /ownership|escapes|path escape|PROJECT_OWNERSHIP/i.test(message) ||
-            (error instanceof Error && error.name === "ProjectOwnershipError");
-          // Never return raw Error text to clients (CodeQL js/stack-trace-exposure).
+            error instanceof ProjectOwnershipError || error instanceof PathEscapeError;
           sendJson(res, ownershipDenied ? 400 : 500, {
-            error: ownershipDenied
-              ? "path outside project ownership"
-              : "what-if analysis failed",
+            error: ownershipDenied ? "path outside project ownership" : "what-if analysis failed",
           });
         }
         return;
@@ -483,7 +482,7 @@ export async function startDashboardServer(
       }
       sendJson(res, 404, { error: "not found" });
     } catch (error) {
-      sendJson(res, 500, { error: safeJsonError(error) });
+      sendJson(res, 500, { error: clientErrorMessage(error) });
     }
   });
 
