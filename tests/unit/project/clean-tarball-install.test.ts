@@ -35,7 +35,7 @@ describe("clean npm tarball install smoke", () => {
     const bin = path.join(tmp, "node_modules", ".bin", "agentdoctor");
     const ver = spawnSync(bin, ["--version"], { encoding: "utf8", timeout: 15_000 });
     expect(ver.status).toBe(0);
-    expect(ver.stdout.trim()).toBe("3.0.0");
+    expect(ver.stdout.trim()).toBe("3.0.1");
 
     const help = spawnSync(bin, ["--help"], { encoding: "utf8", timeout: 15_000 });
     expect(help.status).toBe(0);

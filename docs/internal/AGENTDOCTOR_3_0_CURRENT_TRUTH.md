@@ -1,37 +1,42 @@
-# AgentDoctor 3.0.0 — Current Truth
+# AgentDoctor 3.0.1 — Current Truth (release candidate)
 
-**Updated:** 2026-09-27T07:30:00Z
+**Updated:** 2026-09-27T08:20:00Z
 **Authoritative freeze audit:** `AGENTDOCTOR_3_0_FINAL_FREEZE_AUDIT.md`
-**Prior security certification:** `AGENTDOCTOR_3_0_FINAL_ZERO_TRUST_VERIFICATION.md`
+**Release relationship:** `AGENTDOCTOR_3_0_1_RELEASE_RELATIONSHIP.md`
 **Feature matrix:** `AGENTDOCTOR_3_0_FINAL_FEATURE_MATRIX.md`
 
 ## Verdict
 
-**FREEZE_READY_WITH_DOCUMENTED_LIMITATIONS**
-
-Freeze verify this pass: `npm run verify` **PASS** — **140 files / 666 tests**.
-
-Security certification remains **ZERO_TRUST_VERIFIED** on the remediation tree. This freeze audit found **no new OPEN P0/P1**. Do **not** publish/tag/push from automation.
+**3.0.1 RELEASE CANDIDATE** (version transition from verified freeze remediation).
+Public **3.0.0** history is unchanged.
 
 ## Identity
 
-| Field                      | Value                         |
-| -------------------------- | ----------------------------- |
-| VERSION                    | 3.0.0                         |
-| Baseline                   | `c21faf1` + dirty remediation |
-| OWNERSHIP_BOUNDARY_VERSION | 4                             |
+| Field                      | Value                |
+| -------------------------- | -------------------- |
+| CURRENT PACKAGE VERSION    | **3.0.1**            |
+| Freeze remediation commit  | `319810a`            |
+| Public 3.0.0 commit        | `c21faf1`            |
+| Public 3.0.0 tag           | `v3.0.0` (untouched) |
+| OWNERSHIP_BOUNDARY_VERSION | 4                    |
 
-## Freeze posture
+## Public vs candidate
 
-- RELEASE_ACTIONS_PERFORMED=NONE
-- DIRTY_TREE=YES (human review before commit)
-- OPEN_P0=0 OPEN_P1=0
-- OPEN_P2=1 (knowledge docs shallow readdir — completeness)
-- OPEN_P3=1 (dirty tree process)
+| Artifact                                | 3.0.0                                        | 3.0.1                                  |
+| --------------------------------------- | -------------------------------------------- | -------------------------------------- |
+| npm                                     | `@praneeth_54/agentdoctor@3.0.0` (published) | candidate — not published by this prep |
+| Git tag                                 | `v3.0.0` → `c21faf1`                         | none yet                               |
+| GitHub Release                          | existing                                     | none yet                               |
+| Contains freeze remediation (`319810a`) | **No**                                       | **Yes**                                |
 
-## Documented limitations
+## Documented limitations (unchanged)
 
 - Full TTY `chat` REPL not automated (`ask` + dashboard chat certified)
 - Native Anthropic/Gemini not implemented
 - Vendor LLMs / live ops telemetry EXTERNAL
-- Historical internal audits retained; do not treat older “RELEASE READY” prose as current
+- Knowledge docs shallow readdir completeness
+- Historical internal audits retained; do not treat older "RELEASE READY" prose as current
+
+## Release actions
+
+This preparation commit does **not** publish, push, tag, or create a GitHub release.
