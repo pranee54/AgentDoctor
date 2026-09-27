@@ -2,7 +2,6 @@ import { EXIT_CODES, type ExitCode } from "../../types/index.js";
 import { initBrainStore, rebuildBrain, getBrainStatus } from "../../core/brain-cli/service.js";
 import { discoverProjectRoots } from "../../product/discovery/roots.js";
 import { buildProjectDna, persistProjectDna } from "../../product/dna/build.js";
-import { resolveRepoRoot } from "../../utils/path.js";
 import { resolveCliProjectRoot } from "../safe-root.js";
 
 function printJson(value: unknown): void {
@@ -19,9 +18,16 @@ export async function runStartCommand(options: {
   listOnly?: boolean;
 }): Promise<ExitCode> {
   const prefer = options.select ?? options.root;
+  // Fail closed before discovery walks anything (home/Desktop refusal must be instant).
+  const gated = await resolveCliProjectRoot(prefer);
+  if (!gated.ok) {
+    console.error(`Error: ${gated.message}`);
+    return gated.code;
+  }
+
   const discovery = await discoverProjectRoots({
-    cwd: prefer ? resolveRepoRoot(prefer) : process.cwd(),
-    ...(prefer ? { prefer: resolveRepoRoot(prefer) } : {}),
+    cwd: gated.root,
+    prefer: gated.root,
     ...(options.maxEntries !== undefined ? { maxEntries: options.maxEntries } : {}),
     autoSelect: !options.listOnly,
   });
