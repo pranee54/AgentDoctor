@@ -1,5 +1,6 @@
 import type { TruthLabel, ContextCitation } from "../context/types.js";
 import type { AiProviderId, ModelProvider, TokenUsage } from "../../ai/types.js";
+import type { AskProgressReporter } from "../progress.js";
 
 export type ChatRole = "system" | "user" | "assistant";
 
@@ -51,4 +52,6 @@ export interface ChatServiceOptions {
   persistAudit?: boolean;
   /** Appended to PROJECT_CHAT_SYSTEM_PROMPT (modes) */
   systemPromptAddon?: string;
+  /** Optional ask progress reporter (CLI TTY UX). */
+  progress?: AskProgressReporter;
 }

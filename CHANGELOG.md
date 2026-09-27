@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.3] — 2026-09-27
+
+Patch release on top of public **3.0.2**: Brain → Project Chat evidence bridge and
+real operation-based progress UX for `agentdoctor ask`.
+
+Public relationship:
+
+- **3.0.2** remains the immutable public discovery patch (`v3.0.2` → `8d41936`).
+- **3.0.3** packages the finalize work from `a586cdf` (Brain→Chat + ask progress).
+- Does **not** rewrite **3.0.0**, **3.0.1**, or **3.0.2** history.
+
+### Fixed
+
+- Deterministic `agentdoctor ask` / Project Chat now consumes searchable Project Brain claims/components as first-class **INFERRED** evidence (aligned with `brain search`).
+- Brain-derived source paths are ownership-gated before excerpts; Brain claims are never auto-upgraded to **VERIFIED**.
+- `.agentdoctor/**` control-plane paths cannot become **VERIFIED** application source evidence.
+- Architecture/module answers prioritize Brain + owned sources over generic minified graph noise.
+- Ownership, containment, HOME/broad-root, `.private`, nested-repo, symlink, and stale-brain protections remain enforced.
+
+### Added
+
+- `agentdoctor ask` progress UX driven by real pipeline stages (understand → search → retrieve → verify → prepare).
+- Progress writes to stderr (TTY spinner / non-TTY stable lines); answers and `--json` stay on stdout without contamination.
+- No artificial delays — spinner frames only animate while real work is in flight.
+
+### Tests
+
+- Added `tests/unit/agent/chat-brain-context.test.ts` for Brain → ask evidence, control-plane hostility, stale brain, and UNKNOWN.
+- Added `tests/unit/cli/ask-progress.test.ts` for TTY/non-TTY/JSON/error progress lifecycle.
+
 ## [3.0.2] — 2026-09-27
 
 Patch release: fix current-directory project discovery for `agentdoctor start`.
@@ -14,7 +44,7 @@ Patch release: fix current-directory project discovery for `agentdoctor start`.
 Public relationship:
 
 - **3.0.0** and **3.0.1** remain immutable public releases.
-- **3.0.2** does not rewrite prior npm/GitHub history.
+- **3.0.2** is the public discovery patch (`v3.0.2` → `8d41936`). Brain→Chat and ask progress ship in **3.0.3**.
 
 ### Fixed
 
@@ -622,7 +652,8 @@ First public beta.
 - Not a complete secret scanner
 - Git “tracked secret” detection deferred
 
-[Unreleased]: https://github.com/pranee54/AgentDoctor/compare/v3.0.2...HEAD
+[Unreleased]: https://github.com/pranee54/AgentDoctor/compare/v3.0.3...HEAD
+[3.0.3]: https://github.com/pranee54/AgentDoctor/compare/v3.0.2...v3.0.3
 [3.0.2]: https://github.com/pranee54/AgentDoctor/compare/v3.0.1...v3.0.2
 [3.0.1]: https://github.com/pranee54/AgentDoctor/compare/v3.0.0...v3.0.1
 [3.0.0]: https://github.com/pranee54/AgentDoctor/compare/v2.1.0...v3.0.0

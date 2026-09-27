@@ -89,7 +89,7 @@ describe("CLI exhaustive matrix (help + home refusal)", () => {
 
     const version = await runCliAsync(["--version"]);
     expect(version.status).toBe(0);
-    expect(version.stdout.trim()).toBe("3.0.2");
+    expect(version.stdout.trim()).toBe("3.0.3");
 
     const commands = parseTopLevelCommands(top.stdout);
     expect(commands.length).toBeGreaterThan(40);

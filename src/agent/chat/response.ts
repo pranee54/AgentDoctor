@@ -17,10 +17,18 @@ export function buildChatTurnResponse(options: {
   error?: string;
   usage?: TokenUsage;
 }): ChatTurnResponse {
-  const citations = options.context.citations.filter(
-    (c) => c.path && c.confidence === "VERIFIED",
+  const verifiedSource = options.context.citations.filter(
+    (c) => c.path && c.confidence === "VERIFIED" && c.evidenceType === "source-code",
   ) as ContextCitation[];
-  const contextPaths = citations.map((c) => c.path!).filter(Boolean);
+  const brainCitations = options.context.citations.filter(
+    (c) => c.source === "brain" || c.evidenceType === "project-brain",
+  );
+  const graphCitations = options.context.citations.filter(
+    (c) => c.source === "graph" || c.evidenceType === "graph",
+  );
+  // Surface verified source + brain/graph evidence (brain is never upgraded to VERIFIED).
+  const citations = [...verifiedSource, ...brainCitations, ...graphCitations];
+  const contextPaths = verifiedSource.map((c) => c.path!).filter(Boolean);
   const mentioned = extractMentionedPaths(options.modelText, contextPaths);
 
   const truthClaims: TruthClaim[] = [];
@@ -32,10 +40,17 @@ export function buildChatTurnResponse(options: {
     });
   }
 
-  if (citations.length === 0) {
+  const hasUsableEvidence = verifiedSource.length > 0 || brainCitations.length > 0;
+  if (!hasUsableEvidence) {
     truthClaims.push({
       text: "Insufficient repository evidence was retrieved for this question.",
       label: "UNKNOWN",
+      citationPaths: [],
+    });
+  } else if (brainCitations.length > 0 && verifiedSource.length === 0) {
+    truthClaims.push({
+      text: "Answer grounded in Project Brain structural evidence (INFERRED; no owned source excerpts).",
+      label: "INFERRED",
       citationPaths: [],
     });
   } else if (options.modelText.trim()) {
@@ -111,7 +126,16 @@ export function formatChatResponseForCli(response: ChatTurnResponse): string {
 
   if (response.citations.length > 0) {
     lines.push("Evidence:");
-    for (const c of response.citations.slice(0, 12)) {
+    for (const c of response.citations.slice(0, 16)) {
+      if (c.source === "brain" || c.evidenceType === "project-brain") {
+        lines.push(`  - ${c.excerpt ?? c.note ?? "brain claim"} (${c.confidence})`);
+        continue;
+      }
+      if (c.source === "graph" || c.evidenceType === "graph") {
+        const first = (c.excerpt ?? c.note ?? "graph").split("\n")[0] ?? "graph";
+        lines.push(`  - ${first} (${c.confidence})`);
+        continue;
+      }
       const path = c.path ?? "(unknown)";
       lines.push(`  - ${path}${c.range ? `:${c.range}` : ""} (${c.confidence})`);
     }

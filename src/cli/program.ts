@@ -1492,7 +1492,8 @@ export function createProgram(): Command {
     .argument("<question>", "Question about the project")
     .argument("[path]", "Repository path (default: current directory)")
     .option("--json", "Emit JSON response", false)
-    .action(async (question: string, pathArg: string | undefined, options: { json?: boolean }) => {
+    .action(async (question: string, pathArg: string | undefined, _options, command) => {
+      const options = command.optsWithGlobals() as { json?: boolean };
       process.exitCode = await runAskCommand({
         question,
         root: resolveTargetArgument(pathArg),
