@@ -3,6 +3,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 
 import { atomicWriteTextFile } from "../../../../utils/fs.js";
+import { OWNERSHIP_BOUNDARY_VERSION } from "../../../../project/ownership.js";
 import type { BrainDelta } from "../delta.js";
 import { parseBrainDelta, serializeBrainDelta } from "../delta.js";
 import { checkBrainCompatibility, migrateBrain } from "../migrate.js";
@@ -26,6 +27,8 @@ export interface SnapshotMeta {
   projectName: string;
   brainId: string;
   checksum: string;
+  /** Snapshots without this stamp (or with a mismatch) must not be served as current truth. */
+  ownershipBoundaryVersion?: number;
 }
 
 export interface BrainStoreMeta {
@@ -34,6 +37,8 @@ export interface BrainStoreMeta {
   projectName: string;
   latestSnapshotId: string | null;
   snapshots: SnapshotMeta[];
+  /** When missing or mismatched, latest brain is treated as stale vs current ownership rules. */
+  ownershipBoundaryVersion?: number;
 }
 
 export interface SnapshotComparison {
@@ -257,6 +262,7 @@ export class LocalBrainStore {
       projectName: brain.metadata.projectName,
       brainId: brain.metadata.brainId,
       checksum: nextChecksum,
+      ownershipBoundaryVersion: OWNERSHIP_BOUNDARY_VERSION,
     };
 
     const meta = await this.readMeta();
@@ -270,12 +276,20 @@ export class LocalBrainStore {
       projectName: brain.metadata.projectName,
       latestSnapshotId: snapshotId,
       snapshots,
+      ownershipBoundaryVersion: OWNERSHIP_BOUNDARY_VERSION,
     });
 
     return snapMeta;
   }
 
   async loadSnapshot(snapshotId: string): Promise<ProjectBrain> {
+    const meta = await this.readMeta();
+    if (meta.ownershipBoundaryVersion !== OWNERSHIP_BOUNDARY_VERSION) {
+      throw new BrainStorageError(
+        `brain store ownership boundary is stale (have ${String(meta.ownershipBoundaryVersion ?? "missing")}, need ${OWNERSHIP_BOUNDARY_VERSION}); rebuild required`,
+      );
+    }
+
     const target = await assertInsideRootResolved(this.root, this.brainPath(snapshotId));
     let raw: string;
     try {
@@ -287,9 +301,23 @@ export class LocalBrainStore {
       throw error;
     }
 
-    const meta = await this.readMeta();
     const snap = meta.snapshots.find((s) => s.id === snapshotId);
     if (snap) {
+      if (
+        snap.ownershipBoundaryVersion !== undefined &&
+        snap.ownershipBoundaryVersion !== OWNERSHIP_BOUNDARY_VERSION
+      ) {
+        throw new BrainStorageError(
+          `snapshot ${snapshotId} ownership boundary is stale (have ${snap.ownershipBoundaryVersion}, need ${OWNERSHIP_BOUNDARY_VERSION}); rebuild required`,
+        );
+      }
+      // Pre-stamp snapshots created before ownershipBoundaryVersion was recorded are
+      // unsafe to serve once the store claims a current boundary — require rebuild.
+      if (snap.ownershipBoundaryVersion === undefined) {
+        throw new BrainStorageError(
+          `snapshot ${snapshotId} missing ownershipBoundaryVersion; rebuild required`,
+        );
+      }
       const actual = checksumPayload(raw);
       if (actual !== snap.checksum) {
         throw new BrainStorageError(`checksum mismatch for snapshot ${snapshotId}`);
@@ -330,7 +358,12 @@ export class LocalBrainStore {
   }
 
   async loadLatest(): Promise<ProjectBrain | null> {
-    const id = await this.latestSnapshotId();
+    const meta = await this.readMeta();
+    if (meta.ownershipBoundaryVersion !== OWNERSHIP_BOUNDARY_VERSION) {
+      // Pre-boundary or outdated snapshots must not be served as current project truth.
+      return null;
+    }
+    const id = meta.latestSnapshotId;
     if (!id) {
       return null;
     }

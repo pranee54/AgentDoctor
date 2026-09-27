@@ -48,6 +48,13 @@ export async function searchSymbolsAndConcepts(
   const brain = await loadLatestBrain(root);
   if (brain) {
     for (const bh of searchBrain(brain, q)) {
+      if (
+        bh.text.includes(".private/") ||
+        bh.text.includes("AgentDoctorOS/") ||
+        bh.text.includes("oss-validation/")
+      ) {
+        continue;
+      }
       hits.push({
         kind: "brain",
         path: ".agentdoctor/project-brain",

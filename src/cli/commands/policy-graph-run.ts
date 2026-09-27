@@ -9,6 +9,7 @@ import {
 import { buildIntelligenceGraph } from "../../intelligence/graph/build.js";
 import { EXIT_CODES } from "../../types/index.js";
 import type { GraphBuilderMode } from "../../intelligence/graph/build.js";
+import { resolveCliProjectRoot } from "../safe-root.js";
 
 function emit(json: boolean, value: unknown, human: string): void {
   if (json) {
@@ -25,6 +26,12 @@ export async function runGraphSurfaceCommand(options: {
   json?: boolean;
 }): Promise<number> {
   try {
+    const gated = await resolveCliProjectRoot(options.root);
+    if (!gated.ok) {
+      console.error(`Error: ${gated.message}`);
+      return gated.code;
+    }
+    options = { ...options, root: gated.root };
     const mode = (options.mode as GraphBuilderMode | undefined) ?? "auto";
     if (options.action === "status") {
       const status = await graphStatus({ root: options.root });

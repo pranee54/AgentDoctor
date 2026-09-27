@@ -2,6 +2,7 @@ import path from "node:path";
 
 import { evaluateScanPolicy, type PolicyOptions } from "../../core/policy/evaluate.js";
 import { scan } from "../../core/scanner/scan.js";
+import { classifyBroadUserScanRoot } from "../../product/discovery/roots.js";
 import { emitGithubReports } from "../../reporters/github/emit.js";
 import { renderJsonReport } from "../../reporters/json/report.js";
 import { renderTerminalReport } from "../../reporters/terminal/report.js";
@@ -26,6 +27,12 @@ export async function runScanCommand(options: ScanCommandOptions): Promise<ExitC
 
   if (!(await isDirectory(target))) {
     console.error(`Error: not a directory: ${target}`);
+    return EXIT_CODES.USAGE_ERROR;
+  }
+
+  const broad = classifyBroadUserScanRoot(target);
+  if (broad.blocked) {
+    console.error(`Error: ${broad.reason}`);
     return EXIT_CODES.USAGE_ERROR;
   }
 

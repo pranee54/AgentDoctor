@@ -1,5 +1,5 @@
 import { EXIT_CODES, type ExitCode } from "../../types/index.js";
-import { resolveRepoRoot } from "../../utils/path.js";
+import { resolveCliProjectRoot } from "../safe-root.js";
 import { analyzeChanges } from "../../core/changes/analyze.js";
 import { analyzeContextHealth } from "../../core/context-health/analyze.js";
 import { scanSecrets } from "../../core/secrets/scan.js";
@@ -34,7 +34,12 @@ export async function runChangesCommand(options: {
   impact?: boolean;
   json?: boolean;
 }): Promise<ExitCode> {
-  const root = resolveRepoRoot(options.root ?? process.cwd());
+  const gated = await resolveCliProjectRoot(options.root ?? process.cwd());
+  if (!gated.ok) {
+    console.error(`Error: ${gated.message}`);
+    return gated.code;
+  }
+  const root = gated.root;
   const report = await analyzeChanges({
     root,
     ...(options.since ? { since: options.since } : {}),
@@ -63,7 +68,12 @@ export async function runContextHealthCommand(options: {
   root?: string;
   json?: boolean;
 }): Promise<ExitCode> {
-  const root = resolveRepoRoot(options.root ?? process.cwd());
+  const gated = await resolveCliProjectRoot(options.root ?? process.cwd());
+  if (!gated.ok) {
+    console.error(`Error: ${gated.message}`);
+    return gated.code;
+  }
+  const root = gated.root;
   const report = await analyzeContextHealth(root);
   if (options.json) printJson(report);
   else {
@@ -81,7 +91,12 @@ export async function runSecretsCommand(options: {
   root?: string;
   json?: boolean;
 }): Promise<ExitCode> {
-  const root = resolveRepoRoot(options.root ?? process.cwd());
+  const gated = await resolveCliProjectRoot(options.root ?? process.cwd());
+  if (!gated.ok) {
+    console.error(`Error: ${gated.message}`);
+    return gated.code;
+  }
+  const root = gated.root;
   const report = await scanSecrets({ root, enabled: true });
   if (options.json) printJson(report);
   else {
@@ -104,8 +119,13 @@ export async function runFixUndoCommand(options: {
   auditId: string;
 }): Promise<ExitCode> {
   try {
+    const gated = await resolveCliProjectRoot(options.root);
+    if (!gated.ok) {
+      console.error(`Error: ${gated.message}`);
+      return gated.code;
+    }
     const record = await undoFix({
-      root: resolveRepoRoot(options.root ?? process.cwd()),
+      root: gated.root,
       auditId: options.auditId,
     });
     process.stdout.write(`Undid Safe Fix audit ${options.auditId} → undo audit ${record.id}\n`);
@@ -120,7 +140,12 @@ export async function runFixHistoryCommand(options: {
   root?: string;
   json?: boolean;
 }): Promise<ExitCode> {
-  const audits = await listFixAudits(resolveRepoRoot(options.root ?? process.cwd()));
+  const gated = await resolveCliProjectRoot(options.root);
+  if (!gated.ok) {
+    console.error(`Error: ${gated.message}`);
+    return gated.code;
+  }
+  const audits = await listFixAudits(gated.root);
   if (options.json) printJson({ audits });
   else if (audits.length === 0) process.stdout.write("No Safe Fix audits yet.\n");
   else {
@@ -137,7 +162,12 @@ export async function runBaselineCommand(options: {
   root?: string;
   json?: boolean;
 }): Promise<ExitCode> {
-  const root = resolveRepoRoot(options.root ?? process.cwd());
+  const gated = await resolveCliProjectRoot(options.root ?? process.cwd());
+  if (!gated.ok) {
+    console.error(`Error: ${gated.message}`);
+    return gated.code;
+  }
+  const root = gated.root;
   try {
     if (options.action === "list") {
       const names = await listNamedBaselines(root);
@@ -216,7 +246,12 @@ export async function runPackagesCommand(options: {
   json?: boolean;
   scan?: boolean;
 }): Promise<ExitCode> {
-  const root = resolveRepoRoot(options.root ?? process.cwd());
+  const gated = await resolveCliProjectRoot(options.root ?? process.cwd());
+  if (!gated.ok) {
+    console.error(`Error: ${gated.message}`);
+    return gated.code;
+  }
+  const root = gated.root;
   const mono = await detectMonorepo(root);
   if (!options.scan) {
     if (options.json) printJson(mono);
@@ -256,8 +291,13 @@ export async function runPrReviewCommand(options: {
   base?: string;
   json?: boolean;
 }): Promise<ExitCode> {
+  const gated = await resolveCliProjectRoot(options.root);
+  if (!gated.ok) {
+    console.error(`Error: ${gated.message}`);
+    return gated.code;
+  }
   const report = await analyzePullRequest({
-    root: resolveRepoRoot(options.root ?? process.cwd()),
+    root: gated.root,
     dryRun: true,
     ...(options.base ? { baseRef: options.base } : {}),
   });
@@ -276,8 +316,13 @@ export async function runDashboardCommand(options: {
   allowNonLoopback?: boolean;
 }): Promise<ExitCode> {
   try {
+    const gated = await resolveCliProjectRoot(options.root);
+    if (!gated.ok) {
+      console.error(`Error: ${gated.message}`);
+      return gated.code;
+    }
     const server = await startDashboardServer({
-      root: resolveRepoRoot(options.root ?? process.cwd()),
+      root: gated.root,
       host: options.host ?? "127.0.0.1",
       port: options.port ?? 8787,
       readOnly: true,
@@ -306,7 +351,12 @@ export async function runPluginsCommand(options: {
   json?: boolean;
   run?: boolean;
 }): Promise<ExitCode> {
-  const root = resolveRepoRoot(options.root ?? process.cwd());
+  const gated = await resolveCliProjectRoot(options.root);
+  if (!gated.ok) {
+    console.error(`Error: ${gated.message}`);
+    return gated.code;
+  }
+  const root = gated.root;
   const plugins = await discoverPlugins(root);
   const analyzerResults = options.run ? await runPluginAnalyzers(root) : undefined;
   if (options.json) {

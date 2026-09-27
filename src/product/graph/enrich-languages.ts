@@ -1,10 +1,10 @@
-import fs from "node:fs/promises";
 import path from "node:path";
 import { createHash } from "node:crypto";
 
 import type { GraphEdge, GraphNode, RepositoryGraph } from "../../platform/types.js";
 import { getAdapterForFile, parseSourceFile } from "../../languages/index.js";
 import type { LanguageId } from "../../languages/types.js";
+import { discoverFiles } from "../../discovery/files.js";
 import { readTextFile } from "../../utils/fs.js";
 import { resolveRepoRoot, toPosixRelative } from "../../utils/path.js";
 
@@ -25,32 +25,12 @@ export interface LanguageGraphEnrichmentStats {
 }
 
 async function listLanguageSourceFiles(root: string, limit = 120): Promise<string[]> {
-  const out: string[] = [];
-  const skip = new Set(["node_modules", ".git", "dist", "coverage", ".agentdoctor", "vendor"]);
-  async function walk(dir: string): Promise<void> {
-    if (out.length >= limit) return;
-    let entries;
-    try {
-      entries = await fs.readdir(dir, { withFileTypes: true });
-    } catch {
-      return;
-    }
-    for (const e of entries) {
-      if (out.length >= limit) return;
-      if (skip.has(e.name)) continue;
-      const abs = path.join(dir, e.name);
-      if (e.isSymbolicLink()) continue;
-      if (e.isDirectory()) {
-        await walk(abs);
-        continue;
-      }
-      if (LANG_FILE_RE.test(e.name)) {
-        out.push(abs);
-      }
-    }
-  }
-  await walk(root);
-  return out.sort();
+  const discovered = await discoverFiles({ root });
+  return discovered.files
+    .filter((f) => LANG_FILE_RE.test(f.relativePath))
+    .map((f) => f.absolutePath)
+    .sort()
+    .slice(0, limit);
 }
 
 function evidenceFromAdapter(kind: "ast" | "unsupported"): "verified" | "inferred" | "unknown" {

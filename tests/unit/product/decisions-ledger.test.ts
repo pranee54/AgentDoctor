@@ -15,7 +15,11 @@ describe("decisions ledger", () => {
     );
     try {
       const report = await loadDecisionLedger(root);
-      expect(report.decisions.some((d) => d.title.includes("Redis"))).toBe(true);
+      const hit = report.decisions.find((d) => d.title.includes("Redis"));
+      expect(hit).toBeTruthy();
+      expect(hit?.ownership).toBe("project_owned");
+      expect(hit?.sourceKind).toBe("adr_file");
+      expect(hit?.truthMeaning).toMatch(/File evidence/i);
     } finally {
       await fs.rm(root, { recursive: true, force: true });
     }

@@ -4,7 +4,7 @@ import { stdin as input, stdout as output } from "node:process";
 import { ChatService, formatChatResponseForCli } from "../../agent/chat/index.js";
 import { MockModelProvider, createModelProvider, loadAiConfig } from "../../ai/index.js";
 import { EXIT_CODES, type ExitCode } from "../../types/index.js";
-import { resolveRepoRoot } from "../../utils/path.js";
+import { resolveCliProjectRoot } from "../safe-root.js";
 import { colors } from "../../utils/colors.js";
 
 function printBanner(options: {
@@ -69,7 +69,12 @@ export async function runAskCommand(options: {
   /** Test-only: force mock provider */
   useMock?: boolean;
 }): Promise<ExitCode> {
-  const root = resolveRepoRoot(options.root ?? process.cwd());
+  const gated = await resolveCliProjectRoot(options.root ?? process.cwd());
+  if (!gated.ok) {
+    console.error(`Error: ${gated.message}`);
+    return gated.code;
+  }
+  const root = gated.root;
   const provider = options.useMock ? new MockModelProvider() : createModelProvider(loadAiConfig());
   const chat = new ChatService({
     root,
@@ -100,7 +105,12 @@ export async function runChatCommand(options: {
   scriptedInputs?: string[];
   useMock?: boolean;
 }): Promise<ExitCode> {
-  const root = resolveRepoRoot(options.root ?? process.cwd());
+  const gated = await resolveCliProjectRoot(options.root ?? process.cwd());
+  if (!gated.ok) {
+    console.error(`Error: ${gated.message}`);
+    return gated.code;
+  }
+  const root = gated.root;
   const provider = options.useMock ? new MockModelProvider() : createModelProvider(loadAiConfig());
   const chat = new ChatService({
     root,

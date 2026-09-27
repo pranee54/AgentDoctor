@@ -3,6 +3,7 @@ import { initBrainStore, rebuildBrain, getBrainStatus } from "../../core/brain-c
 import { discoverProjectRoots } from "../../product/discovery/roots.js";
 import { buildProjectDna, persistProjectDna } from "../../product/dna/build.js";
 import { resolveRepoRoot } from "../../utils/path.js";
+import { resolveCliProjectRoot } from "../safe-root.js";
 
 function printJson(value: unknown): void {
   process.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
@@ -87,7 +88,12 @@ export async function runDnaCommand(options: {
   json?: boolean;
   persist?: boolean;
 }): Promise<ExitCode> {
-  const root = resolveRepoRoot(options.root ?? process.cwd());
+  const gated = await resolveCliProjectRoot(options.root);
+  if (!gated.ok) {
+    console.error(`Error: ${gated.message}`);
+    return gated.code;
+  }
+  const root = gated.root;
   const dna = options.persist ? await persistProjectDna(root) : await buildProjectDna(root);
   if (options.json) {
     printJson(dna);

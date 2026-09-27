@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
+import { classifyRelativePathOwnership, isUnderNestedRepository } from "../../project/ownership.js";
 import { resolveRepoRoot, toPosixRelative } from "../../utils/path.js";
 
 export interface WorkspacePackage {
@@ -110,6 +111,15 @@ export async function detectMonorepo(rootInput: string): Promise<MonorepoDetecti
       const pkg = await packageFromDir(root, dir);
       if (!pkg) continue;
       if (seen.has(pkg.absolutePath)) continue;
+      const ownership = classifyRelativePathOwnership(pkg.relativePath);
+      if (ownership !== "project_owned") {
+        limitations.push(`Skipped non-owned workspace package: ${pkg.relativePath} (${ownership})`);
+        continue;
+      }
+      if (await isUnderNestedRepository(root, pkg.absolutePath)) {
+        limitations.push(`Skipped nested-repository workspace package: ${pkg.relativePath}`);
+        continue;
+      }
       seen.add(pkg.absolutePath);
       packages.push(pkg);
     }

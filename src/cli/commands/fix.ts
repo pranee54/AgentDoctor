@@ -12,6 +12,7 @@ import { buildFixPlan } from "../../core/fix/plan.js";
 import { renderFixPlanTerminal } from "../../core/fix/render.js";
 import { runFix } from "../../core/fix/run.js";
 import { scan } from "../../core/scanner/scan.js";
+import { classifyBroadUserScanRoot } from "../../product/discovery/roots.js";
 import { colors } from "../../utils/colors.js";
 
 export interface FixCommandOptions {
@@ -28,6 +29,12 @@ export async function runFixCommand(options: FixCommandOptions): Promise<ExitCod
 
   if (!(await isDirectory(target))) {
     console.error(`Error: not a directory: ${target}`);
+    return EXIT_CODES.USAGE_ERROR;
+  }
+
+  const broad = classifyBroadUserScanRoot(target);
+  if (broad.blocked) {
+    console.error(`Error: ${broad.reason}`);
     return EXIT_CODES.USAGE_ERROR;
   }
 

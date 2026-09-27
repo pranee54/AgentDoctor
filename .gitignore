@@ -63,7 +63,9 @@ validation/real-world/history/*
 !fixtures/**/.agentdoctor/**
 
 # Local Cursor IDE / MCP config (machine-absolute paths; never publish)
-.cursor/
+.cursor/*
+!.cursor/skills/
+!.cursor/skills/**
 
 # Flutter / Dart generated (fixtures may create these during local scans)
 **/.dart_tool/

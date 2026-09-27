@@ -4,6 +4,7 @@ import path from "node:path";
 import { DEFAULT_MAX_FILE_SIZE_BYTES } from "../../constants.js";
 import { detectProject } from "../../detectors/project.js";
 import { detectMonorepo } from "../../detectors/monorepo.js";
+import { isProjectOwnedRelativePath } from "../../project/ownership.js";
 import { resolveRepoRoot } from "../../utils/path.js";
 import type { ProductEvidence, TruthLabel } from "../truth.js";
 
@@ -34,7 +35,9 @@ async function topLevelEntries(root: string): Promise<string[]> {
   try {
     const entries = await fs.readdir(root, { withFileTypes: true });
     return entries
-      .filter((e) => e.isDirectory() && !e.name.startsWith("."))
+      .filter(
+        (e) => e.isDirectory() && !e.name.startsWith(".") && isProjectOwnedRelativePath(e.name),
+      )
       .map((e) => e.name)
       .sort();
   } catch {

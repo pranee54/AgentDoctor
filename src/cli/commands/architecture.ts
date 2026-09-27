@@ -1,5 +1,5 @@
 import { EXIT_CODES, type ExitCode } from "../../types/index.js";
-import { resolveRepoRoot } from "../../utils/path.js";
+import { resolveCliProjectRoot } from "../safe-root.js";
 import { buildIntelligenceGraph } from "../../intelligence/graph/build.js";
 import { buildC4Views } from "../../architecture/c4.js";
 import {
@@ -18,7 +18,12 @@ export async function runArchitectureCommand(options: {
   root?: string;
   json?: boolean;
 }): Promise<ExitCode> {
-  const root = resolveRepoRoot(options.root ?? process.cwd());
+  const gated = await resolveCliProjectRoot(options.root ?? process.cwd());
+  if (!gated.ok) {
+    console.error(`Error: ${gated.message}`);
+    return gated.code;
+  }
+  const root = gated.root;
   try {
     switch (options.action) {
       case "init": {

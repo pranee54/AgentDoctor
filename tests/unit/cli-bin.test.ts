@@ -210,12 +210,17 @@ describe("local CLI bin reliability", () => {
   it(
     "runs packed tarball CLI from an empty temporary directory",
     async () => {
-      const pack = runNpm(["pack", "--silent"], { cwd: repoRoot });
+      const packDir = await tempDir("agentdoctor-pack-out-");
+      const pack = runNpm(["pack", "--pack-destination", packDir, "--silent"], {
+        cwd: repoRoot,
+      });
       expect(pack.status, spawnMessage(pack)).toBe(0);
       const tarballName = pack.stdout.trim().split("\n").pop();
       expect(tarballName).toBeTruthy();
-      const tarballPath = path.join(repoRoot, tarballName!);
-      tempDirs.push(tarballPath);
+      const tarballPath = path.isAbsolute(tarballName!)
+        ? tarballName!
+        : path.join(packDir, path.basename(tarballName!));
+      expect(fs.existsSync(tarballPath), tarballPath).toBe(true);
 
       const work = await tempDir("agentdoctor-pack-");
       const install = runNpm(["install", tarballPath, "--no-save"], { cwd: work });

@@ -5,6 +5,7 @@ import path from "node:path";
 
 import { PACKAGE_VERSION } from "../../constants.js";
 import type { GraphEdge, GraphNode } from "../../platform/types.js";
+import { OWNERSHIP_BOUNDARY_VERSION } from "../../project/ownership.js";
 import { resolveRepoRoot, toPosixRelative } from "../../utils/path.js";
 import { atomicWriteTextFile } from "../../utils/fs.js";
 import { buildIntelligenceGraph, listTsFiles, type GraphBuilderMode } from "./build.js";
@@ -22,6 +23,8 @@ export interface GraphSnapshot {
   nodes: GraphNode[];
   edges: GraphEdge[];
   limitations: string[];
+  /** Reject cached graphs built under a prior ownership boundary. */
+  ownershipBoundaryVersion?: number;
 }
 
 export interface GraphStatus {
@@ -110,6 +113,13 @@ async function loadSnapshot(
     if (!isValidSnapshot(parsed)) {
       return { ok: false, corrupt: true, error: "index.json failed schema checks" };
     }
+    if (parsed.ownershipBoundaryVersion !== OWNERSHIP_BOUNDARY_VERSION) {
+      return {
+        ok: false,
+        corrupt: false,
+        error: `graph index ownership boundary is stale (have ${String(parsed.ownershipBoundaryVersion ?? "missing")}, need ${OWNERSHIP_BOUNDARY_VERSION})`,
+      };
+    }
     return { ok: true, snapshot: parsed };
   } catch (error) {
     return {
@@ -148,6 +158,7 @@ async function buildAndPersist(
       ...graph.limitations,
       "Incremental index persists file hashes for change detection",
     ],
+    ownershipBoundaryVersion: OWNERSHIP_BOUNDARY_VERSION,
   };
   const saved = await persistSnapshot(root, snapshot);
   return { snapshot, path: saved };

@@ -1,5 +1,5 @@
 import { EXIT_CODES, type ExitCode } from "../../types/index.js";
-import { resolveRepoRoot } from "../../utils/path.js";
+import { resolveCliProjectRoot } from "../safe-root.js";
 import {
   exportBrain,
   getBrainStatus,
@@ -33,7 +33,12 @@ export async function runBrainCommand(options: {
   decision?: "approved" | "rejected" | "pending-review" | "deprecated";
   note?: string;
 }): Promise<ExitCode> {
-  const root = resolveRepoRoot(options.root ?? process.cwd());
+  const gated = await resolveCliProjectRoot(options.root);
+  if (!gated.ok) {
+    console.error(`Error: ${gated.message}`);
+    return gated.code;
+  }
+  const root = gated.root;
   const json = options.json === true;
 
   try {

@@ -7,7 +7,9 @@ test-results/
 .agentdoctor/
 .private/
 AgentDoctorOS/
-.cursor/
+.cursor/*
+!.cursor/skills/
+!.cursor/skills/**
 *.tgz
 
 validation/real-world/repositories/checkouts/

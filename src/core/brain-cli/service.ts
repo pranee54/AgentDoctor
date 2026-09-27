@@ -9,6 +9,7 @@ import {
   type SnapshotMeta,
 } from "../understanding/brain/index.js";
 import { compileProjectBrain } from "../../mcp/brain/compile.js";
+import { OWNERSHIP_BOUNDARY_VERSION } from "../../project/ownership.js";
 import { resolveRepoRoot } from "../../utils/path.js";
 import { isDirectory } from "../../utils/fs.js";
 
@@ -42,11 +43,13 @@ export async function getBrainStatus(root: string): Promise<BrainStatus> {
   const storeRoot = path.join(resolved, ".agentdoctor", "project-brain");
   try {
     const meta = await store.readMeta();
+    const boundaryOk = meta.ownershipBoundaryVersion === OWNERSHIP_BOUNDARY_VERSION;
+    const hasUsableLatest = boundaryOk && meta.latestSnapshotId !== null;
     return {
       root: resolved,
       storeRoot,
-      hasSnapshot: meta.latestSnapshotId !== null,
-      latestSnapshotId: meta.latestSnapshotId,
+      hasSnapshot: hasUsableLatest,
+      latestSnapshotId: hasUsableLatest ? meta.latestSnapshotId : null,
       snapshotCount: meta.snapshots.length,
       projectName: meta.projectName || null,
       schemaVersion: meta.schemaVersion || null,

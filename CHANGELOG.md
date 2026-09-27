@@ -7,11 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.1] — 2026-09-27
+
+Production-hardening follow-up on the reviewed freeze remediation commit
+`319810a`. This does **not** rewrite public **3.0.0** history.
+
+Public relationship:
+
+- **3.0.0** remains the original public npm/GitHub release (`v3.0.0` → `c21faf1`).
+- **3.0.1** packages the freeze remediation that landed after that public release.
+
+### Hardening included in 3.0.1
+
+- Ownership boundary **v4** (realpath symlink semantics; containment ≠ ownership)
+- CLI broad-root refusal (`resolveCliProjectRoot`) for intelligence surfaces
+- MCP path ownership + STDIO transport adversarial coverage
+- Deterministic local provider prompt-injection / tool-call E2E harness
+- what-if ownership gate (`.private` / foreign targets fail closed)
+- Brain / Twin / Graph stale-state stamps (`ownershipBoundaryVersion` / invalidation)
+- Dashboard what-if/whatif aliases, ask-only chat, hostile route matrices
+- CLI/dashboard certification inventories and hostile fixtures
+
+Documented limitations from the freeze audit remain (TTY chat REPL not fully
+automated; native Anthropic/Gemini not implemented; vendor LLMs EXTERNAL; knowledge
+docs shallow readdir completeness).
+
 ## [3.0.0] — 2026-09-26
 
 Public release of the **AgentDoctor 3.0 local core**: project intelligence, doctors,
 student/agent workflows, MCP, dashboard, evidence/proof, and honest EXTERNAL
 boundaries. AI providers remain **opt-in**. Correctness is never claimed.
+
+> Historical note: npm `@praneeth_54/agentdoctor@3.0.0` and GitHub `v3.0.0` point to
+> commit `c21faf1`. Freeze remediation after that release is shipped as **3.0.1**.
 
 Limitations: [docs/LIMITATIONS.md](docs/LIMITATIONS.md).
 Release prep: [docs/FINAL_PRE_RELEASE_CHECK.md](docs/FINAL_PRE_RELEASE_CHECK.md).
@@ -573,7 +601,8 @@ First public beta.
 - Not a complete secret scanner
 - Git “tracked secret” detection deferred
 
-[Unreleased]: https://github.com/pranee54/AgentDoctor/compare/v3.0.0...HEAD
+[Unreleased]: https://github.com/pranee54/AgentDoctor/compare/v3.0.1...HEAD
+[3.0.1]: https://github.com/pranee54/AgentDoctor/compare/v3.0.0...v3.0.1
 [3.0.0]: https://github.com/pranee54/AgentDoctor/compare/v2.1.0...v3.0.0
 [2.1.0]: https://github.com/pranee54/AgentDoctor/compare/v2.0.1...v2.1.0
 [2.0.1]: https://github.com/pranee54/AgentDoctor/compare/v2.0.0...v2.0.1

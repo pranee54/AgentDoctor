@@ -116,4 +116,53 @@ describe("retrieveProjectContext", () => {
       await fs.rm(root, { recursive: true, force: true });
     }
   }, 30_000);
+
+  it("rejects .private and AgentDoctorOS includePaths (ownership, not just containment)", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "ad-ctx-own-"));
+    try {
+      await fs.mkdir(path.join(root, "src"), { recursive: true });
+      await fs.mkdir(path.join(root, ".private", "secret-project"), { recursive: true });
+      await fs.mkdir(path.join(root, "AgentDoctorOS"), { recursive: true });
+      await fs.writeFile(path.join(root, "package.json"), '{"name":"ctx-own"}\n');
+      await fs.writeFile(path.join(root, "src", "ok.ts"), "export const OK = 1;\n");
+      await fs.writeFile(
+        path.join(root, ".private", "secret-project", "secret.ts"),
+        "export const FOREIGN_PROJECT_SECRET_123 = 1;\n",
+      );
+      await fs.writeFile(
+        path.join(root, "AgentDoctorOS", "internal.ts"),
+        "export const FOREIGN_SIGMA_PROJECT_456 = 1;\n",
+      );
+
+      const bundle = await retrieveProjectContext({
+        root,
+        query: "leak",
+        includePaths: [
+          "src/ok.ts",
+          ".private/secret-project/secret.ts",
+          "AgentDoctorOS/internal.ts",
+        ],
+        budgetTokens: 4_000,
+      });
+
+      expect(bundle.rendered).not.toContain("FOREIGN_PROJECT_SECRET_123");
+      expect(bundle.rendered).not.toContain("FOREIGN_SIGMA_PROJECT_456");
+      expect(
+        bundle.citations.some((c) => c.path === "src/ok.ts" && c.confidence === "VERIFIED"),
+      ).toBe(true);
+      expect(
+        bundle.citations.some(
+          (c) =>
+            c.path === ".private/secret-project/secret.ts" && c.note?.includes("ownership_denied"),
+        ),
+      ).toBe(true);
+      expect(
+        bundle.citations.some(
+          (c) => c.path === "AgentDoctorOS/internal.ts" && c.note?.includes("ownership_denied"),
+        ),
+      ).toBe(true);
+    } finally {
+      await fs.rm(root, { recursive: true, force: true });
+    }
+  }, 30_000);
 });

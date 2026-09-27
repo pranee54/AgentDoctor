@@ -51,7 +51,7 @@ describe("E2E password reset agent flow", () => {
       expect(result.state).toBe(AgentState.COMPLETED);
       expect(result.toolResults?.some((t) => t.name === "create_file" && t.ok)).toBe(true);
       const abs = path.join(root, target);
-      expect(await fs.stat(abs)).toBeTruthy();
+      // Single open/read — avoid exists/stat → read TOCTOU (CodeQL js/file-system-race).
       const content = await fs.readFile(abs, "utf8");
       expect(content).toMatch(/requestPasswordReset/);
     } finally {

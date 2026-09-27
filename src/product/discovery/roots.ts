@@ -117,6 +117,33 @@ function scoreMarkers(markers: string[]): number {
 }
 
 /**
+ * True when `cwd` is the user home directory or a similarly unsafe broad folder
+ * (Desktop / Downloads / Documents). Used to refuse silent whole-home scans.
+ */
+export function classifyBroadUserScanRoot(
+  cwdInput: string,
+  homeInput?: string,
+): { blocked: true; reason: string } | { blocked: false } {
+  const cwd = path.resolve(cwdInput);
+  const home = normalizeHome(homeInput ?? os.homedir());
+  const baselower = path.basename(cwd).toLowerCase();
+  if (
+    cwd === home ||
+    SUSPICIOUS_DIR_NAMES.has(baselower) ||
+    isUnderHomeSubtree(cwd, home, "Desktop") ||
+    isUnderHomeSubtree(cwd, home, "Downloads") ||
+    isUnderHomeSubtree(cwd, home, "Documents")
+  ) {
+    return {
+      blocked: true,
+      reason:
+        "Refusing to scan home / Desktop / Downloads / Documents (or similarly broad user folders) as a project root. Navigate into a project directory or pass an explicit project path.",
+    };
+  }
+  return { blocked: false };
+}
+
+/**
  * Discover likely project roots from cwd without silently scanning home/Desktop/Downloads
  * or unbounded parent trees.
  */
@@ -131,14 +158,8 @@ export async function discoverProjectRoots(
     "Candidates are VERIFIED only when marker files/directories exist on disk.",
   ];
 
-  const baselower = path.basename(cwd).toLowerCase();
-  if (
-    cwd === home ||
-    SUSPICIOUS_DIR_NAMES.has(baselower) ||
-    isUnderHomeSubtree(cwd, home, "Desktop") ||
-    isUnderHomeSubtree(cwd, home, "Downloads") ||
-    isUnderHomeSubtree(cwd, home, "Documents")
-  ) {
+  const broad = classifyBroadUserScanRoot(cwd, home);
+  if (broad.blocked) {
     const estimatedEntries = await countEntriesShallow(cwd, Math.min(maxEntries, 5_000));
     return {
       cwd,
@@ -146,8 +167,7 @@ export async function discoverProjectRoots(
       candidates: [],
       selected: null,
       blocked: true,
-      blockReason:
-        "Refusing to scan home / Desktop / Downloads / Documents (or similarly broad user folders) as a project root. Navigate into a project directory or pass an explicit project path.",
+      blockReason: broad.reason,
       estimatedEntries,
       limitations,
     };
