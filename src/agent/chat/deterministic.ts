@@ -6,13 +6,16 @@ import { resolveRepoRoot } from "../../utils/path.js";
 import type { ChatTurnResponse } from "./types.js";
 import type { ContextBundle } from "../context/types.js";
 import { retrieveProjectContext } from "../context/retrieve.js";
+import { extractQueryTerms } from "../context/brain-evidence.js";
 import { buildChatTurnResponse } from "./response.js";
+import { noopAskProgress, type AskProgressReporter } from "../progress.js";
 
 const ARCH_RE =
   /architecture|structure|module|layout|what (is|does) (this|my) project|project overview|understand (my |this )?project/i;
 const AUTH_RE = /auth|login|password|session|jwt|oauth/i;
 const DEPS_RE = /depend|package|lockfile|npm|yarn|pnpm/i;
 const DB_RE = /database|db\.|sql|prisma|query\(/i;
+const MODULE_RE = /\bmodule\b|\bcomponent\b|\bprovides?\b|\bbelong/i;
 
 /** ReDoS-safe: avoid `where.*…` / `how.*…` backtracking on uncontrolled chat input. */
 function isStartQuestion(q: string): boolean {
@@ -30,19 +33,61 @@ function isArchitectureQuestion(q: string): boolean {
   return false;
 }
 
+function isModuleQuestion(q: string): boolean {
+  return MODULE_RE.test(q) || extractQueryTerms(q).length > 0;
+}
+
 export async function answerDeterministicProjectQuestion(options: {
   root: string;
   question: string;
   sessionId: string;
+  progress?: AskProgressReporter;
 }): Promise<ChatTurnResponse> {
   const root = resolveRepoRoot(options.root);
   const q = options.question.trim();
+  const progress = options.progress ?? noopAskProgress;
+
+  progress.stage("understand", "start");
+  const terms = extractQueryTerms(q);
+  progress.stage(
+    "understand",
+    "ok",
+    terms.length ? `focus: ${terms.slice(0, 4).join(", ")}` : undefined,
+  );
 
   const context = await retrieveProjectContext({
     root,
     query: q,
     budgetTokens: 4_000,
+    maxSourceFiles: 8,
+    progress,
   });
+
+  progress.stage("prepare", "start");
+  try {
+    const response = await buildDeterministicAnswer({
+      root,
+      q,
+      terms,
+      context,
+      sessionId: options.sessionId,
+    });
+    progress.stage("prepare", "ok");
+    return response;
+  } catch (error) {
+    progress.stage("prepare", "fail", error instanceof Error ? error.message : String(error));
+    throw error;
+  }
+}
+
+async function buildDeterministicAnswer(options: {
+  root: string;
+  q: string;
+  terms: string[];
+  context: ContextBundle;
+  sessionId: string;
+}): Promise<ChatTurnResponse> {
+  const { root, q, terms, context, sessionId } = options;
 
   const sections: string[] = [
     "Deterministic project answer (no LLM). Evidence from DNA, graph, brain, and dependency analyzers.",
@@ -55,6 +100,34 @@ export async function answerDeterministicProjectQuestion(options: {
   sections.push(`Frameworks: ${dna.frameworks.join(", ") || "UNKNOWN"}`);
   sections.push(`Monorepo: ${dna.monorepo.isMonorepo ? dna.monorepo.tool : "no"}`);
   sections.push("");
+
+  const brainCitations = context.citations.filter(
+    (c) => c.source === "brain" || c.evidenceType === "project-brain",
+  );
+  const sourceCitations = context.citations.filter(
+    (c) => c.confidence === "VERIFIED" && c.evidenceType === "source-code" && c.path,
+  );
+
+  if (brainCitations.length > 0 && (isModuleQuestion(q) || isArchitectureQuestion(q))) {
+    const focus = terms.length ? terms.join(", ") : "project";
+    sections.push(`[INFERRED] Project Brain evidence for: ${focus}`);
+    for (const c of brainCitations.slice(0, 14)) {
+      sections.push(`  - ${c.excerpt ?? c.note ?? "brain claim"}`);
+    }
+    sections.push("");
+    if (sourceCitations.length) {
+      sections.push("[VERIFIED] Owned source paths linked from Brain / retrieval:");
+      for (const c of sourceCitations.slice(0, 10)) {
+        sections.push(`  - ${c.path}`);
+      }
+      sections.push("");
+    } else {
+      sections.push(
+        "[INFERRED] No owned source excerpts resolved for these Brain claims; structural evidence only.",
+      );
+      sections.push("");
+    }
+  }
 
   if (AUTH_RE.test(q)) {
     const authFiles = context.citations
@@ -172,13 +245,28 @@ export async function answerDeterministicProjectQuestion(options: {
     sections.push("");
   }
 
-  if (isArchitectureQuestion(q)) {
+  if (isArchitectureQuestion(q) && brainCitations.length === 0) {
     try {
       const graph = await buildIntelligenceGraph({ root, mode: "auto" });
       sections.push(
         `[INFERRED] Graph: ${graph.nodes.length} nodes, ${graph.edges.length} edges (${graph.builder})`,
       );
-      const sample = graph.nodes.filter((n) => n.path).slice(0, 6);
+      const termLower = terms.map((t) => t.toLowerCase());
+      const filtered = graph.nodes
+        .filter((n) => n.path && n.label)
+        .filter((n) => {
+          if (/\.min\.js$/i.test(n.path!) || /chart\.umd|node_modules/i.test(n.path!)) return false;
+          if (termLower.length === 0) return n.kind === "file" || n.kind === "module";
+          const blob = `${n.label} ${n.path}`.toLowerCase();
+          return termLower.some((t) => blob.includes(t));
+        })
+        .slice(0, 8);
+      const sample = filtered.length
+        ? filtered
+        : graph.nodes
+            .filter((n) => n.path && !/\.min\.js$/i.test(n.path))
+            .filter((n) => n.kind === "file")
+            .slice(0, 6);
       for (const n of sample) {
         sections.push(`  - ${n.kind}: ${n.label}${n.path ? ` @ ${n.path}` : ""}`);
       }
@@ -186,6 +274,16 @@ export async function answerDeterministicProjectQuestion(options: {
       sections.push("[UNKNOWN] Intelligence graph build failed.");
     }
     sections.push("");
+  } else if (isArchitectureQuestion(q)) {
+    // Brain already rendered; add a short graph filter if present in context.
+    const graphCite = context.citations.find((c) => c.source === "graph");
+    if (graphCite?.excerpt) {
+      sections.push("[INFERRED] Query-filtered graph nodes:");
+      for (const line of graphCite.excerpt.split("\n").slice(0, 6)) {
+        sections.push(`  - ${line}`);
+      }
+      sections.push("");
+    }
   }
 
   const brain = await getBrainStatus(root);
@@ -195,6 +293,19 @@ export async function answerDeterministicProjectQuestion(options: {
     );
   } else {
     sections.push("[UNKNOWN] No project brain snapshot — run brain compile for richer answers.");
+  }
+
+  if (
+    brainCitations.length === 0 &&
+    sourceCitations.length === 0 &&
+    !AUTH_RE.test(q) &&
+    !DEPS_RE.test(q) &&
+    !isArchitectureQuestion(q)
+  ) {
+    sections.push("");
+    sections.push(
+      "[UNKNOWN] Insufficient Brain/source evidence for this question — try a more specific module or path name.",
+    );
   }
 
   sections.push("");
@@ -211,7 +322,7 @@ export async function answerDeterministicProjectQuestion(options: {
   };
 
   return buildChatTurnResponse({
-    sessionId: options.sessionId,
+    sessionId,
     modelText: sections.join("\n"),
     context: bundle,
     provider: "deterministic",

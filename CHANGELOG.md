@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [3.0.2] — 2026-09-27
 
-Patch release: fix current-directory project discovery for `agentdoctor start`.
+Patch release: project discovery for `start`, Brain → Project Chat evidence bridge,
+and real operation-based progress UX for `ask`.
 
 Public relationship:
 
@@ -22,11 +23,22 @@ Public relationship:
 - Discovery fallback now reuses the same deterministic `detectProject` engine as `dna`, so `start` and `dna` agree on the project root.
 - Clearer discovery UX (`✓ Project detected`) and empty-state guidance.
 - Reject empty trees that only report `unknown` language; do not silently absorb multi-project parents with 2+ child marker projects.
-- Ownership, containment, HOME/broad-root, `.private`, nested-repo, and symlink protections remain enforced.
+- Deterministic `agentdoctor ask` / Project Chat now consumes searchable Project Brain claims/components as first-class **INFERRED** evidence (aligned with `brain search`).
+- Brain-derived source paths are ownership-gated before excerpts; Brain claims are never auto-upgraded to **VERIFIED**.
+- `.agentdoctor/**` control-plane paths cannot become **VERIFIED** application source evidence.
+- Architecture/module answers prioritize Brain + owned sources over generic minified graph noise.
+- Ownership, containment, HOME/broad-root, `.private`, nested-repo, symlink, and stale-brain protections remain enforced.
+
+### Added
+
+- `agentdoctor ask` progress UX driven by real pipeline stages (understand → search → retrieve → verify → prepare).
+- Progress writes to stderr (TTY spinner / non-TTY stable lines); answers and `--json` stay on stdout without contamination.
 
 ### Tests
 
 - Added `tests/unit/project/start-discovery.test.ts` regression coverage for markerless cwd, nested roots, multi-project parents, `.private`, and home refusal.
+- Added `tests/unit/agent/chat-brain-context.test.ts` for Brain → ask evidence, control-plane hostility, stale brain, and UNKNOWN.
+- Added `tests/unit/cli/ask-progress.test.ts` for TTY/non-TTY/JSON/error progress lifecycle.
 
 ## [3.0.1] — 2026-09-27
 

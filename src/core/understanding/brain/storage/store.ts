@@ -184,7 +184,6 @@ export class LocalBrainStore {
   }
 
   async readMeta(): Promise<BrainStoreMeta> {
-    await this.ensureRoot();
     try {
       const raw = await fs.readFile(this.metaPath(), "utf8");
       const parsed = JSON.parse(raw) as BrainStoreMeta;
