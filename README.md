@@ -281,15 +281,15 @@ Student path: `learn` → ask → viva → docs → Build With Me (with `--appro
 Requires **Node.js 20+**.
 
 ```bash
-npm install -g @praneeth_54/agentdoctor@3.0.1
-agentdoctor --version   # 3.0.1
+npm install -g @praneeth_54/agentdoctor@3.0.2
+agentdoctor --version   # 3.0.2
 agentdoctor --help
 ```
 
 Or without global install:
 
 ```bash
-npx @praneeth_54/agentdoctor@3.0.1 --help
+npx @praneeth_54/agentdoctor@3.0.2 --help
 ```
 
 ---
@@ -298,7 +298,7 @@ npx @praneeth_54/agentdoctor@3.0.1 --help
 
 ```bash
 # 1. Install
-npm install -g @praneeth_54/agentdoctor@3.0.1
+npm install -g @praneeth_54/agentdoctor@3.0.2
 
 # 2. Enter YOUR project (not your home folder)
 cd /path/to/my-project
@@ -581,11 +581,12 @@ Post-acceptance ideas for later releases: maintainers see [docs/internal/POST_3_
 
 ## Roadmap
 
-| Track                 | Meaning                                                                   |
-| --------------------- | ------------------------------------------------------------------------- |
-| **3.0.0 (released)**  | Original public release (`v3.0.0` → `c21faf1`)                            |
-| **3.0.1 (candidate)** | Freeze remediation / ownership & security hardening follow-up (`319810a`) |
-| **Coming soon**       | Maturity, language depth, runtime adapters, DX — not promised ship dates  |
+| Track                | Meaning                                                                  |
+| -------------------- | ------------------------------------------------------------------------ |
+| **3.0.0 (released)** | Original public release (`v3.0.0` → `c21faf1`)                           |
+| **3.0.1 (released)** | Freeze remediation / ownership & security hardening follow-up            |
+| **3.0.2 (released)** | `start` discovery aligned with deterministic `detectProject`             |
+| **Coming soon**      | Maturity, language depth, runtime adapters, DX — not promised ship dates |
 
 ---
 

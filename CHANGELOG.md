@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.2] — 2026-09-27
+
+Patch release: fix current-directory project discovery for `agentdoctor start`.
+
+Public relationship:
+
+- **3.0.0** and **3.0.1** remain immutable public releases.
+- **3.0.2** does not rewrite prior npm/GitHub history.
+
+### Fixed
+
+- `agentdoctor start` no longer reports `(none found)` for valid software trees that lack classic manifests (e.g. language-only roots without `package.json` / `.git`).
+- Discovery fallback now reuses the same deterministic `detectProject` engine as `dna`, so `start` and `dna` agree on the project root.
+- Clearer discovery UX (`✓ Project detected`) and empty-state guidance.
+- Reject empty trees that only report `unknown` language; do not silently absorb multi-project parents with 2+ child marker projects.
+- Ownership, containment, HOME/broad-root, `.private`, nested-repo, and symlink protections remain enforced.
+
+### Tests
+
+- Added `tests/unit/project/start-discovery.test.ts` regression coverage for markerless cwd, nested roots, multi-project parents, `.private`, and home refusal.
+
 ## [3.0.1] — 2026-09-27
 
 Production-hardening follow-up on the reviewed freeze remediation commit
@@ -601,7 +622,8 @@ First public beta.
 - Not a complete secret scanner
 - Git “tracked secret” detection deferred
 
-[Unreleased]: https://github.com/pranee54/AgentDoctor/compare/v3.0.1...HEAD
+[Unreleased]: https://github.com/pranee54/AgentDoctor/compare/v3.0.2...HEAD
+[3.0.2]: https://github.com/pranee54/AgentDoctor/compare/v3.0.1...v3.0.2
 [3.0.1]: https://github.com/pranee54/AgentDoctor/compare/v3.0.0...v3.0.1
 [3.0.0]: https://github.com/pranee54/AgentDoctor/compare/v2.1.0...v3.0.0
 [2.1.0]: https://github.com/pranee54/AgentDoctor/compare/v2.0.1...v2.1.0

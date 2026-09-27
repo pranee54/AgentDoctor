@@ -3,6 +3,7 @@ import os from "node:os";
 import path from "node:path";
 
 import { DEFAULT_IGNORE_DIRECTORIES } from "../../constants.js";
+import { detectProject } from "../../detectors/project.js";
 import { isDirectory, pathExists } from "../../utils/fs.js";
 import { resolveRepoRoot } from "../../utils/path.js";
 import type { TruthLabel } from "../truth.js";
@@ -22,6 +23,9 @@ const PROJECT_MARKERS = [
   "pubspec.yaml",
   ".git",
 ] as const;
+
+/** Directory basenames that must never be treated as a project root candidate. */
+const FORBIDDEN_ROOT_BASENAMES = new Set([".private", "agentdoctoros"]);
 
 const SUSPICIOUS_DIR_NAMES = new Set([
   "desktop",
@@ -165,8 +169,8 @@ export async function discoverProjectRoots(
   const home = normalizeHome(os.homedir());
   const maxEntries = options.maxEntries ?? 25_000;
   const limitations: string[] = [
-    "Discovery uses shallow marker probes and bounded entry counts — not a full repository index.",
-    "Candidates are VERIFIED only when marker files/directories exist on disk.",
+    "Discovery uses shallow marker probes, bounded entry counts, and detectProject for cwd/prefer when classic markers are absent.",
+    "Candidates are VERIFIED only when marker files exist or detectProject finds languages/source under that root.",
   ];
 
   const broad = classifyBroadUserScanRoot(cwd, home);
@@ -201,17 +205,63 @@ export async function discoverProjectRoots(
   const candidates: ProjectCandidate[] = [];
   const seen = new Set<string>();
 
+  function rejectForbiddenRoot(resolved: string): boolean {
+    const base = path.basename(resolved).toLowerCase();
+    return FORBIDDEN_ROOT_BASENAMES.has(base);
+  }
+
   async function consider(dir: string, reason: string): Promise<void> {
     const resolved = path.resolve(dir);
     if (seen.has(resolved)) return;
     if (!(await isDirectory(resolved))) return;
     if (pathsEqual(resolved, home)) return;
+    if (rejectForbiddenRoot(resolved)) return;
     const markers = await markersAt(resolved);
     if (markers.length === 0) return;
     seen.add(resolved);
     candidates.push({
       root: resolved,
       score: scoreMarkers(markers),
+      markers,
+      truth: "VERIFIED",
+      reason,
+    });
+  }
+
+  /**
+   * When classic manifests/.git are absent, reuse the same detectProject path as DNA
+   * so `start` agrees with `dna` for valid software trees (e.g. language-only roots).
+   * Only applied to prefer/cwd — never to unbounded parent/child walks.
+   */
+  async function considerDetectProject(dir: string, reason: string): Promise<void> {
+    const resolved = path.resolve(dir);
+    if (seen.has(resolved)) return;
+    if (!(await isDirectory(resolved))) return;
+    if (pathsEqual(resolved, home)) return;
+    if (rejectForbiddenRoot(resolved)) return;
+    if (classifyBroadUserScanRoot(resolved, home).blocked) return;
+
+    let detection;
+    try {
+      detection = await detectProject(resolved);
+    } catch {
+      return;
+    }
+
+    // detectProject returns ["unknown"] for empty trees — that is not a project signal.
+    const languages = detection.repository.languages.filter((l) => l !== "unknown");
+    const sourceFiles = detection.discovery.files.filter((f) =>
+      /\.(ts|tsx|js|jsx|mjs|cjs|py|php|go|rs|java|kt|kts|dart|rb|cs)$/i.test(f.relativePath),
+    ).length;
+    if (languages.length === 0 && sourceFiles === 0) return;
+
+    seen.add(resolved);
+    const markers =
+      languages.length > 0 ? languages.map((l) => `lang:${l}`) : [`source-files:${sourceFiles}`];
+    candidates.push({
+      root: resolved,
+      // Match strong marker score so a lone detectProject hit auto-selects like package.json.
+      score: languages.length > 0 ? 5 : 3,
       markers,
       truth: "VERIFIED",
       reason,
@@ -238,17 +288,63 @@ export async function discoverProjectRoots(
     for (const entry of entries) {
       if (!entry.isDirectory() || entry.isSymbolicLink()) continue;
       if (DEFAULT_IGNORE_DIRECTORIES.has(entry.name) || entry.name.startsWith(".")) continue;
+      if (FORBIDDEN_ROOT_BASENAMES.has(entry.name.toLowerCase())) continue;
       await consider(path.join(cwd, entry.name), "child directory with project markers");
     }
   } catch {
     limitations.push("Could not list child directories for candidate discovery.");
   }
 
+  // detectProject fallback (same engine as DNA) for prefer/cwd when no classic markers
+  // apply to that path AND no ancestor marker candidate already covers it (nested Case B).
+  // Also skip when child classic-marker projects already exist — otherwise detectProject
+  // would absorb sibling packages into a multi-project parent (start always passes prefer=cwd).
+  const preferAbs = options.prefer ? path.resolve(options.prefer) : null;
+
+  function ancestorMarkerCovers(target: string): ProjectCandidate | undefined {
+    return candidates.find((c) => {
+      if (pathsEqual(c.root, target)) return true;
+      const rootWithSep = c.root.endsWith(path.sep) ? c.root : c.root + path.sep;
+      if (process.platform === "win32") {
+        return target.toLowerCase().startsWith(rootWithSep.toLowerCase());
+      }
+      return target.startsWith(rootWithSep);
+    });
+  }
+
+  function descendantMarkerCandidates(target: string): ProjectCandidate[] {
+    const targetWithSep = target.endsWith(path.sep) ? target : target + path.sep;
+    return candidates.filter((c) => {
+      if (pathsEqual(c.root, target)) return false;
+      if (process.platform === "win32") {
+        return c.root.toLowerCase().startsWith(targetWithSep.toLowerCase());
+      }
+      return c.root.startsWith(targetWithSep);
+    });
+  }
+
+  if (preferAbs) {
+    // Skip detectProject absorption when 2+ classic child projects exist (multi-project
+    // parent). A single nested foreign repo must not block prefer's own language tree.
+    if (!ancestorMarkerCovers(preferAbs) && descendantMarkerCandidates(preferAbs).length < 2) {
+      await considerDetectProject(preferAbs, "explicit prefer path (detectProject)");
+    }
+  } else if (candidates.length === 0) {
+    await considerDetectProject(cwd, "current working directory (detectProject)");
+  }
+
   candidates.sort((a, b) => b.score - a.score || a.root.localeCompare(b.root));
 
   let selected: ProjectCandidate | null = null;
-  if (options.prefer) {
-    selected = candidates.find((c) => c.root === path.resolve(options.prefer!)) ?? null;
+  if (preferAbs) {
+    const exact = candidates.find((c) => pathsEqual(c.root, preferAbs));
+    const covered = ancestorMarkerCovers(preferAbs);
+    // Nested dir under a marker project → select the marker root, not the nested leaf.
+    if (covered && !pathsEqual(covered.root, preferAbs)) {
+      selected = covered;
+    } else {
+      selected = exact ?? covered ?? null;
+    }
   } else if (options.autoSelect !== false) {
     const strong = candidates.filter((c) => c.score >= 5);
     if (strong.length === 1) {
