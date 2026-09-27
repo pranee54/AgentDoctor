@@ -26,7 +26,8 @@ describe("software evolution timeline", () => {
       execSync('git config user.email "t@example.com"', { cwd: root });
       execSync('git config user.name "Test"', { cwd: root });
       await fs.writeFile(path.join(root, "a.txt"), "1\n", "utf8");
-      execSync("git add a.txt && git commit -m 'init'", { cwd: root, shell: "/bin/sh" });
+      execSync("git add a.txt", { cwd: root });
+      execSync("git commit -m init", { cwd: root });
       const report = await buildSoftwareEvolutionTimeline(root, { maxCommits: 10 });
       expect(report.gitAvailable).toBe(true);
       expect(report.events.length).toBeGreaterThan(0);
