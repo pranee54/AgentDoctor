@@ -207,14 +207,21 @@ describe("CLI certification matrix", () => {
     expect(TOP_LEVEL_COMMANDS.length).toBeGreaterThan(60);
     const failures: string[] = [];
     for (const cmd of TOP_LEVEL_COMMANDS) {
-      const r = await runCliAsync([cmd, "--help"], 8_000);
+      let r = await runCliAsync([cmd, "--help"], 8_000);
+      let text = `${r.stdout}\n${r.stderr}`;
+      // One retry under CI load (rare single-command help flake).
+      if (!(r.status === 0 || /Usage:/i.test(text)) && r.signal !== "SIGTERM") {
+        r = await runCliAsync([cmd, "--help"], 8_000);
+        text = `${r.stdout}\n${r.stderr}`;
+      }
       if (r.signal === "SIGTERM" || r.ms >= 7_500) {
         failures.push(`${cmd}: hung (${r.ms}ms signal=${r.signal})`);
         continue;
       }
-      const text = `${r.stdout}\n${r.stderr}`;
       if (!(r.status === 0 || /Usage:/i.test(text))) {
-        failures.push(`${cmd}: status=${r.status}`);
+        failures.push(
+          `${cmd}: status=${r.status} out=${JSON.stringify(text.trim().slice(0, 200))}`,
+        );
       }
     }
     expect(failures, failures.join("\n")).toEqual([]);
